@@ -41,7 +41,9 @@ class ConnectionService(private val service: AriesAgentService) {
     }
 
     // Accept Out of band V2 invitation after scanning QR Code
-    fun acceptOOBV2Invitation(invitation: String){
+    fun acceptOOBV2Invitation(inv: String){
+
+        val invitation = """ ${inv.dropLast(1)}, "my_label": "${service.agentlabel}" }"""
 
         var res: ResponseEnvelope
         try {
