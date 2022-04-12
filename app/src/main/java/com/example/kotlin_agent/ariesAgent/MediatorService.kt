@@ -42,7 +42,7 @@ class MediatorService(private val service: AriesAgentService) {
         val mediatorRequest = """ {"connectionID":"${service.routerConnectionId}"} """
 
         val data = mediatorRequest.toByteArray(StandardCharsets.UTF_8)
-        val res = mediatorController?.register(RequestEnvelope(data))
+        val res = mediatorController?.register(data)
 
         if (res != null) {
             if(res.error != null){

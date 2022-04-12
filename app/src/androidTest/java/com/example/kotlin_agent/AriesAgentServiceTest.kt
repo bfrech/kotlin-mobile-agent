@@ -20,9 +20,9 @@ class AriesAgentServiceTest : TestCase() {
 
     fun testConnectToMediator() {
         service?.createNewAgent("Test Agent A")
-        service?.connectToMediator("http://0e7c-84-58-54-76.eu.ngrok.io/invitation")
+        service?.connectToMediator("http://a3ec-84-58-54-76.eu.ngrok.io/invitation")
         Thread.sleep(5000)
-        service?.createInvitationForMobileAgent()
+        service?.createOOBV2InvitationForMobileAgent()
         Thread.sleep(10000)
     }
 }

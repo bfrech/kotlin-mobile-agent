@@ -1,5 +1,7 @@
 package com.example.kotlin_agent.ariesAgent
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
@@ -47,8 +49,9 @@ class AriesAgentService {
         mediatorService.registerMediator()
     }
 
-    fun createInvitationForMobileAgent() {
-        connectionService.createInvitationForMobileAgent("Connect", "connect")
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createOOBV2InvitationForMobileAgent() {
+        connectionService.createOOBV2InvitationForMobileAgent("Connect", "connect")
     }
 
 }
