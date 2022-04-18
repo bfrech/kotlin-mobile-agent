@@ -49,6 +49,8 @@ class MediatorService(private val service: AriesAgentService) {
                 println("There was an error with the Router Registration ${res.error.message}")
             } else {
                 println("Registered Router with: ${service.routerConnectionId}")
+
+                // TODO: change to new screen
             }
         }
     }

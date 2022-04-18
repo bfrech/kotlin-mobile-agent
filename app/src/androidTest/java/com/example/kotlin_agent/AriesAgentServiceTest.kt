@@ -14,15 +14,11 @@ class AriesAgentServiceTest : TestCase() {
 
     public override fun tearDown() {}
 
-    fun testCreateNewAgent() {
-        service?.createNewAgent("Alice")
-    }
 
     fun testConnectToMediator() {
-        service?.createNewAgent("Alice")
-        service?.connectToMediator("http://a3ec-84-58-54-76.eu.ngrok.io/invitation")
+        service?.setupAgentWithLabelAndMediator("http://f11e-84-58-54-76.eu.ngrok.io/invitation", "Alice")
         Thread.sleep(5000)
-        service?.createOOBV2InvitationForMobileAgent()
+        service?.createOOBInvitationForMobileAgent()
         Thread.sleep(100000)
     }
 }

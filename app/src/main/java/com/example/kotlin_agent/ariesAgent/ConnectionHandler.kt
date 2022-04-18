@@ -13,10 +13,12 @@ class ConnectionHandler(private val ariesAgentService: AriesAgentService) : Hand
         val json = JSONObject(String(message, StandardCharsets.UTF_8))
         val jsonMessage = JSONObject(json["message"].toString())
         if(jsonMessage["StateID"].equals("completed")) {
-            println("Reached completed State: register Router now")
+            val message = JSONObject(jsonMessage["Properties"].toString())
 
-            // Register Mediator
-            ariesAgentService.registerMediator()
+            if(message["connectionID"].equals(ariesAgentService.routerConnectionId)){
+                println("Reached completed State: register Router now")
+                ariesAgentService.registerMediator()
+            }
 
         }
     }
