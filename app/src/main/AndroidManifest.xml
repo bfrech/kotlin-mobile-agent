@@ -12,13 +12,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotlin_Agent">
+        <service
+            android:name=".ariesAgent.AriesAgentService"
+            android:enabled="true"
+            android:exported="false">
+        </service>
         <activity
             android:name=".ContactsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_contacts"
-            android:theme="@style/Theme.Kotlin_Agent.NoActionBar" />
-        <activity
-            android:name=".Contacts_"
             android:exported="false"
             android:label="@string/title_activity_contacts"
             android:theme="@style/Theme.Kotlin_Agent.NoActionBar" />

@@ -10,8 +10,6 @@ import com.example.kotlin_agent.didcomm.DIDCommService
 
 class MainActivity : AppCompatActivity() {
 
-    var service: AriesAgentService? = AriesAgentService()
-
     lateinit var connectButton: Button
     lateinit var mediatorURLEdit: EditText
     lateinit var labelEdit: EditText
@@ -21,18 +19,20 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
+        labelEdit = findViewById(R.id.yourLabelEditText)
+
+        val service = Intent(this, AriesAgentService::class.java)
+
         connectButton = findViewById(R.id.connectbutton)
         connectButton.setOnClickListener {
 
-            // Call Setup Agent with mediator URL and Label in background
-            val background = object: Thread(){
-                override fun run(){
-                    mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
-                    labelEdit = findViewById(R.id.yourLabelEditText)
-                    service?.setupAgentWithLabelAndMediator(mediatorURLEdit.text.toString(), labelEdit.text.toString())
-                }
-            }.start()
+            service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
+            service.putExtra("label",labelEdit.text.toString())
+            service.action = "startAgent"
+            startService(service)
 
+            // Screen 2
             val intent = Intent(this, ContactsActivity::class.java)
             startActivity(intent)
         }
