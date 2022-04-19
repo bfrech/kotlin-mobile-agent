@@ -4,7 +4,7 @@ import org.hyperledger.aries.api.Handler
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
-class ConnectionHandler(private val ariesAgentService: AriesAgentService) : Handler {
+class ConnectionHandler(private val ariesAgentService: AriesAgent) : Handler {
 
     override fun handle(topic: String, message: ByteArray) {
         println("received notification topic: $topic")

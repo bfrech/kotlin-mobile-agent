@@ -7,7 +7,7 @@ import java.io.BufferedReader
 import java.net.URL
 import java.nio.charset.StandardCharsets
 
-class MediatorService(private val service: AriesAgentService) {
+class MediatorService(private val service: AriesAgent) {
 
     fun connectToMediator(mediatorUrl: String){
         val url = URL(mediatorUrl)
@@ -50,7 +50,6 @@ class MediatorService(private val service: AriesAgentService) {
             } else {
                 println("Registered Router with: ${service.routerConnectionId}")
 
-                // TODO: change to new screen
             }
         }
     }

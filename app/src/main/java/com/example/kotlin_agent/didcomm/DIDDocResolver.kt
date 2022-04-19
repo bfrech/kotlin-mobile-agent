@@ -1,13 +1,12 @@
 package com.example.kotlin_agent.didcomm
 
-import com.example.kotlin_agent.ariesAgent.AriesAgentService
+import com.example.kotlin_agent.ariesAgent.AriesAgent
 import org.didcommx.didcomm.diddoc.DIDDoc
 import org.didcommx.didcomm.diddoc.DIDDocResolver
-import org.hyperledger.aries.models.RequestEnvelope
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-class MessagingDIDDocResolver(private val service: AriesAgentService): DIDDocResolver {
+class MessagingDIDDocResolver(private val service: AriesAgent): DIDDocResolver {
 
     override fun resolve(did: String): Optional<DIDDoc> {
 

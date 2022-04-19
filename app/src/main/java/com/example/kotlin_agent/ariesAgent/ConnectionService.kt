@@ -10,7 +10,7 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.*
 
-class ConnectionService(private val service: AriesAgentService) {
+class ConnectionService(private val service: AriesAgent) {
 
     // Create Out of Band Invitation for other Mobile Agent
     @RequiresApi(Build.VERSION_CODES.O)
