@@ -50,17 +50,18 @@ class AriesAgentService: Service(){
         if (intent != null){
             val action = intent.action
             println("using an intent with action $action")
+            println(action.equals("startAgent"))
 
             if (action.equals("startAgent")) {
-                var extras = intent?.extras
+                val extras = intent.extras
                 if (extras == null){
                     println("No mediator URL or Label given")
                 } else {
                     mediatorURL= extras["mediatorURL"].toString()
                     agentlabel = extras["label"].toString()
-                    println(mediatorURL)
+                    val setup = backgroundSetup
                 }
-                val setup = backgroundSetup
+
             }
 
             if (action.equals("createInvitation")){

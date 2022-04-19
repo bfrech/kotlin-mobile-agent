@@ -154,5 +154,9 @@ class ConnectionService(private val service: AriesAgent) {
         return ""
     }
 
+    fun acceptDIDExchangeRequest(){
+        // TODO
+    }
+
 
 }

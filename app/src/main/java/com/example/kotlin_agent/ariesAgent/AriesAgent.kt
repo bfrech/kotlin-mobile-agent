@@ -5,8 +5,6 @@ import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
 
 
-
-
 class AriesAgent {
 
     companion object {
@@ -69,6 +67,10 @@ class AriesAgent {
 
     fun createDIDExchangeRequest() {
         connectionService.createDIDExchangeRequest()
+    }
+
+    fun acceptDIDExchangeRequest(){
+        connectionService.acceptDIDExchangeRequest()
     }
 
 }
