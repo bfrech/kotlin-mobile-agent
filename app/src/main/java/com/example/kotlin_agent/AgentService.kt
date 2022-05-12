@@ -1,28 +1,14 @@
-package com.example.kotlin_agent.ariesAgent
+package com.example.kotlin_agent
 
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.media.MediaParser.SeekPoint.START
 import android.os.Build
-import android.os.Bundle
 import android.os.IBinder
 import androidx.annotation.RequiresApi
-import com.google.firebase.appindexing.builders.Actions
-import org.hyperledger.aries.api.AriesController
-import org.hyperledger.aries.ariesagent.Ariesagent
-import org.hyperledger.aries.config.Options
-import org.hyperledger.aries.models.RequestEnvelope
-import org.hyperledger.aries.models.ResponseEnvelope
-import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.Serializable
-import java.net.URL
-import java.nio.charset.StandardCharsets
+import com.example.kotlin_agent.ariesAgent.AriesAgent
+import com.example.kotlin_agent.didcomm.DIDCommAgent
 
-class AriesAgentService: Service(){
+class AgentService: Service(){
 
     var agentlabel: String = ""
     var mediatorURL = ""
@@ -44,6 +30,7 @@ class AriesAgentService: Service(){
         return null
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         println("onStartCommand executed with startId: $startId")
 
@@ -65,7 +52,8 @@ class AriesAgentService: Service(){
             }
 
             if (action.equals("createInvitation")){
-                AriesAgent.getInstance()?.createOOBInvitationForMobileAgent()
+                //AriesAgent.getInstance()?.createOOBInvitationForMobileAgent()
+                DIDCommAgent.getInstance()?.createPeerDID()
             }
 
         } else {

@@ -1,5 +1,7 @@
 package com.example.kotlin_agent.ariesAgent
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
@@ -23,8 +25,8 @@ class AriesAgent {
     var routerConnectionId = ""
     var mediatorURL = ""
 
-    var mediatorService: MediatorService = MediatorService(this)
-    var connectionService: ConnectionService = ConnectionService(this)
+    var mediator: Mediator = Mediator(this)
+    var connection: Connection = Connection(this)
 
 
     fun createNewAgent(label: String) {
@@ -35,11 +37,12 @@ class AriesAgent {
         opts.label = agentlabel
         opts.addOutboundTransport("ws")
         opts.mediaTypeProfiles = "didcomm/v2"
+        //opts.mediaTypeProfiles = "didcomm/aip1"
         //opts.autoAccept = true  --> default value?
 
         try {
             ariesAgent = Ariesagent.new_(opts)
-            val handler = ConnectionHandler(this)
+            val handler = NotificationHandler(this)
             val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
             println("registered handler with registration id: $registrationID")
         }catch (e: Exception){
@@ -49,28 +52,34 @@ class AriesAgent {
 
     fun connectToMediator(mediatorUrl: String){
         this.mediatorURL = mediatorUrl
-        mediatorService.connectToMediator(mediatorUrl)
+        mediator.connectToMediator(mediatorUrl)
     }
 
     fun registerMediator() {
-        mediatorService.registerMediator()
+        mediator.registerMediator()
     }
 
-    //@RequiresApi(Build.VERSION_CODES.O)
-    //fun createOOBV2InvitationForMobileAgent() {
-    //    connectionService.createOOBV2InvitationForMobileAgent("Connect", "connect")
-    //}
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createOOBV2InvitationForMobileAgent() {
+      connection.createOOBV2InvitationForMobileAgent("Connect", "connect")
+    }
 
     fun createOOBInvitationForMobileAgent() {
-        connectionService.createOOBInvitationForMobileAgent()
+        connection.createOOBInvitationForMobileAgent()
     }
 
-    fun createDIDExchangeRequest() {
-        connectionService.createDIDExchangeRequest()
+    fun acceptDIDExchangeRequest(connectionID: String, theirLabel: String){
+        println("AcceptDIDExchangeRequest was called")
+        connection.acceptDIDExchangeRequest(connectionID, theirLabel)
     }
 
-    fun acceptDIDExchangeRequest(){
-        connectionService.acceptDIDExchangeRequest()
+    fun getConnection(connectionID: String){
+        connection.getConnection(connectionID)
     }
+
+    fun getRouterConnection(): String {
+        return connection.getConnection(routerConnectionId)
+    }
+
 
 }

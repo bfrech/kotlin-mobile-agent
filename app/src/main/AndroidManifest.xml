@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotlin_Agent">
         <service
-            android:name=".ariesAgent.AriesAgentService"
+            android:name=".AgentService"
             android:enabled="true"
             android:exported="false">
         </service>
