@@ -14,18 +14,12 @@ class Connection(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun createOOBV2InvitationForMobileAgent(goal: String, goalCode: String) {
 
-        val key = createKeySet("NISTP384ECDHKW")
-
-        val peerDID = createPeerDID(key, "NISTP384ECDHKW")
+        // Call Create Peer DID from didcomm Agent
+        val peerDID = ""
 
         val oobController = service.ariesAgent?.outOfBandV2Controller
         val payload = """{"label":"${service.agentlabel},"body":{"goal":"$goal","goal_code":"$goalCode","accept":["didcomm/v2", "didcomm/aip2;env=rfc19"]}, "from": "$peerDID"}}"""
-        //val payload =
-        //    """{"label":"${service.agentlabel}","body":{"goal":"$goal","goal_code":"$goalCode",
-        //        |"accept":["didcomm/v2", "didcomm/aip2;env=rfc19"]}, "from": "$peerDID",
-        //        |"attachments": [{"@id": "request-0", "mime-type": "application/json", "data": {"base64": "${encodedString}"}}] }""".trimMargin()
         val dataTest = payload.toByteArray(StandardCharsets.UTF_8)
-
         val invitation = oobController?.createInvitation(dataTest)
         if (invitation != null) {
             if (invitation.error != null) {
@@ -34,31 +28,10 @@ class Connection(private val service: AriesAgent) {
                 val actionsResponse = String(invitation.payload, StandardCharsets.UTF_8)
                 println(actionsResponse)
                 // TODO: generate QR Code from invitation instead of sending
-
             }
         }
     }
 
-    fun createOOBInvitationForMobileAgent(){
-        val protocols = "https://didcomm.org/didexchange/1.0"
-
-        val oobController = service.ariesAgent?.outOfBandController
-
-        val payload = """{"label":"${service.agentlabel}","goal":"goal","goal_code":"goalCode","protocols":["$protocols"], "router_connection_id":"${service.routerConnectionId}"}"""
-
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val invitation = oobController?.createInvitation(data)
-        if (invitation != null) {
-            if (invitation.error != null) {
-                println(invitation.error)
-            } else {
-                val actionsResponse = String(invitation.payload, StandardCharsets.UTF_8)
-                println(actionsResponse)
-                // TODO: generate QR Code from invitation instead of sending
-
-            }
-        }
-    }
 
     // Accept Out of band V2 invitation after scanning QR Code
     fun acceptOOBV2Invitation(inv: String){
@@ -104,61 +77,6 @@ class Connection(private val service: AriesAgent) {
         return key
     }
 
-    private fun createPeerDID(key: String, keyType: String): String {
-        val vdrController = service.ariesAgent?.vdrController
-        val id = UUID.randomUUID()
-        println(id)
-
-        val vdrRequest =
-            """{"method": "peer", "opts": {"router_connection_id":"${service.routerConnectionId}"},
-                |"did": {"@context":["https://w3id.org/did/v1","https://w3id.org/did/v2"], "id": "$id",
-                | "verificationMethod": [{"controller":"did:peer:123456789abcdefghw", "id":"did:peer:123456789abcdefghw#key2", "publicKeyBase58":"${key}","type":"Ed25519VerificationKey2018"}]}}""".trimMargin()
-
-        //val vdrRequest =
-        //    """{"method": "peer", "opts": {"router_connection_id":"${service.routerConnectionId}"},
-        //        |"did": {"@context":["https://w3id.org/did/v1","https://w3id.org/did/v2"], "id": "$id",
-        //        | "keyAgreement": [{"controller":"did:peer:123456789abcdefghw", "id":"$id", "publicKeyBase58":"${key}","type":"X25519KeyAgreementKey2019"}]}}""".trimMargin()
-        val vdrData = vdrRequest.toByteArray(StandardCharsets.UTF_8)
-
-        val vdrResponse = vdrController?.createDID(vdrData)
-
-        if (vdrResponse != null) {
-            if (vdrResponse.error != null) {
-                println(vdrResponse.error)
-            } else {
-                val actionsResponse = String(vdrResponse.payload, StandardCharsets.UTF_8)
-                val jsonActionResponse = JSONObject(actionsResponse)
-                println(jsonActionResponse)
-                val did = JSONObject(jsonActionResponse["did"].toString())
-                val peerDID = did["id"].toString()
-                return peerDID
-            }
-        }
-        return ""
-    }
-
-
-    fun acceptDIDExchangeRequest(connectionID: String, theirLabel: String){
-        println("AcceptDIDExchangeRequest connection Service was called")
-        val myDID = getConnection(connectionID)
-        val request = """{"id":"$connectionID", "router_connections": "${service.routerConnectionId}", "public": ""}"""
-        val data = request.toByteArray(StandardCharsets.UTF_8)
-        val res = service.ariesAgent?.didExchangeController?.acceptExchangeRequest(data)
-        if(res != null){
-            println(res)
-            if(res.error != null){
-                println(res.error)
-            } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                println(actionsResponse)
-            }
-        } else {
-            println("Res is null")
-        }
-        println("accepted DID Exchange Request")
-        // didExchangeClient.AcceptExchangeRequest(ConnectionID(), connection.MyDID, Label, didexchange.WithRouterConnections(RouterID))
-    }
-
     fun getConnection(connectionID: String): String{
         val request = """{"id": "$connectionID"}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
@@ -178,22 +96,23 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-    //fun resolveDID(did: String){
-    //    val request = """{"id":"$did"}"""
-    //    val data = request.toByteArray(StandardCharsets.UTF_8)
-    //    val res = service.ariesAgent?.vdrController?.resolveDID(data)
-    //    if(res != null){
-    //        println(res)
-    //        if(res.error != null){
-    //            println(res.error)
-    //        } else {
-    //            val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-    //            println(actionsResponse)
-    //        }
-    //    } else {
-    //        println("Res is null")
-    //    }
-    //}
+
+    fun createNewConnection(myDID: String, theirDID: String){
+        val request = """{"my_did": "$myDID", "their_did": "$theirDID"}"""
+        val data = request.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.connectionController?.createConnectionV2(data)
+        if(res != null){
+            if(res.error != null){
+                println(res.error)
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                println(jsonObject)
+            }
+        } else {
+            println("Res is null")
+        }
+    }
 
 
 }

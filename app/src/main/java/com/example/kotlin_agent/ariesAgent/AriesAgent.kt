@@ -64,14 +64,14 @@ class AriesAgent {
       connection.createOOBV2InvitationForMobileAgent("Connect", "connect")
     }
 
-    fun createOOBInvitationForMobileAgent() {
-        connection.createOOBInvitationForMobileAgent()
-    }
+    //fun createOOBInvitationForMobileAgent() {
+    //    connection.createOOBInvitationForMobileAgent()
+    //}
 
-    fun acceptDIDExchangeRequest(connectionID: String, theirLabel: String){
-        println("AcceptDIDExchangeRequest was called")
-        connection.acceptDIDExchangeRequest(connectionID, theirLabel)
-    }
+    //fun acceptDIDExchangeRequest(connectionID: String, theirLabel: String){
+    //    println("AcceptDIDExchangeRequest was called")
+    //    connection.acceptDIDExchangeRequest(connectionID, theirLabel)
+    //}
 
     fun getConnection(connectionID: String){
         connection.getConnection(connectionID)
@@ -79,6 +79,10 @@ class AriesAgent {
 
     fun getRouterConnection(): String {
         return connection.getConnection(routerConnectionId)
+    }
+
+    fun createNewConnection(myDID: String, theirDID: String) {
+        connection.createNewConnection(myDID, theirDID)
     }
 
 

@@ -19,7 +19,7 @@ import com.example.kotlin_agent.peerdid.VerificationMaterialFormatPeerDID
 import com.example.kotlin_agent.peerdid.resolvePeerDID
 import java.util.*
 
-class PeerDIDDocResolver(): DIDDocResolver {
+class PeerDIDDocResolver: DIDDocResolver {
 
     @RequiresApi(Build.VERSION_CODES.N)
     override fun resolve(did: String): Optional<DIDDoc> {

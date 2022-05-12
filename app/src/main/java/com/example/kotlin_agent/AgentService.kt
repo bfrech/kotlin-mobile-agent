@@ -54,6 +54,11 @@ class AgentService: Service(){
             if (action.equals("createInvitation")){
                 //AriesAgent.getInstance()?.createOOBInvitationForMobileAgent()
                 DIDCommAgent.getInstance()?.createPeerDID()
+
+            }
+
+            if (action.equals("acceptInvitation")){
+                DIDCommAgent.getInstance()?.acceptPeerDIDInvitation("...")
             }
 
         } else {

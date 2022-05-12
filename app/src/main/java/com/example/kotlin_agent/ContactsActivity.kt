@@ -17,8 +17,9 @@ class ContactsActivity : AppCompatActivity() {
             val service = Intent(this, AgentService::class.java)
             service.action = "createInvitation"
             startService(service)
-
         }
+
+        // TODO: Add button here to accept Invitation
 
     }
 }

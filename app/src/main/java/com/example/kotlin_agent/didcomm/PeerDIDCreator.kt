@@ -88,7 +88,7 @@ class PeerDIDCreator( secretsResolver: SecretResolverEditable? = null ) {
             secretsResolver.addKey(jwkToSecret(privateKey))
         }
 
-        println(did)
+        println("Created a new peer DID: $did")
         return did
     }
 }
