@@ -26,11 +26,24 @@ class DIDCommAgent {
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    fun acceptPeerDIDInvitation(theirDID: String) {
+    fun acceptPeerDIDInvitation(theirDID: String, name: String) {
         val myDid = peerDIDCreator.createPeerDID()
-        println(peerDIDDocResolver.resolve(theirDID))
+        val theirDIDDoc = peerDIDDocResolver.resolveToString(theirDID)
+
+        // Save DID in Store
+        //AriesAgent.getInstance()?.saveDID(theirDIDDoc, name)
+
+        // Create DID in VDR
+        val peerDID = AriesAgent.getInstance()?.createDIDInVdr(theirDIDDoc)
+
+
+        if (peerDID != null) {
+            AriesAgent.getInstance()?.vdrResolveDID(peerDID)
+        }
 
         // TODO: create new Connection with MyDID and TheirDID
-        AriesAgent.getInstance()?.createNewConnection(myDid, theirDID)
+        if (peerDID != null) {
+            AriesAgent.getInstance()?.createNewConnection(myDid, peerDID)
+        }
     }
 }

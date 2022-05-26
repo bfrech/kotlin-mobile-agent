@@ -19,7 +19,11 @@ class ContactsActivity : AppCompatActivity() {
             startService(service)
         }
 
-        // TODO: Add button here to accept Invitation
-
+        val scanQrActionButton: FloatingActionButton = findViewById(R.id.scanQRActionButton)
+        scanQrActionButton.setOnClickListener{
+            val service = Intent(this, AgentService::class.java)
+            service.action = "acceptInvitation"
+            startService(service)
+        }
     }
 }

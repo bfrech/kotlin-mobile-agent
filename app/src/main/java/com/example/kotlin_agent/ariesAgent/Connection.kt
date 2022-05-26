@@ -115,4 +115,87 @@ class Connection(private val service: AriesAgent) {
     }
 
 
+    fun saveDID(did: String, name: String){
+        val payload = """ {"did": {"@context":["https://w3id.org/did/v1"], ${did.drop(1).replace("\n","")}, "name":"$name"}""".trimMargin()
+        println(payload)
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.vdrController?.saveDID(data)
+        if(res != null){
+            if(res.error != null){
+                println("Error: ${res.error}")
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                println(jsonObject)
+            }
+        } else {
+            println("Res is null")
+        }
+    }
+
+
+    fun getDID(did: String){
+        val payload = """ {"id":"$did"}"""
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.vdrController?.getDID(data)
+        if(res != null){
+            if(res.error != null){
+                println("Error: ${res.error}")
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                println(jsonObject)
+            }
+        } else {
+            println("Res is null")
+        }
+    }
+
+    fun vdrResolveDID(did: String){
+        val payload = """ {"id":"$did"}"""
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.vdrController?.resolveDID(data)
+        if(res != null){
+            if(res.error != null){
+                println("Error: ${res.error}")
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                println(jsonObject)
+            }
+        } else {
+            println("Res is null")
+        }
+    }
+
+    fun createDIDInVDR(didDoc: String): String {
+
+        val jsonObject = JSONObject(didDoc)
+        val auth = jsonObject["authentication"]
+
+        val payload = """ {"method":"peer", "did": {"@context":["https://w3id.org/did/v1"], ${didDoc.drop(1).dropLast(1).replace("\n","")}, "verificationMethod": $auth }} """
+
+
+        println(payload)
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.vdrController?.createDID(data)
+        if(res != null){
+            if(res.error != null){
+                println("Error: ${res.error}")
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                val did = jsonObject["did"].toString()
+                val jsonDID = JSONObject(did)
+
+                return jsonDID["id"].toString()
+            }
+        } else {
+            println("Res is null")
+        }
+        return ""
+    }
+
+
+
 }

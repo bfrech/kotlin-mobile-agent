@@ -37,6 +37,7 @@ class AriesAgent {
         opts.label = agentlabel
         opts.addOutboundTransport("ws")
         opts.mediaTypeProfiles = "didcomm/v2"
+
         //opts.mediaTypeProfiles = "didcomm/aip1"
         //opts.autoAccept = true  --> default value?
 
@@ -85,5 +86,19 @@ class AriesAgent {
         connection.createNewConnection(myDID, theirDID)
     }
 
+    fun saveDID(did: String, name: String){
+        connection.saveDID(did, name)
+    }
 
+    fun getDID(did: String){
+        connection.getDID(did)
+    }
+
+    fun vdrResolveDID(did: String){
+        connection.vdrResolveDID(did)
+    }
+
+    fun createDIDInVdr(didDoc: String): String {
+        return connection.createDIDInVDR(didDoc)
+    }
 }

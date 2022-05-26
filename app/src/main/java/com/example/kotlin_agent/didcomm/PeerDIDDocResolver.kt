@@ -25,6 +25,7 @@ class PeerDIDDocResolver: DIDDocResolver {
     override fun resolve(did: String): Optional<DIDDoc> {
 
         val didDocJson = resolvePeerDID(did, format = VerificationMaterialFormatPeerDID.JWK)
+
         val didDoc = DIDDocPeerDID.fromJson(didDocJson)
 
         didDoc.keyAgreement
@@ -62,5 +63,9 @@ class PeerDIDDocResolver: DIDDocResolver {
             )
         )
 
+    }
+
+    fun resolveToString(did: String): String{
+        return resolvePeerDID(did, format = VerificationMaterialFormatPeerDID.JWK)
     }
 }

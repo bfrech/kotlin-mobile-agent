@@ -37,7 +37,6 @@ class AgentService: Service(){
         if (intent != null){
             val action = intent.action
             println("using an intent with action $action")
-            println(action.equals("startAgent"))
 
             if (action.equals("startAgent")) {
                 val extras = intent.extras
@@ -54,12 +53,18 @@ class AgentService: Service(){
             if (action.equals("createInvitation")){
                 //AriesAgent.getInstance()?.createOOBInvitationForMobileAgent()
                 DIDCommAgent.getInstance()?.createPeerDID()
-
             }
 
             if (action.equals("acceptInvitation")){
-                DIDCommAgent.getInstance()?.acceptPeerDIDInvitation("...")
+                val did = "did:peer:2.Ez6LSnkzXAqNYCbKTBCwsK3Puw9Gk91PJAQqepAbF3Co3DVke.Vz6MkuPv5x2oPJ9KQvwedzKg7dyXwDBqcUDq2wM2a6H6wAefX.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJ3czovL01CUC12b24tQmVyaXQuZnJpdHouYm94OjUwMDEiLCJyIjpbIlwiZGlkOmtleTp6NkxTclozREs5Nk1xZ1dpVnRSclN6QlU4aWIyNmJ5d0VLMkJpRmNuZ0NqRnQ5TXdcIiJdLCJhIjpbImRpZGNvbW0vdjIiXX0"
+                DIDCommAgent.getInstance()?.acceptPeerDIDInvitation(theirDID = did, name="Bob")
             }
+
+            if (action.equals("receiveInvitation")){
+                //DIDCommAgent.getInstance()?.acceptPeerDIDInvitation("...")
+            }
+
+
 
         } else {
             println(
