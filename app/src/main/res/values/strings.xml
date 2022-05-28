@@ -5,6 +5,7 @@
     <string name="your_label">Your Label</string>
     <string name="connect">Connect</string>
     <string name="title_activity_contacts">Contacts_</string>
+    <string name="qr_code">qr_code</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>

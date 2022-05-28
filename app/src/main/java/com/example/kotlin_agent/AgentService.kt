@@ -7,6 +7,10 @@ import android.os.IBinder
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.ariesAgent.AriesAgent
 import com.example.kotlin_agent.didcomm.DIDCommAgent
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+
+
+
 
 class AgentService: Service(){
 
@@ -34,36 +38,40 @@ class AgentService: Service(){
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         println("onStartCommand executed with startId: $startId")
 
-        if (intent != null){
+        if (intent != null) {
             val action = intent.action
             println("using an intent with action $action")
 
             if (action.equals("startAgent")) {
                 val extras = intent.extras
-                if (extras == null){
+                if (extras == null) {
                     println("No mediator URL or Label given")
                 } else {
-                    mediatorURL= extras["mediatorURL"].toString()
+                    mediatorURL = extras["mediatorURL"].toString()
                     agentlabel = extras["label"].toString()
                     val setup = backgroundSetup
                 }
 
             }
 
-            if (action.equals("createInvitation")){
-                //AriesAgent.getInstance()?.createOOBInvitationForMobileAgent()
-                DIDCommAgent.getInstance()?.createPeerDID()
+            if (action.equals("createInvitation")) {
+                val myDID = DIDCommAgent.getInstance()?.createPeerDID()
+                println("Created MyDID: $myDID")
+                if (myDID != null) {
+                    sendMessage(myDID)
+                }
             }
 
-            if (action.equals("acceptInvitation")){
-                val did = "did:peer:2.Ez6LSnkzXAqNYCbKTBCwsK3Puw9Gk91PJAQqepAbF3Co3DVke.Vz6MkuPv5x2oPJ9KQvwedzKg7dyXwDBqcUDq2wM2a6H6wAefX.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJ3czovL01CUC12b24tQmVyaXQuZnJpdHouYm94OjUwMDEiLCJyIjpbIlwiZGlkOmtleTp6NkxTclozREs5Nk1xZ1dpVnRSclN6QlU4aWIyNmJ5d0VLMkJpRmNuZ0NqRnQ5TXdcIiJdLCJhIjpbImRpZGNvbW0vdjIiXX0"
-                DIDCommAgent.getInstance()?.acceptPeerDIDInvitation(theirDID = did, name="Bob")
-            }
+            if (action.equals("acceptInvitation")) {
 
-            if (action.equals("receiveInvitation")){
-                //DIDCommAgent.getInstance()?.acceptPeerDIDInvitation("...")
-            }
+                // Only for testing:
+                val did =
+                    "did:peer:2.Ez6LSiEp8B3VwSnmp3yZGkigQE8NwaYQNZNEp1MhG9xtapFsC.Vz6MkquHnx5Rrj3P2ZywFF9LZXftvEHaSgq46SRhkZxgiEhwq.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJ3czovL01CUC12b24tQmVyaXQ6NTAwMSIsInIiOlsiXCJkaWQ6a2V5Ono2TFNqdTRmZFZVVDRyZEI0YWVKd2NUTk02aG05MkdoRWY4VkNOMWc3MXprRXZRYVwiIl0sImEiOlsiZGlkY29tbS92MiJdfQ"
 
+                val myDID = DIDCommAgent.getInstance()
+                    ?.acceptPeerDIDInvitation(theirDID = did, name = "Bob")
+                println("Accepted Invitation with myDID: $myDID")
+            }
 
 
         } else {
@@ -74,6 +82,14 @@ class AgentService: Service(){
 
         // Makes sure that the service is restarted if the system kills the service
         return START_STICKY
+    }
+
+
+    private fun sendMessage(peerDID: String) {
+        println("sender: Broadcasting message")
+        val intent = Intent("created-peer-did")
+        intent.putExtra("message", peerDID)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
 

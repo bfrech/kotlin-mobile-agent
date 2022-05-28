@@ -87,18 +87,22 @@ class AriesAgent {
     }
 
     fun saveDID(did: String, name: String){
-        connection.saveDID(did, name)
+        connection.saveDIDInStore(did, name)
     }
 
     fun getDID(did: String){
         connection.getDID(did)
     }
 
-    fun vdrResolveDID(did: String){
-        connection.vdrResolveDID(did)
+    fun vdrResolveDID(did: String): String {
+        return connection.vdrResolveDID(did)
     }
 
     fun createDIDInVdr(didDoc: String): String {
         return connection.createDIDInVDR(didDoc)
+    }
+
+    fun storeDIDInVdr(didDoc: String): String {
+        return connection.storeDIDInVDR(didDoc)
     }
 }

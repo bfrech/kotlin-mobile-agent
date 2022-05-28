@@ -91,7 +91,7 @@ class Connection(private val service: AriesAgent) {
                 return result.toString()
             }
         } else {
-            println("Res is null")
+            return "Res is null"
         }
         return ""
     }
@@ -115,7 +115,7 @@ class Connection(private val service: AriesAgent) {
     }
 
 
-    fun saveDID(did: String, name: String){
+    fun saveDIDInStore(did: String, name: String){
         val payload = """ {"did": {"@context":["https://w3id.org/did/v1"], ${did.drop(1).replace("\n","")}, "name":"$name"}""".trimMargin()
         println(payload)
         val data = payload.toByteArray(StandardCharsets.UTF_8)
@@ -151,7 +151,7 @@ class Connection(private val service: AriesAgent) {
         }
     }
 
-    fun vdrResolveDID(did: String){
+    fun vdrResolveDID(did: String): String {
         val payload = """ {"id":"$did"}"""
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.vdrController?.resolveDID(data)
@@ -162,21 +162,18 @@ class Connection(private val service: AriesAgent) {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
                 val jsonObject = JSONObject(actionsResponse)
                 println(jsonObject)
+                return jsonObject.toString()
             }
         } else {
             println("Res is null")
         }
+        return ""
     }
 
     fun createDIDInVDR(didDoc: String): String {
-
         val jsonObject = JSONObject(didDoc)
         val auth = jsonObject["authentication"]
-
         val payload = """ {"method":"peer", "did": {"@context":["https://w3id.org/did/v1"], ${didDoc.drop(1).dropLast(1).replace("\n","")}, "verificationMethod": $auth }} """
-
-
-        println(payload)
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.vdrController?.createDID(data)
         if(res != null){
@@ -187,7 +184,34 @@ class Connection(private val service: AriesAgent) {
                 val jsonObject = JSONObject(actionsResponse)
                 val did = jsonObject["did"].toString()
                 val jsonDID = JSONObject(did)
+                return jsonDID["id"].toString()
+            }
+        } else {
+            println("Res is null")
+        }
+        return ""
+    }
 
+
+    // Store Aries DID in VDR
+    fun storeDIDInVDR(didDoc: String): String {
+
+        //val jsonObject = JSONObject(didDoc)
+        //val auth = jsonObject["authentication"]
+        println(didDoc)
+
+        val payload = """ {"method":"peer", "did": $didDoc} """
+
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.vdrController?.createDID(data)
+        if(res != null){
+            if(res.error != null){
+                println("Error: ${res.error}")
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                val did = jsonObject["did"].toString()
+                val jsonDID = JSONObject(did)
                 return jsonDID["id"].toString()
             }
         } else {

@@ -24,11 +24,18 @@ class PeerDIDCreator( secretsResolver: SecretResolverEditable? = null ) {
         val x25519keyPairs = (1..agreementKeysCount).map{ generateX25519Keys()}
         val ed25519keyPairs = (1..authKeysCount).map { generateEd25519Keys() }
 
-        val routerConnection = AriesAgent.getInstance()?.getRouterConnection()
-        println(routerConnection)
 
+        // Get the Router Connection to create Service Endpoint
+        val routerConnection = AriesAgent.getInstance()?.getRouterConnection()
         val jsonRouterConnection = JSONObject(routerConnection)
+
+        // Format Issue: new format return service endpoint as object, old format as simple string
+        // New Format:
         val serviceEndpoint = jsonRouterConnection["ServiceEndPoint"].toString()
+
+        // TODO: remove when obsolete. Old Format:
+        val serviceEndpointOldJson = JSONObject(serviceEndpoint)
+        val serviceEndpointOld = serviceEndpointOldJson["uri"].toString()
 
         // TODO: needs better handling of json Array here
         val serviceRoutingKeys = listOf(jsonRouterConnection["RecipientKeys"].toString().drop(1).dropLast(1))
@@ -51,7 +58,7 @@ class PeerDIDCreator( secretsResolver: SecretResolverEditable? = null ) {
         }
 
         // 3. generate service
-        val service = serviceEndpoint?.let {
+        val service = serviceEndpointOld?.let {
             toJson(
                 DIDCommServicePeerDID(
                     id = "new-id",
@@ -88,7 +95,6 @@ class PeerDIDCreator( secretsResolver: SecretResolverEditable? = null ) {
             secretsResolver.addKey(jwkToSecret(privateKey))
         }
 
-        println("Created a new peer DID: $did")
         return did
     }
 }

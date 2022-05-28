@@ -12,11 +12,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotlin_Agent">
+        <activity
+            android:name=".NewInvitationActivity"
+            android:exported="false" />
+
         <service
             android:name=".AgentService"
             android:enabled="true"
-            android:exported="false">
-        </service>
+            android:exported="false"></service>
+
         <activity
             android:name=".ContactsActivity"
             android:exported="false"
