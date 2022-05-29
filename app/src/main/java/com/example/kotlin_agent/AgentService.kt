@@ -58,7 +58,7 @@ class AgentService: Service(){
                 val myDID = DIDCommAgent.getInstance()?.createPeerDID()
                 println("Created MyDID: $myDID")
                 if (myDID != null) {
-                    sendMessage(myDID)
+                    sendPeerDidMessage(myDID)
                 }
             }
 
@@ -67,6 +67,8 @@ class AgentService: Service(){
                 // Only for testing:
                 val did =
                     "did:peer:2.Ez6LSiEp8B3VwSnmp3yZGkigQE8NwaYQNZNEp1MhG9xtapFsC.Vz6MkquHnx5Rrj3P2ZywFF9LZXftvEHaSgq46SRhkZxgiEhwq.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJ3czovL01CUC12b24tQmVyaXQ6NTAwMSIsInIiOlsiXCJkaWQ6a2V5Ono2TFNqdTRmZFZVVDRyZEI0YWVKd2NUTk02aG05MkdoRWY4VkNOMWc3MXprRXZRYVwiIl0sImEiOlsiZGlkY29tbS92MiJdfQ"
+
+                // TODO: Get DID and Name from Extras
 
                 val myDID = DIDCommAgent.getInstance()
                     ?.acceptPeerDIDInvitation(theirDID = did, name = "Bob")
@@ -85,7 +87,7 @@ class AgentService: Service(){
     }
 
 
-    private fun sendMessage(peerDID: String) {
+    private fun sendPeerDidMessage(peerDID: String) {
         println("sender: Broadcasting message")
         val intent = Intent("created-peer-did")
         intent.putExtra("message", peerDID)

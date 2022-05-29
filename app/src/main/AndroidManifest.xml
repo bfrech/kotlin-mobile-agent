@@ -13,13 +13,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotlin_Agent">
         <activity
+            android:name=".AcceptInvitationActivity"
+            android:exported="false" />
+        <activity
             android:name=".NewInvitationActivity"
             android:exported="false" />
 
         <service
             android:name=".AgentService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false" />
 
         <activity
             android:name=".ContactsActivity"

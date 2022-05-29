@@ -1,25 +1,19 @@
 package com.example.kotlin_agent
 
-import android.content.IntentFilter
+
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
-import android.content.Intent
 
-import android.content.BroadcastReceiver
-import android.content.Context
 
 
 class NewInvitationActivity : AppCompatActivity() {
 
     lateinit var qrImageView: ImageView
-    val did = "did:peer:2.Ez6LSiEp8B3VwSnmp3yZGkigQE8NwaYQNZNEp1MhG9xtapFsC.Vz6MkquHnx5Rrj3P2ZywFF9LZXftvEHaSgq46SRhkZxgiEhwq.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJ3czovL01CUC12b24tQmVyaXQ6NTAwMSIsInIiOlsiXCJkaWQ6a2V5Ono2TFNqdTRmZFZVVDRyZEI0YWVKd2NUTk02aG05MkdoRWY4VkNOMWc3MXprRXZRYVwiIl0sImEiOlsiZGlkY29tbS92MiJdfQ"
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
