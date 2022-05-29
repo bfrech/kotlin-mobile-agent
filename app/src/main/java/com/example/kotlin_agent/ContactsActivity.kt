@@ -40,7 +40,6 @@ class ContactsActivity : AppCompatActivity() {
         }
     }
 
-
     // Register the launcher and result handler
     private val barcodeLauncher = registerForActivityResult(
         ScanContract()
@@ -60,7 +59,7 @@ class ContactsActivity : AppCompatActivity() {
 
     private fun acceptInvitationFromQRCode(peerDID: String){
         val service = Intent(this, AgentService::class.java)
-        service.putExtra("peerDid", peerDID)
+        service.putExtra("did", peerDID)
         service.action = "acceptInvitation"
         startService(service)
     }

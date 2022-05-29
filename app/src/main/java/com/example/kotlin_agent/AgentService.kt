@@ -10,8 +10,6 @@ import com.example.kotlin_agent.didcomm.DIDCommAgent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 
-
-
 class AgentService: Service(){
 
     var agentlabel: String = ""
@@ -63,18 +61,21 @@ class AgentService: Service(){
             }
 
             if (action.equals("acceptInvitation")) {
+                val extras = intent.extras
+                if (extras == null) {
+                    println("No peerDis was given")
+                } else {
+                    val did = extras["did"].toString()
+                    val myDID = DIDCommAgent.getInstance()
+                        ?.acceptPeerDIDInvitation(theirDID = did, name = "Bob")
+                    println("Accepted Invitation with myDID: $myDID")
 
-                // Only for testing:
-                val did =
-                    "did:peer:2.Ez6LSiEp8B3VwSnmp3yZGkigQE8NwaYQNZNEp1MhG9xtapFsC.Vz6MkquHnx5Rrj3P2ZywFF9LZXftvEHaSgq46SRhkZxgiEhwq.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJ3czovL01CUC12b24tQmVyaXQ6NTAwMSIsInIiOlsiXCJkaWQ6a2V5Ono2TFNqdTRmZFZVVDRyZEI0YWVKd2NUTk02aG05MkdoRWY4VkNOMWc3MXprRXZRYVwiIl0sImEiOlsiZGlkY29tbS92MiJdfQ"
-
-                // TODO: Get DID and Name from Extras
-
-                val myDID = DIDCommAgent.getInstance()
-                    ?.acceptPeerDIDInvitation(theirDID = did, name = "Bob")
-                println("Accepted Invitation with myDID: $myDID")
+                    // TODO: Broadcast Message: "accepted-invitation" and trigger message to other agent with myDID
+                    if (myDID != null) {
+                        sendAcceptedInvitationMessage(myDID)
+                    }
+                }
             }
-
 
         } else {
             println(
@@ -91,6 +92,13 @@ class AgentService: Service(){
         println("sender: Broadcasting message")
         val intent = Intent("created-peer-did")
         intent.putExtra("message", peerDID)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun sendAcceptedInvitationMessage(myDid: String) {
+        println("sender: Broadcasting message")
+        val intent = Intent("accepted-invitation")
+        intent.putExtra("message", myDid)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 

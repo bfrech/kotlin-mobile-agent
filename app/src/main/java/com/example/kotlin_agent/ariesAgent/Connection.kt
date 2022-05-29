@@ -32,51 +32,6 @@ class Connection(private val service: AriesAgent) {
         }
     }
 
-
-    // Accept Out of band V2 invitation after scanning QR Code
-    fun acceptOOBV2Invitation(inv: String){
-        val invitation = """ ${inv.dropLast(1)}, "my_label": "${service.agentlabel}" }"""
-
-        var res: ResponseEnvelope
-        try {
-            val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
-            val data = invitation.toByteArray(StandardCharsets.UTF_8)
-            if (outOfBandV2Controller != null) {
-                res = outOfBandV2Controller.acceptInvitation(RequestEnvelope(data))
-                if(res.error != null){
-                    println(res.error.message)
-                } else {
-                    val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                    val jsonActionResponse = JSONObject(actionsResponse)
-                    val connectionID = jsonActionResponse["connection_id"].toString()
-                    println("""Accepted Invitation of Mobile Agent with: ${connectionID}""")
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    private fun createKeySet(keyType: String): String {
-        //DIDComm V2 Key Agreement: NISTP384ECDHKW
-        val kmsController = service.ariesAgent?.kmsController
-        val kmsRequest = """{"keyType":"$keyType"}"""
-        val kmsData = kmsRequest.toByteArray(StandardCharsets.UTF_8)
-        val kmsResponse = kmsController?.createKeySet(RequestEnvelope(kmsData))
-
-        var key = ""
-        if (kmsResponse != null) {
-            if (kmsResponse.error != null) {
-                println(kmsResponse.error)
-            } else {
-                val actionsResponse = String(kmsResponse.payload, StandardCharsets.UTF_8)
-                val jsonActionResponse = JSONObject(actionsResponse)
-                key = jsonActionResponse["publicKey"].toString()
-            }
-        }
-        return key
-    }
-
     fun getConnection(connectionID: String): String{
         val request = """{"id": "$connectionID"}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
@@ -97,7 +52,7 @@ class Connection(private val service: AriesAgent) {
     }
 
 
-    fun createNewConnection(myDID: String, theirDID: String){
+    fun createNewConnection(myDID: String, theirDID: String): String {
         val request = """{"my_did": "$myDID", "their_did": "$theirDID"}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.createConnectionV2(data)
@@ -107,11 +62,13 @@ class Connection(private val service: AriesAgent) {
             } else {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
                 val jsonObject = JSONObject(actionsResponse)
-                println(jsonObject)
+                println(jsonObject["id"])
+                return jsonObject["id"].toString()
             }
         } else {
             println("Res is null")
         }
+        return ""
     }
 
 

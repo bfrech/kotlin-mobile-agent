@@ -47,15 +47,14 @@ class DIDCommAgent {
         // Then their DID:
         val theirDIDDoc = peerDIDDocResolver.resolveToString(theirDID)
         val theirAriesDID = theirDIDDoc?.let { AriesAgent.getInstance()?.createDIDInVdr(it) }
-        //theirAriesDID?.let { AriesAgent.getInstance()?.vdrResolveDID(it) }
 
-        // Create new Connection with MyDID and TheirDID
+        // Create new Connection with MyDID and TheirDID: can be a function
         if (theirAriesDID != null && myAriesDID != null) {
-            AriesAgent.getInstance()?.createNewConnection(myAriesDID, theirAriesDID)
-        }
+            val connectionID = AriesAgent.getInstance()?.createNewConnection(myAriesDID, theirAriesDID)
 
-        // TODO: Save DID in Store with name
-        //AriesAgent.getInstance()?.saveDID(theirDIDDoc, name)
+            // TODO: Save Connection ID and Name in Store
+            println("Now Store connection with id: $connectionID and name: $name")
+        }
 
         println("Created Aries Connection with myDID: $myAriesDID and theirDID: $theirAriesDID")
 
@@ -76,15 +75,15 @@ class DIDCommAgent {
 
         // Then store connection with myAriesDID and TheirAriesDID
         if (theirAriesDID != null && currentOpenDID != "") {
-            AriesAgent.getInstance()?.createNewConnection(currentOpenDID, theirAriesDID)
+            val connectionID = AriesAgent.getInstance()?.createNewConnection(currentOpenDID, theirAriesDID)
             // DID is not open any longer
             currentOpenDID = ""
+
+            // TODO: Save Connection ID and Name in Store
+            println("Now Store connection with id: $connectionID and name: $name")
         }
 
         println("Created Aries Connection with myDID: $currentOpenDID and theirDID: $theirAriesDID")
-
-        // TODO: Save DID in Store with name
-        //AriesAgent.getInstance()?.saveDID(theirDIDDoc, name)
 
         // TODO: Call AgentService to broadcast completed message
 

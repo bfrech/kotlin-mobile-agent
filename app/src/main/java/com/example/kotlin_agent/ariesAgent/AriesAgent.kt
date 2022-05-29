@@ -82,8 +82,8 @@ class AriesAgent {
         return connection.getConnection(routerConnectionId)
     }
 
-    fun createNewConnection(myDID: String, theirDID: String) {
-        connection.createNewConnection(myDID, theirDID)
+    fun createNewConnection(myDID: String, theirDID: String): String {
+        return connection.createNewConnection(myDID, theirDID)
     }
 
     fun saveDID(did: String, name: String){
