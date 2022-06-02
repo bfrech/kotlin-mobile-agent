@@ -174,37 +174,37 @@ class Connection(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun createMyDID(): String {
         // Get the Router Connection to create Service Endpoint
-        //val routerConnection = getConnection(service.routerConnectionId)
-        //val jsonRouterConnection = JSONObject(routerConnection)
-        //val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
-        //val serviceEndpointJson = JSONObject(serviceEndpointObject)
-        //val serviceEndpointURI = serviceEndpointJson["uri"].toString()
-        //val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
+        val routerConnection = getConnection(service.routerConnectionId)
+        val jsonRouterConnection = JSONObject(routerConnection)
+        val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
+        val serviceEndpointJson = JSONObject(serviceEndpointObject)
+        val serviceEndpointURI = serviceEndpointJson["uri"].toString()
+        val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
 
         // Create Service:
-        //val service = """
+        val myService = """
+            [  {
+                "id": "",
+                "type": "DIDCommMessaging",
+                "serviceEndpoint": {
+                    "uri": "$serviceEndpointURI"
+                },
+                "routingKeys": $serviceRoutingKeys,
+                "accept": ["didcomm/v2"]
+            } ]
+        """.trimIndent()
+
+        //val testService = """
         //    [  {
         //        "id": "",
         //        "type": "DIDCommMessaging",
         //        "serviceEndpoint": {
-        //            "uri": "$serviceEndpointURI"
+        //            "uri": "http://7bdb-84-58-54-76.eu.ngrok.io/invitation"
         //        },
-        //        "routingKeys": $serviceRoutingKeys,
+        //        "routingKeys": ["did:key:daehdjkafdbkja"],
         //        "accept": ["didcomm/v2"]
         //    } ]
         //""".trimIndent()
-
-        val testService = """
-            [  {      
-                "id": "",  
-                "type": "DIDCommMessaging",      
-                "serviceEndpoint": {
-                    "uri": "http://7bdb-84-58-54-76.eu.ngrok.io/invitation"
-                },
-                "routingKeys": ["did:key:daehdjkafdbkja"],      
-                "accept": ["didcomm/v2"] 
-            } ]
-        """.trimIndent()
 
         val kDid = createKeyDid()
         val jsonKeyDidDoc = JSONObject(kDid)
@@ -213,7 +213,7 @@ class Connection(private val service: AriesAgent) {
         val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()
 
         val payload = """ {"@context":["https://w3id.org/did/v1"], "id": "#id" ,
-            "service": $testService , 
+            "service": $myService , 
             "verificationMethod":  $verificationMethod,
             "keyAgreement": $keyAgreement 
             } """
@@ -290,7 +290,5 @@ class Connection(private val service: AriesAgent) {
         }
         return ""
     }
-
-
 
 }
