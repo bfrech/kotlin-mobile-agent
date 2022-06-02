@@ -3,6 +3,7 @@ package com.example.kotlin_agent.didcomm
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.ariesAgent.AriesAgent
+import java.util.*
 
 
 class DIDCommAgent {
@@ -20,33 +21,33 @@ class DIDCommAgent {
         }
     }
 
-    private val peerDIDCreator = PeerDIDCreator()
+    //private val peerDIDCreator = PeerDIDCreator()
     private val peerDIDDocResolver = PeerDIDDocResolver()
 
-    fun createPeerDID(): String {
-        val did = peerDIDCreator.createPeerDID()
-        val didDoc = peerDIDDocResolver.resolveToString(did)
-        val ariesDID = AriesAgent.getInstance()?.createDIDInVdr(didDoc)
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createPeerDID(): String? {
+        val ariesDID = AriesAgent.getInstance()?.createMyDID()
+        val ariesDIDDoc = ariesDID?.let { AriesAgent.getInstance()?.vdrResolveDID(it) }
 
-        // TODO: did should be returned to other Agent to circumvent resolver problem, but ariesDID
-        //  needs to be stored until other DID is received from other Agent
+        //  DID needs to be stored until other DID is received from other Agent
         if (ariesDID != null) {
             currentOpenDID = ariesDID
         }
-        return did
+
+        // Should return DIDDocEncoded
+        return encodeBase64(ariesDIDDoc)
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
-    fun acceptPeerDIDInvitation(theirDID: String, name: String): String {
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun acceptPeerDIDInvitation(theirDIDDocEncoded: String, name: String): String? {
 
-        // Create own peer DID (this should be returned to the other Agent) and store in VDR
-        val myDid = peerDIDCreator.createPeerDID()
-        val myDIDDoc =  peerDIDDocResolver.resolveToString(myDid)
-        val myAriesDID = AriesAgent.getInstance()?.createDIDInVdr(myDIDDoc)
+        val myAriesDID = AriesAgent.getInstance()?.createMyDID()
+        val myAriesDIDDoc = myAriesDID?.let { AriesAgent.getInstance()?.vdrResolveDID(it) }
 
         // Then their DID:
-        val theirDIDDoc = peerDIDDocResolver.resolveToString(theirDID)
-        val theirAriesDID = theirDIDDoc?.let { AriesAgent.getInstance()?.createDIDInVdr(it) }
+        val theirDIDDoc = decodeBase64(theirDIDDocEncoded)
+        println("Their DID Doc: $theirDIDDoc")
+        val theirAriesDID = AriesAgent.getInstance()?.createTheirDID(theirDIDDoc)
 
         // Create new Connection with MyDID and TheirDID: can be a function
         if (theirAriesDID != null && myAriesDID != null) {
@@ -54,12 +55,17 @@ class DIDCommAgent {
 
             // TODO: Save Connection ID and Name in Store
             println("Now Store connection with id: $connectionID and name: $name")
+            if (connectionID != null) {
+
+                println(AriesAgent.getInstance()?.getConnection(connectionID))
+
+                // Message should include the decoded DIDDoc (or send from somehere else
+                AriesAgent.getInstance()?.sendMessage("invitation-response", connectionID)
+            }
         }
 
         println("Created Aries Connection with myDID: $myAriesDID and theirDID: $theirAriesDID")
-
-        // Other user needs peerDID from lib
-        return myDid
+        return encodeBase64(myAriesDIDDoc)
     }
 
 
@@ -67,6 +73,7 @@ class DIDCommAgent {
         After Other mobile Agent accepted Invitation, the other Agents' DID is returned and
         the connection is stored
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun completePeerDIDInvitation(theirDID: String, name: String){
 
         // First store theirDID in VDR
@@ -88,4 +95,23 @@ class DIDCommAgent {
         // TODO: Call AgentService to broadcast completed message
 
     }
+
+
+    /*
+        HELPER
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun encodeBase64(encodeMe: String?): String {
+        val payload = encodeMe?.toByteArray()
+        val encodedBytes = Base64.getEncoder().encode(payload)
+        return String(encodedBytes)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun decodeBase64(encodedData: String): String {
+        val decodedBytes = Base64.getDecoder().decode(encodedData.toByteArray())
+        return String(decodedBytes)
+    }
+
+
 }

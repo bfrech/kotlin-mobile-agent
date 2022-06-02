@@ -57,9 +57,9 @@ class ContactsActivity : AppCompatActivity() {
         }
     }
 
-    private fun acceptInvitationFromQRCode(peerDID: String){
+    private fun acceptInvitationFromQRCode(didDocEncoded: String){
         val service = Intent(this, AgentService::class.java)
-        service.putExtra("did", peerDID)
+        service.putExtra("did", didDocEncoded)
         service.action = "acceptInvitation"
         startService(service)
     }

@@ -53,27 +53,35 @@ class AgentService: Service(){
             }
 
             if (action.equals("createInvitation")) {
-                val myDID = DIDCommAgent.getInstance()?.createPeerDID()
-                println("Created MyDID: $myDID")
-                if (myDID != null) {
-                    sendPeerDidMessage(myDID)
+                val myDIDDocEncoded = DIDCommAgent.getInstance()?.createPeerDID()
+                println("Created MyDIDDocEncoded: $myDIDDocEncoded")
+
+                // Subscribe to Message to wait for response
+                AriesAgent.getInstance()?.registerService("invitation-response", "complete-invitation")
+
+                if (myDIDDocEncoded != null) {
+                    sendPeerDidMessage(myDIDDocEncoded)
                 }
             }
 
             if (action.equals("acceptInvitation")) {
                 val extras = intent.extras
                 if (extras == null) {
-                    println("No peerDis was given")
+                    println("No Value was given")
                 } else {
                     val did = extras["did"].toString()
-                    val myDID = DIDCommAgent.getInstance()
-                        ?.acceptPeerDIDInvitation(theirDID = did, name = "Bob")
-                    println("Accepted Invitation with myDID: $myDID")
+                    val myDIDDocEncoded = DIDCommAgent.getInstance()
+                        ?.acceptPeerDIDInvitation(theirDIDDocEncoded = did, name = "Bob")
+
+                    println("Accepted Invitation with myAriesDIDDocEncoded: $myDIDDocEncoded")
 
                     // TODO: Broadcast Message: "accepted-invitation" and trigger message to other agent with myDID
-                    if (myDID != null) {
-                        sendAcceptedInvitationMessage(myDID)
+                    if (myDIDDocEncoded != null) {
+                        sendAcceptedInvitationMessage(myDIDDocEncoded)
                     }
+
+
+
                 }
             }
 
@@ -88,10 +96,10 @@ class AgentService: Service(){
     }
 
 
-    private fun sendPeerDidMessage(peerDID: String) {
+    private fun sendPeerDidMessage(peerDIDDocEncoded: String) {
         println("sender: Broadcasting message")
         val intent = Intent("created-peer-did")
-        intent.putExtra("message", peerDID)
+        intent.putExtra("message", peerDIDDocEncoded)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 

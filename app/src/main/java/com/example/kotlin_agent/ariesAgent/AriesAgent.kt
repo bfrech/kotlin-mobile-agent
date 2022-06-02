@@ -27,6 +27,7 @@ class AriesAgent {
 
     var mediator: Mediator = Mediator(this)
     var connection: Connection = Connection(this)
+    var messaging: Messaging = Messaging(this)
 
 
     fun createNewAgent(label: String) {
@@ -65,17 +66,8 @@ class AriesAgent {
       connection.createOOBV2InvitationForMobileAgent("Connect", "connect")
     }
 
-    //fun createOOBInvitationForMobileAgent() {
-    //    connection.createOOBInvitationForMobileAgent()
-    //}
-
-    //fun acceptDIDExchangeRequest(connectionID: String, theirLabel: String){
-    //    println("AcceptDIDExchangeRequest was called")
-    //    connection.acceptDIDExchangeRequest(connectionID, theirLabel)
-    //}
-
-    fun getConnection(connectionID: String){
-        connection.getConnection(connectionID)
+    fun getConnection(connectionID: String): String {
+        return connection.getConnection(connectionID)
     }
 
     fun getRouterConnection(): String {
@@ -98,11 +90,35 @@ class AriesAgent {
         return connection.vdrResolveDID(did)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createMyDID(): String {
+        return connection.createMyDID()
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createTheirDID(didDoc: String): String {
+        return connection.createTheirDID(didDoc)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createDIDInVdr(didDoc: String): String {
         return connection.createDIDInVDR(didDoc)
     }
 
     fun storeDIDInVdr(didDoc: String): String {
         return connection.storeDIDInVDR(didDoc)
+    }
+
+
+    /*
+        Messaging Functions
+     */
+    fun registerService(name: String, purpose: String){
+        println("Register Service Called")
+        messaging.registerMessagingService(name, purpose)
+    }
+
+    fun sendMessage(message: String, connectionID: String){
+        messaging.sendMessage(message, connectionID)
     }
 }

@@ -3,10 +3,8 @@ package com.example.kotlin_agent.ariesAgent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import org.hyperledger.aries.models.RequestEnvelope
-import org.hyperledger.aries.models.ResponseEnvelope
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 class Connection(private val service: AriesAgent) {
 
@@ -31,6 +29,28 @@ class Connection(private val service: AriesAgent) {
             }
         }
     }
+
+    private fun createKeySet(keyType: String): String {
+        //DIDComm V2 Key Agreement: NISTP384ECDHKW?
+        val kmsController = service.ariesAgent?.kmsController
+        val kmsRequest = """{"keyType":"$keyType"}"""
+        val kmsData = kmsRequest.toByteArray(StandardCharsets.UTF_8)
+        val kmsResponse = kmsController?.createKeySet(RequestEnvelope(kmsData))
+
+        var key = ""
+        if (kmsResponse != null) {
+            if (kmsResponse.error != null) {
+                println(kmsResponse.error)
+            } else {
+                val actionsResponse = String(kmsResponse.payload, StandardCharsets.UTF_8)
+                val jsonActionResponse = JSONObject(actionsResponse)
+                key = jsonActionResponse["publicKey"].toString()
+            }
+        }
+        return key
+    }
+
+
 
     fun getConnection(connectionID: String): String{
         val request = """{"id": "$connectionID"}"""
@@ -118,7 +138,6 @@ class Connection(private val service: AriesAgent) {
             } else {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
                 val jsonObject = JSONObject(actionsResponse)
-                println(jsonObject)
                 return jsonObject.toString()
             }
         } else {
@@ -127,10 +146,9 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-    fun createDIDInVDR(didDoc: String): String {
-        val jsonObject = JSONObject(didDoc)
-        val auth = jsonObject["authentication"]
-        val payload = """ {"method":"peer", "did": {"@context":["https://w3id.org/did/v1"], ${didDoc.drop(1).dropLast(1).replace("\n","")}, "verificationMethod": $auth }} """
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createDIDInVDR(did: String): String {
+        val payload ="""{"method":"peer", "did": $did}"""
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.vdrController?.createDID(data)
         if(res != null){
@@ -138,6 +156,7 @@ class Connection(private val service: AriesAgent) {
                 println("Error: ${res.error}")
             } else {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                println("ActionResponse: $actionsResponse")
                 val jsonObject = JSONObject(actionsResponse)
                 val did = jsonObject["did"].toString()
                 val jsonDID = JSONObject(did)
@@ -149,13 +168,108 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
+    /*
+        Create Own DID in VDR (uses Router Connection
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createMyDID(): String {
+        // Get the Router Connection to create Service Endpoint
+        //val routerConnection = getConnection(service.routerConnectionId)
+        //val jsonRouterConnection = JSONObject(routerConnection)
+        //val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
+        //val serviceEndpointJson = JSONObject(serviceEndpointObject)
+        //val serviceEndpointURI = serviceEndpointJson["uri"].toString()
+        //val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
+
+        // Create Service:
+        //val service = """
+        //    [  {
+        //        "id": "",
+        //        "type": "DIDCommMessaging",
+        //        "serviceEndpoint": {
+        //            "uri": "$serviceEndpointURI"
+        //        },
+        //        "routingKeys": $serviceRoutingKeys,
+        //        "accept": ["didcomm/v2"]
+        //    } ]
+        //""".trimIndent()
+
+        val testService = """
+            [  {      
+                "id": "",  
+                "type": "DIDCommMessaging",      
+                "serviceEndpoint": {
+                    "uri": "http://7bdb-84-58-54-76.eu.ngrok.io/invitation"
+                },
+                "routingKeys": ["did:key:daehdjkafdbkja"],      
+                "accept": ["didcomm/v2"] 
+            } ]
+        """.trimIndent()
+
+        val kDid = createKeyDid()
+        val jsonKeyDidDoc = JSONObject(kDid)
+
+        val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
+        val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()
+
+        val payload = """ {"@context":["https://w3id.org/did/v1"], "id": "#id" ,
+            "service": $testService , 
+            "verificationMethod":  $verificationMethod,
+            "keyAgreement": $keyAgreement 
+            } """
+        return createDIDInVDR(payload)
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createTheirDID(didDoc: String): String {
+        val jsonDIDDoc = JSONObject(didDoc)
+        val did = jsonDIDDoc["didDocument"].toString()
+        return createDIDInVDR(did)
+    }
+
+
+    private fun createKeyDid(): String {
+        val keyType = "ED25519"
+        val key = createKeySet(keyType)
+        println("Verification Key with Type: $keyType: $key")
+
+        val payload ="""{"method":"key", "did": {"@context": ["https://www.w3.org/ns/did/v1"],
+            "id": "",
+            "verificationMethod":  [
+            {
+                "id": "",
+                "type":"Ed25519VerificationKey2018",
+                "controller":"",
+                "publicKeyJwk": {        
+                    "kty": "OKP",        
+                    "crv": "Ed25519",        
+                    "x": "$key"      
+                }      
+                }
+            ]
+            }}"""
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.vdrController?.createDID(data)
+        if(res != null){
+            if(res.error != null){
+                println("Error: ${res.error}")
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                println("ActionResponse: $actionsResponse")
+                val jsonObject = JSONObject(actionsResponse)
+                val did = jsonObject["did"].toString()
+                return did
+            }
+        } else {
+            println("Res is null")
+        }
+        return ""
+    }
+
 
     // Store Aries DID in VDR
     fun storeDIDInVDR(didDoc: String): String {
-
-        //val jsonObject = JSONObject(didDoc)
-        //val auth = jsonObject["authentication"]
-        println(didDoc)
 
         val payload = """ {"method":"peer", "did": $didDoc} """
 

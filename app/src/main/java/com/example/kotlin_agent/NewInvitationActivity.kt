@@ -30,6 +30,7 @@ class NewInvitationActivity : AppCompatActivity() {
 
     private fun getQrCodeBitmap(qrCodeContent: String): Bitmap {
         val size = 512 //pixels
+
         //val hints = hashMapOf<EncodeHintType, Int>().also { it[EncodeHintType.MARGIN] = 1 } // Make the QR code buffer border narrower
         val bits = QRCodeWriter().encode(qrCodeContent, BarcodeFormat.QR_CODE, size, size)
         return Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565).also {
