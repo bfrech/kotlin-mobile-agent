@@ -41,7 +41,7 @@ class AriesAgent {
         opts.mediaTypeProfiles = "didcomm/v2"
 
         //opts.mediaTypeProfiles = "didcomm/aip1"
-        //opts.autoAccept = true  --> default value?
+        opts.autoAccept = false  //--> default value?
 
         try {
             ariesAgent = Ariesagent.new_(opts)
@@ -133,5 +133,9 @@ class AriesAgent {
 
     fun acceptDidExchangeInvitation(connectionID: String): String {
         return didExchange.acceptDidExchangeInvitation(connectionID)
+    }
+
+    fun acceptDidExchangeRequest(connectionID: String): String {
+        return didExchange.acceptDidExchangeRequest(connectionID)
     }
 }

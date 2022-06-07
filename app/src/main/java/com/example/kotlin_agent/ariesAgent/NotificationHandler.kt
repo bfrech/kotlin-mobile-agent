@@ -20,5 +20,13 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
                 ariesAgent.registerMediator()
             }
         }
+
+        val content = JSONObject(jsonMessage["Message"].toString())
+        if(content["@type"].equals("https://didcomm.org/didexchange/1.0/request")) {
+            if( !properties["connectionID"].equals(ariesAgent.routerConnectionId) ){
+                println("Received Did Exchange Request")
+                AriesAgent.getInstance()?.acceptDidExchangeRequest(properties["connectionID"].toString())
+            }
+        }
     }
 }

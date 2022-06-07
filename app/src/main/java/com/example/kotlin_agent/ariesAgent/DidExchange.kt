@@ -43,6 +43,7 @@ class DidExchange(private val service: AriesAgent) {
     fun acceptDidExchangeInvitation(connectionID: String): String {
 
         val payload = """ {"id":"$connectionID", "router_connections": "${service.routerConnectionId}"} """
+
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.didExchangeController?.acceptInvitation(data)
         if (res != null) {
@@ -53,6 +54,26 @@ class DidExchange(private val service: AriesAgent) {
                 val jsonResponse = JSONObject(actionsResponse)
                 println(jsonResponse["connection_id"])
                 return jsonResponse["connection_id"].toString()
+            }
+        }
+        return ""
+    }
+
+
+    fun acceptDidExchangeRequest(connectionID: String): String {
+        val payload = """ {"id":"$connectionID", "router_connections": "${service.routerConnectionId}"} """
+        println("Accept DID Exchange Request Payload: $payload")
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.didExchangeController?.acceptExchangeRequest(data)
+        if (res != null) {
+            if (res.error != null) {
+                println(res.error)
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                //val jsonResponse = JSONObject(actionsResponse)
+                //println(jsonResponse["connection_id"])
+                println(actionsResponse)
+                return ""
             }
         }
         return ""
