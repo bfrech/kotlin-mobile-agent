@@ -28,6 +28,7 @@ class AriesAgent {
     var mediator: Mediator = Mediator(this)
     var connection: Connection = Connection(this)
     var messaging: Messaging = Messaging(this)
+    var didExchange: DidExchange = DidExchange(this)
 
 
     fun createNewAgent(label: String) {
@@ -120,5 +121,17 @@ class AriesAgent {
 
     fun sendMessage(message: String, connectionID: String){
         messaging.sendMessage(message, connectionID)
+    }
+
+    fun createDidExchangeInvitation(): String {
+        return didExchange.createDidExchangeInvitation()
+    }
+
+    fun receiveDidExchangeInvitation(invitation: String): String {
+        return didExchange.receiveDidExchangeInvitation(invitation)
+    }
+
+    fun acceptDidExchangeInvitation(connectionID: String): String {
+        return didExchange.acceptDidExchangeInvitation(connectionID)
     }
 }

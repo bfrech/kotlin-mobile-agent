@@ -149,6 +149,7 @@ class Connection(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun createDIDInVDR(did: String): String {
         val payload ="""{"method":"peer", "did": $did}"""
+        //println(payload)
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.vdrController?.createDID(data)
         if(res != null){
@@ -156,7 +157,7 @@ class Connection(private val service: AriesAgent) {
                 println("Error: ${res.error}")
             } else {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                println("ActionResponse: $actionsResponse")
+                //println("ActionResponse: $actionsResponse")
                 val jsonObject = JSONObject(actionsResponse)
                 val did = jsonObject["did"].toString()
                 val jsonDID = JSONObject(did)
@@ -175,11 +176,15 @@ class Connection(private val service: AriesAgent) {
     fun createMyDID(): String {
         // Get the Router Connection to create Service Endpoint
         val routerConnection = getConnection(service.routerConnectionId)
+        //println("Router: $routerConnection")
         val jsonRouterConnection = JSONObject(routerConnection)
         val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
         val serviceEndpointJson = JSONObject(serviceEndpointObject)
         val serviceEndpointURI = serviceEndpointJson["uri"].toString()
         val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
+
+        // TEST
+        //println("Resolved Router DID: ${vdrResolveDID(jsonRouterConnection["TheirDID"].toString())}")
 
         // Create Service:
         val myService = """
@@ -194,25 +199,13 @@ class Connection(private val service: AriesAgent) {
             } ]
         """.trimIndent()
 
-        //val testService = """
-        //    [  {
-        //        "id": "",
-        //        "type": "DIDCommMessaging",
-        //        "serviceEndpoint": {
-        //            "uri": "http://7bdb-84-58-54-76.eu.ngrok.io/invitation"
-        //        },
-        //        "routingKeys": ["did:key:daehdjkafdbkja"],
-        //        "accept": ["didcomm/v2"]
-        //    } ]
-        //""".trimIndent()
-
         val kDid = createKeyDid()
         val jsonKeyDidDoc = JSONObject(kDid)
 
         val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
         val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()
 
-        val payload = """ {"@context":["https://w3id.org/did/v1"], "id": "#id" ,
+        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], "id": "#id" ,
             "service": $myService , 
             "verificationMethod":  $verificationMethod,
             "keyAgreement": $keyAgreement 
@@ -225,6 +218,7 @@ class Connection(private val service: AriesAgent) {
     fun createTheirDID(didDoc: String): String {
         val jsonDIDDoc = JSONObject(didDoc)
         val did = jsonDIDDoc["didDocument"].toString()
+
         return createDIDInVDR(did)
     }
 

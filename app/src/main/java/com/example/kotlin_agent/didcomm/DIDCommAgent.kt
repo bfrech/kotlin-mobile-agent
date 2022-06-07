@@ -34,8 +34,11 @@ class DIDCommAgent {
             currentOpenDID = ariesDID
         }
 
+        val invitation = AriesAgent.getInstance()?.createDidExchangeInvitation()
+
         // Should return DIDDocEncoded
-        return encodeBase64(ariesDIDDoc)
+        //return encodeBase64(ariesDIDDoc)
+        return invitation
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -66,6 +69,10 @@ class DIDCommAgent {
 
         println("Created Aries Connection with myDID: $myAriesDID and theirDID: $theirAriesDID")
         return encodeBase64(myAriesDIDDoc)
+    }
+
+    fun acceptDidExchangeInvitation(invitation: String){
+
     }
 
 

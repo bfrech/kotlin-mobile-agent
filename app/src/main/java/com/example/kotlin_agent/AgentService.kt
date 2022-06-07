@@ -70,8 +70,15 @@ class AgentService: Service(){
                     println("No Value was given")
                 } else {
                     val did = extras["did"].toString()
-                    val myDIDDocEncoded = DIDCommAgent.getInstance()
-                        ?.acceptPeerDIDInvitation(theirDIDDocEncoded = did, name = "Bob")
+                    //val myDIDDocEncoded = DIDCommAgent.getInstance()
+                    //    ?.acceptPeerDIDInvitation(theirDIDDocEncoded = did, name = "Bob")
+
+                    val myDIDDocEncoded = AriesAgent.getInstance()?.receiveDidExchangeInvitation(did)
+                    val res = myDIDDocEncoded?.let {
+                        AriesAgent.getInstance()?.acceptDidExchangeInvitation(
+                            it
+                        )
+                    }
 
                     println("Accepted Invitation with myAriesDIDDocEncoded: $myDIDDocEncoded")
 
