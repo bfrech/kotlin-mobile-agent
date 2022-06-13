@@ -8,30 +8,44 @@ import java.nio.charset.StandardCharsets
 
 class Connection(private val service: AriesAgent) {
 
-    // Create Out of Band Invitation for other Mobile Agent
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createOOBV2InvitationForMobileAgent(goal: String, goalCode: String) {
+    fun createServiceEndpointInvitation(): String {
+        val did = createMyDID()
+        val res = JSONObject(vdrResolveDID(did))
 
-        // Call Create Peer DID from didcomm Agent
-        val peerDID = ""
+        println("My DID: $res")
 
-        val oobController = service.ariesAgent?.outOfBandV2Controller
-        val payload = """{"label":"${service.agentlabel},"body":{"goal":"$goal","goal_code":"$goalCode","accept":["didcomm/v2", "didcomm/aip2;env=rfc19"]}, "from": "$peerDID"}}"""
-        val dataTest = payload.toByteArray(StandardCharsets.UTF_8)
-        val invitation = oobController?.createInvitation(dataTest)
-        if (invitation != null) {
-            if (invitation.error != null) {
-                println(invitation.error)
-            } else {
-                val actionsResponse = String(invitation.payload, StandardCharsets.UTF_8)
-                println(actionsResponse)
-                // TODO: generate QR Code from invitation instead of sending
-            }
-        }
+        val didDoc = JSONObject(res["didDocument"].toString())
+        val service = JSONObject(didDoc["service"].toString().drop(1).dropLast(1))
+        val serviceEndpoint = JSONObject(service["serviceEndpoint"].toString())
+        //println(serviceEndpoint)
+
+        val payload = """{
+            |"recipientKeys": ${service["recipientKeys"]},
+            |"serviceEndpoint": "${serviceEndpoint["uri"]}",
+            |"routingKeys": ${service["routingKeys"]}
+            |}""".trimMargin()
+
+        // extract service
+        return payload
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun acceptConnectionInvitation(invitation: String): String {
+        val myDID = createMyDID()
+        val theirDID = createTheirDID(invitation)
+
+        // TEST
+        val myDIDDoc = vdrResolveDID(myDID)
+        val theirDIDDoc = vdrResolveDID(theirDID)
+        println("My DID Doc: $myDIDDoc")
+        println("Their DID Doc: $theirDIDDoc")
+
+        return createNewConnection(myDID, theirDID)
     }
 
     private fun createKeySet(keyType: String): String {
-        //DIDComm V2 Key Agreement: NISTP384ECDHKW?
+        //DIDComm V2 Key Agreement: NISTP384ECDHKW or X25519ECDH
         val kmsController = service.ariesAgent?.kmsController
         val kmsRequest = """{"keyType":"$keyType"}"""
         val kmsData = kmsRequest.toByteArray(StandardCharsets.UTF_8)
@@ -49,7 +63,6 @@ class Connection(private val service: AriesAgent) {
         }
         return key
     }
-
 
 
     fun getConnection(connectionID: String): String{
@@ -183,9 +196,6 @@ class Connection(private val service: AriesAgent) {
         val serviceEndpointURI = serviceEndpointJson["uri"].toString()
         val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
 
-        // TEST
-        //println("Resolved Router DID: ${vdrResolveDID(jsonRouterConnection["TheirDID"].toString())}")
-
         // Create Service:
         val myService = """
             [  {
@@ -200,8 +210,10 @@ class Connection(private val service: AriesAgent) {
         """.trimIndent()
 
         val kDid = createKeyDid()
-        val jsonKeyDidDoc = JSONObject(kDid)
 
+        println("My Key Did: $kDid")
+
+        val jsonKeyDidDoc = JSONObject(kDid)
         val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
         val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()
 
@@ -215,11 +227,42 @@ class Connection(private val service: AriesAgent) {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTheirDID(didDoc: String): String {
-        val jsonDIDDoc = JSONObject(didDoc)
-        val did = jsonDIDDoc["didDocument"].toString()
+    fun createTheirDID(invitation: String): String {
+        val jsonResponse = JSONObject(invitation)
+        val invitation = jsonResponse["invitation"].toString()
+        val jsonInvitation = JSONObject(invitation)
 
-        return createDIDInVDR(did)
+        val serviceEndpoint = jsonInvitation["serviceEndpoint"].toString()
+        val recipientKeys = jsonInvitation["recipientKeys"].toString()
+        val routingKeys = jsonInvitation["routingKeys"].toString()
+        val alias = jsonResponse["alias"].toString()
+
+        // Create Service:
+        val theirService = """
+            [  {
+                "id": "",
+                "type": "DIDCommMessaging",
+                "serviceEndpoint": {
+                    "uri": "$serviceEndpoint"
+                },
+                "routingKeys": $routingKeys,
+                "recipientKeys": $recipientKeys,
+                "accept": ["didcomm/v2"]
+            } ]
+        """.trimIndent()
+
+        val kDid = createKeyDid()
+        val jsonKeyDidDoc = JSONObject(kDid)
+        val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
+        val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()
+
+        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], "id": "$alias" ,
+            "service": $theirService , 
+            "verificationMethod":  $verificationMethod,
+            "keyAgreement": $keyAgreement 
+            } """
+
+        return createDIDInVDR(payload)
     }
 
 
@@ -229,10 +272,10 @@ class Connection(private val service: AriesAgent) {
         println("Verification Key with Type: $keyType: $key")
 
         val payload ="""{"method":"key", "did": {"@context": ["https://www.w3.org/ns/did/v1"],
-            "id": "",
+            "id": "1234",
             "verificationMethod":  [
             {
-                "id": "",
+                "id": "key-1‚",
                 "type":"Ed25519VerificationKey2018",
                 "controller":"",
                 "publicKeyJwk": {        

@@ -6,8 +6,8 @@ import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.ariesAgent.AriesAgent
-import com.example.kotlin_agent.didcomm.DIDCommAgent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import org.json.JSONObject
 
 
 class AgentService: Service(){
@@ -53,14 +53,14 @@ class AgentService: Service(){
             }
 
             if (action.equals("createInvitation")) {
-                val myDIDDocEncoded = DIDCommAgent.getInstance()?.createPeerDID()
-                println("Created MyDIDDocEncoded: $myDIDDocEncoded")
+                val invitation = AriesAgent.getInstance()?.createDidExchangeInvitation()
+                println("Created Invitation: $invitation")
 
                 // Subscribe to Message to wait for response
                 AriesAgent.getInstance()?.registerService("invitation-response", "complete-invitation")
 
-                if (myDIDDocEncoded != null) {
-                    sendPeerDidMessage(myDIDDocEncoded)
+                if (invitation != null) {
+                    sendPeerDidMessage(invitation)
                 }
             }
 
@@ -69,26 +69,55 @@ class AgentService: Service(){
                 if (extras == null) {
                     println("No Value was given")
                 } else {
-                    val did = extras["did"].toString()
-                    //val myDIDDocEncoded = DIDCommAgent.getInstance()
-                    //    ?.acceptPeerDIDInvitation(theirDIDDocEncoded = did, name = "Bob")
+                    var invitation = extras["did"].toString()
+                    println(invitation)
 
-                    val myDIDDocEncoded = AriesAgent.getInstance()?.receiveDidExchangeInvitation(did)
-                    val res = myDIDDocEncoded?.let {
-                        AriesAgent.getInstance()?.acceptDidExchangeInvitation(
-                            it
-                        )
+                    // Create Their DID and My DID and store connection
+                    //val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
+                    //println("Accepted Invitation with Connection ID: $connectionID")
+
+                    val connectionID = ""
+                    // "accepted-invitation" and trigger message to other agent with myDID
+                    if (connectionID != null) {
+                        sendAcceptedInvitationMessage(connectionID)
+
+                        // If OK: send message to other agent
+                        //AriesAgent.getInstance()?.sendMessage("invitation-response", connectionID)
+
+
                     }
 
-                    println("Accepted Invitation with myAriesDIDDocEncoded: $myDIDDocEncoded")
+                    // TODO: send message via service endpoint
+                    //val jsonInvitation = JSONObject(invitation)
+                    //val serviceEndpoint = jsonInvitation["invitation"].toString()
 
-                    // TODO: Broadcast Message: "accepted-invitation" and trigger message to other agent with myDID
-                    if (myDIDDocEncoded != null) {
-                        sendAcceptedInvitationMessage(myDIDDocEncoded)
+                    //invitation = """ {"serviceEndpoint":"ws://MBP-von-Berit.fritz.box:5001","recipientKeys":["did:key:z6LSmZvhsAK43vau5w6VZUV6YnhBnmyZysZCpmn6p9Ys362b"],"@id":"80fb0820-9a5a-4f5f-8c39-c0a80c3d6f9b","routingKeys":["did:key:z6LSdHFSbQGstPn3eKFmYMy5pXRugjp2TA9PT7G2DEQ6YDRb"],"@type":"https://didcomm.org/didexchange/1.0/invitation"} """
+
+                    AriesAgent.getInstance()?.sendMessageViaServiceEndpoint("invitation-response", invitation)
+
+                    // TODO: Save Connection ID and Name in Store
+
+                }
+            }
+
+
+            if (action.equals("completeInvitation")) {
+                val extras = intent.extras
+                if (extras == null) {
+                    println("No Value was given")
+                } else {
+                    val invitation = extras["did"].toString()
+
+                    // Create Their DID and My DID and store connection
+                    val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
+                    println("Completed Invitation with Connection ID: $connectionID")
+
+                    // "completed-invitation" and trigger message to other agent with connectionID
+                    if (connectionID != null) {
+                        sendCompletedInvitationMessage(connectionID)
                     }
 
-
-
+                    // TODO: Save Connection ID and Name in Store
                 }
             }
 
@@ -111,6 +140,13 @@ class AgentService: Service(){
     }
 
     private fun sendAcceptedInvitationMessage(myDid: String) {
+        println("sender: Broadcasting message")
+        val intent = Intent("accepted-invitation")
+        intent.putExtra("message", myDid)
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
+
+    private fun sendCompletedInvitationMessage(myDid: String) {
         println("sender: Broadcasting message")
         val intent = Intent("accepted-invitation")
         intent.putExtra("message", myDid)

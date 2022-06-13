@@ -41,7 +41,7 @@ class AriesAgent {
         opts.mediaTypeProfiles = "didcomm/v2"
 
         //opts.mediaTypeProfiles = "didcomm/aip1"
-        opts.autoAccept = false  //--> default value?
+        //opts.autoAccept = false  //--> default value?
 
         try {
             ariesAgent = Ariesagent.new_(opts)
@@ -60,11 +60,6 @@ class AriesAgent {
 
     fun registerMediator() {
         mediator.registerMediator()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createOOBV2InvitationForMobileAgent() {
-      connection.createOOBV2InvitationForMobileAgent("Connect", "connect")
     }
 
     fun getConnection(connectionID: String): String {
@@ -110,6 +105,16 @@ class AriesAgent {
         return connection.storeDIDInVDR(didDoc)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun acceptConnectionInvitation(invitation: String): String{
+        return connection.acceptConnectionInvitation(invitation)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createServiceEndpointInvitation(): String {
+        return connection.createServiceEndpointInvitation()
+    }
+
 
     /*
         Messaging Functions
@@ -123,10 +128,15 @@ class AriesAgent {
         messaging.sendMessage(message, connectionID)
     }
 
+    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String){
+        messaging.sendMessageViaServiceEndpoint(message, serviceEndpoint)
+    }
+
     fun createDidExchangeInvitation(): String {
         return didExchange.createDidExchangeInvitation()
     }
 
+    /*
     fun receiveDidExchangeInvitation(invitation: String): String {
         return didExchange.receiveDidExchangeInvitation(invitation)
     }
@@ -135,7 +145,10 @@ class AriesAgent {
         return didExchange.acceptDidExchangeInvitation(connectionID)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun acceptDidExchangeRequest(connectionID: String): String {
         return didExchange.acceptDidExchangeRequest(connectionID)
     }
+
+     */
 }

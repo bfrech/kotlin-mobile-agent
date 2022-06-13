@@ -71,9 +71,6 @@ class DIDCommAgent {
         return encodeBase64(myAriesDIDDoc)
     }
 
-    fun acceptDidExchangeInvitation(invitation: String){
-
-    }
 
 
     /*
