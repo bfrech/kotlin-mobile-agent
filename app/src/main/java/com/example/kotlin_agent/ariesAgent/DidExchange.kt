@@ -9,14 +9,29 @@ import java.nio.charset.StandardCharsets
 class DidExchange(private val service: AriesAgent) {
 
     fun createDidExchangeInvitation(): String {
-        val payload = """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}", "key_type": "X25519ECDHKW"} """
+
+        /*
+            With key type:
+            """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}"
+            |, "key_type": "X25519ECDHKW"
+            |} """.trimMargin()
+         */
+        val payload = """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}" } """.trimMargin()
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.didExchangeController?.createInvitation(data)
         if (res != null) {
             if (res.error != null) {
                 println(res.error)
             } else {
-                return String(res.payload, StandardCharsets.UTF_8)
+                val invitation =  JSONObject(String(res.payload, StandardCharsets.UTF_8))
+                val content = JSONObject(invitation["invitation"].toString())
+                return """
+                    {
+                        "recipientKeys": ${content["recipientKeys"]},
+                        "routingKeys": ${content["routingKeys"]},
+                        "serviceEndpoint": "${content["serviceEndpoint"]}"
+                    }
+                """.trimIndent()
             }
         }
         return ""

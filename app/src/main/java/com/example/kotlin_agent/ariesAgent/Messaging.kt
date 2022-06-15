@@ -5,8 +5,6 @@ import java.nio.charset.StandardCharsets
 
 class Messaging(private val service: AriesAgent) {
 
-    //private val messageController = service.ariesAgent?.messagingController
-
     /*
        Register Service
      */

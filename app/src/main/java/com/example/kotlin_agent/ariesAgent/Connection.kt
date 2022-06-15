@@ -21,9 +21,9 @@ class Connection(private val service: AriesAgent) {
         //println(serviceEndpoint)
 
         val payload = """{
-            |"recipientKeys": ${service["recipientKeys"]},
             |"serviceEndpoint": "${serviceEndpoint["uri"]}",
-            |"routingKeys": ${service["routingKeys"]}
+            |"routingKeys": ${service["routingKeys"]},
+            |"recipientKeys": ${service["recipientKeys"]}
             |}""".trimMargin()
 
         // extract service
@@ -246,7 +246,6 @@ class Connection(private val service: AriesAgent) {
                     "uri": "$serviceEndpoint"
                 },
                 "routingKeys": $routingKeys,
-                "recipientKeys": $recipientKeys,
                 "accept": ["didcomm/v2"]
             } ]
         """.trimIndent()
@@ -278,11 +277,7 @@ class Connection(private val service: AriesAgent) {
                 "id": "key-1‚",
                 "type":"Ed25519VerificationKey2018",
                 "controller":"",
-                "publicKeyJwk": {        
-                    "kty": "OKP",        
-                    "crv": "Ed25519",        
-                    "x": "$key"      
-                }      
+                "publicKeyBase58": "H3C2AVvLMv6gmMNam3uVAjZpfkcJCwDwnZn6z3wXmqPV"      
                 }
             ]
             }}"""
@@ -293,9 +288,10 @@ class Connection(private val service: AriesAgent) {
                 println("Error: ${res.error}")
             } else {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                println("ActionResponse: $actionsResponse")
+
                 val jsonObject = JSONObject(actionsResponse)
                 val did = jsonObject["did"].toString()
+
                 return did
             }
         } else {

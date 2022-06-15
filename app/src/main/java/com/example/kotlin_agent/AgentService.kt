@@ -91,9 +91,11 @@ class AgentService: Service(){
                     //val jsonInvitation = JSONObject(invitation)
                     //val serviceEndpoint = jsonInvitation["invitation"].toString()
 
-                    //invitation = """ {"serviceEndpoint":"ws://MBP-von-Berit.fritz.box:5001","recipientKeys":["did:key:z6LSmZvhsAK43vau5w6VZUV6YnhBnmyZysZCpmn6p9Ys362b"],"@id":"80fb0820-9a5a-4f5f-8c39-c0a80c3d6f9b","routingKeys":["did:key:z6LSdHFSbQGstPn3eKFmYMy5pXRugjp2TA9PT7G2DEQ6YDRb"],"@type":"https://didcomm.org/didexchange/1.0/invitation"} """
-
-                    AriesAgent.getInstance()?.sendMessageViaServiceEndpoint("invitation-response", invitation)
+                    AriesAgent.getInstance()?.routerConnectionId?.let {
+                        AriesAgent.getInstance()?.sendMessage("hello",
+                            it
+                        )
+                    }
 
                     // TODO: Save Connection ID and Name in Store
 
