@@ -28,7 +28,7 @@ class AriesAgent {
     var mediator: Mediator = Mediator(this)
     var connection: Connection = Connection(this)
     var messaging: Messaging = Messaging(this)
-    var didExchange: DidExchange = DidExchange(this)
+    var didHandler: DidHandler = DidHandler(this)
 
 
     fun createNewAgent(label: String) {
@@ -75,34 +75,34 @@ class AriesAgent {
     }
 
     fun saveDID(did: String, name: String){
-        connection.saveDIDInStore(did, name)
+        didHandler.saveDIDInStore(did, name)
     }
 
     fun getDID(did: String){
-        connection.getDID(did)
+        didHandler.getDID(did)
     }
 
     fun vdrResolveDID(did: String): String {
-        return connection.vdrResolveDID(did)
+        return didHandler.vdrResolveDID(did)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createMyDID(): String {
-        return connection.createMyDID()
+        return didHandler.createMyDID()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createTheirDID(didDoc: String): String {
-        return connection.createTheirDID(didDoc)
+        return didHandler.createTheirDID(didDoc)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createDIDInVdr(didDoc: String): String {
-        return connection.createDIDInVDR(didDoc)
+        return didHandler.createDIDInVDR(didDoc)
     }
 
     fun storeDIDInVdr(didDoc: String): String {
-        return connection.storeDIDInVDR(didDoc)
+        return didHandler.storeDIDInVDR(didDoc)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -128,27 +128,5 @@ class AriesAgent {
         messaging.sendMessage(message, connectionID)
     }
 
-    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String){
-        messaging.sendMessageViaServiceEndpoint(message, serviceEndpoint)
-    }
 
-    fun createDidExchangeInvitation(): String {
-        return didExchange.createDidExchangeInvitation()
-    }
-
-    /*
-    fun receiveDidExchangeInvitation(invitation: String): String {
-        return didExchange.receiveDidExchangeInvitation(invitation)
-    }
-
-    fun acceptDidExchangeInvitation(connectionID: String): String {
-        return didExchange.acceptDidExchangeInvitation(connectionID)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun acceptDidExchangeRequest(connectionID: String): String {
-        return didExchange.acceptDidExchangeRequest(connectionID)
-    }
-
-     */
 }

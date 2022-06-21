@@ -45,22 +45,7 @@ class Messaging(private val service: AriesAgent) {
         }
     }
 
-    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String){
-        val messageController = service.ariesAgent?.messagingController
-        val payload = """ {"message_body": {"text":"$message"}, "service_endpoint": $serviceEndpoint} """
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = messageController?.send(data)
-        if (res != null) {
-            if (res.error != null) {
-                println(res.error)
-            } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
 
-                // Should return empty json
-                println(actionsResponse)
-            }
-        }
-    }
     /*
         Reply to message?
      */

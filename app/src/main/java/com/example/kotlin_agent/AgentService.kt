@@ -53,7 +53,8 @@ class AgentService: Service(){
             }
 
             if (action.equals("createInvitation")) {
-                val invitation = AriesAgent.getInstance()?.createDidExchangeInvitation()
+
+                val invitation = AriesAgent.getInstance()?.createServiceEndpointInvitation()
                 println("Created Invitation: $invitation")
 
                 // Subscribe to Message to wait for response
@@ -73,28 +74,15 @@ class AgentService: Service(){
                     println(invitation)
 
                     // Create Their DID and My DID and store connection
-                    //val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
-                    //println("Accepted Invitation with Connection ID: $connectionID")
+                    val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
+                    println("Accepted Invitation with Connection ID: $connectionID")
 
-                    val connectionID = ""
                     // "accepted-invitation" and trigger message to other agent with myDID
                     if (connectionID != null) {
                         sendAcceptedInvitationMessage(connectionID)
 
                         // If OK: send message to other agent
-                        //AriesAgent.getInstance()?.sendMessage("invitation-response", connectionID)
-
-
-                    }
-
-                    // TODO: send message via service endpoint
-                    //val jsonInvitation = JSONObject(invitation)
-                    //val serviceEndpoint = jsonInvitation["invitation"].toString()
-
-                    AriesAgent.getInstance()?.routerConnectionId?.let {
-                        AriesAgent.getInstance()?.sendMessage("hello",
-                            it
-                        )
+                        AriesAgent.getInstance()?.sendMessage("invitation-response", connectionID)
                     }
 
                     // TODO: Save Connection ID and Name in Store
