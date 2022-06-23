@@ -23,6 +23,7 @@ class DidHandler(private val service: AriesAgent) {
             } else {
                 val actionsResponse = String(kmsResponse.payload, StandardCharsets.UTF_8)
                 val jsonActionResponse = JSONObject(actionsResponse)
+                println(actionsResponse)
                 key = jsonActionResponse["publicKey"].toString()
             }
         }
@@ -113,12 +114,16 @@ class DidHandler(private val service: AriesAgent) {
     fun createMyDID(): String {
         // Get the Router Connection to create Service Endpoint
         val routerConnection = service.getConnection(service.routerConnectionId)
-        //println("Router: $routerConnection")
+        println("Router: $routerConnection")
         val jsonRouterConnection = JSONObject(routerConnection)
         val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
         val serviceEndpointJson = JSONObject(serviceEndpointObject)
         val serviceEndpointURI = serviceEndpointJson["uri"].toString()
         val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
+
+        // TODO: remove
+        println("My Router DID: ${vdrResolveDID(jsonRouterConnection["MyDID"].toString())}")
+        println("Router DID: ${vdrResolveDID(jsonRouterConnection["TheirDID"].toString())}")
 
         // Create Service:
         val myService = """
@@ -134,6 +139,7 @@ class DidHandler(private val service: AriesAgent) {
         """.trimIndent()
 
         val kDid = createKeyDid()
+        println("Keydid: $kDid")
         val jsonKeyDidDoc = JSONObject(kDid)
         val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
         val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()

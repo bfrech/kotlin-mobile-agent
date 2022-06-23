@@ -47,12 +47,21 @@ class AriesAgent {
             ariesAgent = Ariesagent.new_(opts)
             val handler = NotificationHandler(this)
             val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
-            println("registered handler with registration id: $registrationID")
+            println("registered didExchange handler with registration id: $registrationID")
+
+            // Register Message handler:
+            val messageHandler = ariesAgent?.registerHandler(handler, "hello")
+            println("registered message handler with registration id: $messageHandler")
+
+
         }catch (e: Exception){
             e.printStackTrace()
         }
     }
 
+    /*
+        Mediator Functions
+     */
     fun connectToMediator(mediatorUrl: String){
         this.mediatorURL = mediatorUrl
         mediator.connectToMediator(mediatorUrl)
@@ -61,6 +70,11 @@ class AriesAgent {
     fun registerMediator() {
         mediator.registerMediator()
     }
+
+    fun reconnect(){
+        mediator.reconnectToMediator()
+    }
+
 
     fun getConnection(connectionID: String): String {
         return connection.getConnection(connectionID)
@@ -116,6 +130,11 @@ class AriesAgent {
     }
 
 
+    fun createDIDExchangeInvitation(): String {
+        return connection.createDIDExchangeInvitation()
+    }
+
+
     /*
         Messaging Functions
      */
@@ -126,6 +145,14 @@ class AriesAgent {
 
     fun sendMessage(message: String, connectionID: String){
         messaging.sendMessage(message, connectionID)
+    }
+
+    fun sendMessageViaTheirDID(message: String, theirDID: String){
+        messaging.sendMessageViaTheirDID(message, theirDID)
+    }
+
+    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String){
+        messaging.sendMessageViaServiceEndpoint(message, serviceEndpoint)
     }
 
 
