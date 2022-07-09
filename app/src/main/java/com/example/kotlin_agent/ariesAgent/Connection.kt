@@ -20,7 +20,7 @@ class Connection(private val service: AriesAgent) {
             } else {
                 val actionsResponse = JSONObject(String(res.payload, StandardCharsets.UTF_8))
                 val invitation = JSONObject(actionsResponse["invitation"].toString())
-                return """{"serviceEndpoint": "${invitation["serviceEndpoint"]}", "recipientKeys": ${invitation["recipientKeys"]}, "routingKeys":  ${invitation["routingKeys"]}}"""
+                return """{ "label": "${service.agentlabel}", "serviceEndpoint": "${invitation["serviceEndpoint"]}", "recipientKeys": ${invitation["recipientKeys"]}, "routingKeys":  ${invitation["routingKeys"]}}"""
             }
         }
         return ""

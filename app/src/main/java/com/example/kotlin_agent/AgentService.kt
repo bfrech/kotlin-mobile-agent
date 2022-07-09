@@ -72,13 +72,16 @@ class AgentService: Service(){
                     println("No Value was given")
                 } else {
                     var invitation = extras["did"].toString()
-                    println(invitation)
+                    println("Got Invitation: $invitation")
 
                     // Create Their DID and My DID and store connection
-
                     //val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
                     val connectionID = ""
                     println("Accepted Invitation with Connection ID: $connectionID")
+
+                    val myDID = AriesAgent.getInstance()?.createMyDID()
+                    val myDIDDoc = myDID?.let { AriesAgent.getInstance()?.vdrResolveDID(it) }
+                    println("Service Created MyDID: $myDIDDoc")
 
                     // "accepted-invitation" and trigger message to other agent with myDID
                     if (connectionID != null) {
@@ -86,8 +89,14 @@ class AgentService: Service(){
 
                         // If OK: send message to other agent
                         AriesAgent.getInstance()?.reconnect()
+
                         //AriesAgent.getInstance()?.sendMessageViaTheirDID("invitation-response", connectionID)
-                        AriesAgent.getInstance()?.sendMessageViaServiceEndpoint("invitation-response", invitation)
+
+                        // TODO: Create My DID, register key with mediator, send myDID as message
+                        if (myDIDDoc != null) {
+                            AriesAgent.getInstance()?.sendMessageViaServiceEndpoint(myDIDDoc, invitation)
+                        }
+                        //AriesAgent.getInstance()?.sendMessage("Invitation-response", connectionID)
                     }
 
                     // TODO: Save Connection ID and Name in Store

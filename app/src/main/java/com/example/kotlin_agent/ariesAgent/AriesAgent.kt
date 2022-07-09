@@ -40,24 +40,21 @@ class AriesAgent {
         opts.addOutboundTransport("ws")
         opts.mediaTypeProfiles = "didcomm/v2"
 
-        //opts.mediaTypeProfiles = "didcomm/aip1"
-        //opts.autoAccept = false  //--> default value?
-
         try {
             ariesAgent = Ariesagent.new_(opts)
             val handler = NotificationHandler(this)
             val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
             println("registered didExchange handler with registration id: $registrationID")
 
-            // Register Message handler:
-            val messageHandler = ariesAgent?.registerHandler(handler, "hello")
-            println("registered message handler with registration id: $messageHandler")
-
+            val messagingRegistrationID = ariesAgent?.registerHandler(handler, "basicmessage")
+            println("registered didExchange handler with registration id: $messagingRegistrationID")
 
         }catch (e: Exception){
             e.printStackTrace()
         }
     }
+
+
 
     /*
         Mediator Functions

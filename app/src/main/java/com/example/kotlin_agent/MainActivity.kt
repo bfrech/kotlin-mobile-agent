@@ -26,7 +26,7 @@ class MainActivity : AppCompatActivity() {
         connectButton.setOnClickListener {
 
             // TODO: TEST Case
-            ariesService.putExtra("mediatorURL","https://6a0f-88-78-13-247.eu.ngrok.io/invitation")
+            ariesService.putExtra("mediatorURL","http://ee91-88-78-13-247.eu.ngrok.io/invitation")
             //service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
 
             ariesService.putExtra("label",labelEdit.text.toString())

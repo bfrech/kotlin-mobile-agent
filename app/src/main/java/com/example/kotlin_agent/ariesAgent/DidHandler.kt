@@ -76,7 +76,7 @@ class DidHandler(private val service: AriesAgent) {
             } else {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
                 val jsonObject = JSONObject(actionsResponse)
-                return jsonObject.toString()
+                return jsonObject["didDocument"].toString()
             }
         } else {
             println("Res is null")
@@ -114,16 +114,11 @@ class DidHandler(private val service: AriesAgent) {
     fun createMyDID(): String {
         // Get the Router Connection to create Service Endpoint
         val routerConnection = service.getConnection(service.routerConnectionId)
-        println("Router: $routerConnection")
         val jsonRouterConnection = JSONObject(routerConnection)
         val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
         val serviceEndpointJson = JSONObject(serviceEndpointObject)
         val serviceEndpointURI = serviceEndpointJson["uri"].toString()
         val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
-
-        // TODO: remove
-        println("My Router DID: ${vdrResolveDID(jsonRouterConnection["MyDID"].toString())}")
-        println("Router DID: ${vdrResolveDID(jsonRouterConnection["TheirDID"].toString())}")
 
         // Create Service:
         val myService = """
@@ -139,7 +134,12 @@ class DidHandler(private val service: AriesAgent) {
         """.trimIndent()
 
         val kDid = createKeyDid()
-        println("Keydid: $kDid")
+
+        // TODO: Register with mediator
+        val jsonKeyDID = JSONObject(kDid)
+        println("Keydid: ${jsonKeyDID["id"]}")
+        service.mediator.addKeyToMediator(jsonKeyDID["id"].toString())
+
         val jsonKeyDidDoc = JSONObject(kDid)
         val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
         val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()
@@ -155,9 +155,6 @@ class DidHandler(private val service: AriesAgent) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createTheirDID(invitation: String): String {
-        //val jsonResponse = JSONObject(invitation)
-        //val invitation = jsonResponse["invitation"].toString()
-        //val jsonInvitation = JSONObject(invitation)
 
         val jsonInvitation = JSONObject(invitation)
 
@@ -179,8 +176,16 @@ class DidHandler(private val service: AriesAgent) {
             } ]
         """.trimIndent()
 
+        println("Recipient Keys: $recipientKey")
         val result = JSONObject(vdrResolveDID(recipientKey))
+        println(result)
+
         val kDid = result["didDocument"].toString()
+
+        // Register with mediator:
+        val jsonKeyDID = JSONObject(kDid)
+        println("KeyDid: ${jsonKeyDID["id"]}")
+        service.mediator.addKeyToMediator(jsonKeyDID["id"].toString())
 
         val jsonKeyDidDoc = JSONObject(kDid)
         val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
@@ -193,6 +198,13 @@ class DidHandler(private val service: AriesAgent) {
             } """
 
         return createDIDInVDR(payload)
+    }
+
+    /*
+        Stored their DID from invitation to own VDR
+     */
+    fun storeTheirDIDToVDR(didDoc: String){
+
     }
 
 
