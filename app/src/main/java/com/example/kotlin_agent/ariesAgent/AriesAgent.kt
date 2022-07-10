@@ -30,6 +30,7 @@ class AriesAgent {
     var messaging: Messaging = Messaging(this)
     var didHandler: DidHandler = DidHandler(this)
 
+    var openDID = ""
 
     fun createNewAgent(label: String) {
         agentlabel = label
@@ -49,9 +50,39 @@ class AriesAgent {
             val messagingRegistrationID = ariesAgent?.registerHandler(handler, "basicmessage")
             println("registered didExchange handler with registration id: $messagingRegistrationID")
 
+            val connectionRegistrationID = ariesAgent?.registerHandler(handler, "connection")
+            println("registered connection handler with registration id: $connectionRegistrationID")
+
         }catch (e: Exception){
             e.printStackTrace()
         }
+    }
+
+
+    /*
+        Establish Connection
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createAndSendConnectionRequest(invitation: String){
+        val myDID = didHandler.createMyDID()
+        openDID = myDID
+        val myDIDDoc = didHandler.vdrResolveDID(myDID)
+
+        mediator.reconnectToMediator()
+        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(myDIDDoc), invitation)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createAndSendConnectionResponse(didDocEnc: String, label: String){
+        val didDoc = Utils.decodeBase64(didDocEnc)
+        println("Got Connection Request from $label with theirDID: $didDoc")
+
+        val theirDID = didHandler.createTheirDIDFromDoc(didDoc)
+        val connectionID = connection.createNewConnection(openDID, theirDID)
+        println("Created Connection with: $connectionID")
+
+        // TODO: send message back with myDID and mylabel
+        messaging.sendMessage(Utils.encodeBase64(openDID), connectionID)
     }
 
 
@@ -68,30 +99,17 @@ class AriesAgent {
         mediator.registerMediator()
     }
 
-    fun reconnect(){
-        mediator.reconnectToMediator()
-    }
+
 
 
     fun getConnection(connectionID: String): String {
         return connection.getConnection(connectionID)
     }
 
-    fun getRouterConnection(): String {
-        return connection.getConnection(routerConnectionId)
-    }
 
-    fun createNewConnection(myDID: String, theirDID: String): String {
-        return connection.createNewConnection(myDID, theirDID)
-    }
 
-    fun saveDID(did: String, name: String){
-        didHandler.saveDIDInStore(did, name)
-    }
 
-    fun getDID(did: String){
-        didHandler.getDID(did)
-    }
+
 
     fun vdrResolveDID(did: String): String {
         return didHandler.vdrResolveDID(did)
@@ -104,27 +122,9 @@ class AriesAgent {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createTheirDID(didDoc: String): String {
-        return didHandler.createTheirDID(didDoc)
+        return didHandler.createTheirDIDFromDoc(didDoc)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createDIDInVdr(didDoc: String): String {
-        return didHandler.createDIDInVDR(didDoc)
-    }
-
-    fun storeDIDInVdr(didDoc: String): String {
-        return didHandler.storeDIDInVDR(didDoc)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun acceptConnectionInvitation(invitation: String): String{
-        return connection.acceptConnectionInvitation(invitation)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createServiceEndpointInvitation(): String {
-        return connection.createServiceEndpointInvitation()
-    }
 
 
     fun createDIDExchangeInvitation(): String {
@@ -132,25 +132,6 @@ class AriesAgent {
     }
 
 
-    /*
-        Messaging Functions
-     */
-    fun registerService(name: String, purpose: String){
-        println("Register Service Called")
-        messaging.registerMessagingService(name, purpose)
-    }
-
-    fun sendMessage(message: String, connectionID: String){
-        messaging.sendMessage(message, connectionID)
-    }
-
-    fun sendMessageViaTheirDID(message: String, theirDID: String){
-        messaging.sendMessageViaTheirDID(message, theirDID)
-    }
-
-    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String){
-        messaging.sendMessageViaServiceEndpoint(message, serviceEndpoint)
-    }
 
 
 }

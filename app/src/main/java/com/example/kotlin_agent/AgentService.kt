@@ -53,13 +53,8 @@ class AgentService: Service(){
             }
 
             if (action.equals("createInvitation")) {
-
-                //val invitation = AriesAgent.getInstance()?.createServiceEndpointInvitation()
                 val invitation = AriesAgent.getInstance()?.createDIDExchangeInvitation()
                 println("Created Invitation: $invitation")
-
-                // Subscribe to Message to wait for response
-                AriesAgent.getInstance()?.registerService("invitation-response", "complete-invitation")
 
                 if (invitation != null) {
                     sendPeerDidMessage(invitation)
@@ -73,34 +68,7 @@ class AgentService: Service(){
                 } else {
                     var invitation = extras["did"].toString()
                     println("Got Invitation: $invitation")
-
-                    // Create Their DID and My DID and store connection
-                    //val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
-                    val connectionID = ""
-                    println("Accepted Invitation with Connection ID: $connectionID")
-
-                    val myDID = AriesAgent.getInstance()?.createMyDID()
-                    val myDIDDoc = myDID?.let { AriesAgent.getInstance()?.vdrResolveDID(it) }
-                    println("Service Created MyDID: $myDIDDoc")
-
-                    // "accepted-invitation" and trigger message to other agent with myDID
-                    if (connectionID != null) {
-                        sendAcceptedInvitationMessage(connectionID)
-
-                        // If OK: send message to other agent
-                        AriesAgent.getInstance()?.reconnect()
-
-                        //AriesAgent.getInstance()?.sendMessageViaTheirDID("invitation-response", connectionID)
-
-                        // TODO: Create My DID, register key with mediator, send myDID as message
-                        if (myDIDDoc != null) {
-                            AriesAgent.getInstance()?.sendMessageViaServiceEndpoint(myDIDDoc, invitation)
-                        }
-                        //AriesAgent.getInstance()?.sendMessage("Invitation-response", connectionID)
-                    }
-
-                    // TODO: Save Connection ID and Name in Store
-
+                    AriesAgent.getInstance()?.createAndSendConnectionRequest(invitation)
                 }
             }
 
@@ -113,13 +81,13 @@ class AgentService: Service(){
                     val invitation = extras["did"].toString()
 
                     // Create Their DID and My DID and store connection
-                    val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
-                    println("Completed Invitation with Connection ID: $connectionID")
+                    //val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
+                    //println("Completed Invitation with Connection ID: $connectionID")
 
                     // "completed-invitation" and trigger message to other agent with connectionID
-                    if (connectionID != null) {
-                        sendCompletedInvitationMessage(connectionID)
-                    }
+                    //if (connectionID != null) {
+                    //    sendCompletedInvitationMessage(connectionID)
+                    //}
 
                     // TODO: Save Connection ID and Name in Store
                 }

@@ -3,19 +3,18 @@ package com.example.kotlin_agent.ariesAgent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import org.hyperledger.aries.models.RequestEnvelope
+import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
 class DidHandler(private val service: AriesAgent) {
 
-
     private fun createKeySet(keyType: String): String {
         //DIDComm V2 Key Agreement: NISTP384ECDHKW or X25519ECDH
         val kmsController = service.ariesAgent?.kmsController
-        val kmsRequest = """{"keyType":"$keyType"}"""
+        val kmsRequest = """{ "keyType" : "$keyType" }"""
         val kmsData = kmsRequest.toByteArray(StandardCharsets.UTF_8)
         val kmsResponse = kmsController?.createKeySet(RequestEnvelope(kmsData))
-
         var key = ""
         if (kmsResponse != null) {
             if (kmsResponse.error != null) {
@@ -23,7 +22,6 @@ class DidHandler(private val service: AriesAgent) {
             } else {
                 val actionsResponse = String(kmsResponse.payload, StandardCharsets.UTF_8)
                 val jsonActionResponse = JSONObject(actionsResponse)
-                println(actionsResponse)
                 key = jsonActionResponse["publicKey"].toString()
             }
         }
@@ -87,7 +85,6 @@ class DidHandler(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun createDIDInVDR(did: String): String {
         val payload ="""{"method":"peer", "did": $did}"""
-        //println(payload)
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.vdrController?.createDID(data)
         if(res != null){
@@ -95,7 +92,6 @@ class DidHandler(private val service: AriesAgent) {
                 println("Error: ${res.error}")
             } else {
                 val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                //println("ActionResponse: $actionsResponse")
                 val jsonObject = JSONObject(actionsResponse)
                 val did = jsonObject["did"].toString()
                 val jsonDID = JSONObject(did)
@@ -137,7 +133,6 @@ class DidHandler(private val service: AriesAgent) {
 
         // TODO: Register with mediator
         val jsonKeyDID = JSONObject(kDid)
-        println("Keydid: ${jsonKeyDID["id"]}")
         service.mediator.addKeyToMediator(jsonKeyDID["id"].toString())
 
         val jsonKeyDidDoc = JSONObject(kDid)
@@ -154,58 +149,27 @@ class DidHandler(private val service: AriesAgent) {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTheirDID(invitation: String): String {
+    fun createTheirDIDFromDoc(didDoc: String): String {
 
-        val jsonInvitation = JSONObject(invitation)
+        val jsonDIDDoc = JSONObject(didDoc)
+        val service = jsonDIDDoc["service"].toString()
+        val id = jsonDIDDoc["id"].toString()
 
-        val serviceEndpoint = jsonInvitation["serviceEndpoint"].toString()
-        val recipientKey = jsonInvitation["recipientKeys"].toString()
-        val routingKeys = jsonInvitation["routingKeys"].toString()
+        val verificationMethodArray = JSONArray(jsonDIDDoc["verificationMethod"].toString())
+        val verificationMethod = verificationMethodArray[0].toString()
+        val keyAgreement = verificationMethodArray[1].toString()
 
-
-        // Create Service:
-        val theirService = """
-            [  {
-                "id": "",
-                "type": "DIDCommMessaging",
-                "serviceEndpoint": {
-                    "uri": "$serviceEndpoint"
-                },
-                "routingKeys": $routingKeys,
-                "accept": ["didcomm/v2"]
-            } ]
-        """.trimIndent()
-
-        println("Recipient Keys: $recipientKey")
-        val result = JSONObject(vdrResolveDID(recipientKey))
-        println(result)
-
-        val kDid = result["didDocument"].toString()
-
-        // Register with mediator:
-        val jsonKeyDID = JSONObject(kDid)
-        println("KeyDid: ${jsonKeyDID["id"]}")
-        service.mediator.addKeyToMediator(jsonKeyDID["id"].toString())
-
-        val jsonKeyDidDoc = JSONObject(kDid)
-        val verificationMethod = jsonKeyDidDoc["verificationMethod"].toString()
-        val keyAgreement = jsonKeyDidDoc["keyAgreement"].toString()
-
-        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], "id": "" ,
-            "service": $theirService , 
-            "verificationMethod":  $verificationMethod,
-            "keyAgreement": $keyAgreement 
-            } """
+        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], 
+            "id": "$id" ,
+            "service": $service , 
+            "verificationMethod":  [$verificationMethod],
+            "keyAgreement": [$keyAgreement]
+            } 
+        """
 
         return createDIDInVDR(payload)
     }
 
-    /*
-        Stored their DID from invitation to own VDR
-     */
-    fun storeTheirDIDToVDR(didDoc: String){
-
-    }
 
 
     private fun createKeyDid(): String {
@@ -240,30 +204,6 @@ class DidHandler(private val service: AriesAgent) {
                 val did = jsonObject["did"].toString()
 
                 return did
-            }
-        } else {
-            println("Res is null")
-        }
-        return ""
-    }
-
-
-    // Store Aries DID in VDR
-    fun storeDIDInVDR(didDoc: String): String {
-
-        val payload = """ {"method":"peer", "did": $didDoc} """
-
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = service.ariesAgent?.vdrController?.createDID(data)
-        if(res != null){
-            if(res.error != null){
-                println("Error: ${res.error}")
-            } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                val jsonObject = JSONObject(actionsResponse)
-                val did = jsonObject["did"].toString()
-                val jsonDID = JSONObject(did)
-                return jsonDID["id"].toString()
             }
         } else {
             println("Res is null")

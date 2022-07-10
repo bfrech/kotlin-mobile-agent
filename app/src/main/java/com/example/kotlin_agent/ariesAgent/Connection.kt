@@ -7,9 +7,6 @@ import java.nio.charset.StandardCharsets
 
 class Connection(private val service: AriesAgent) {
 
-    var openDID = ""
-
-
     fun createDIDExchangeInvitation(): String {
         val payload = """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}"} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
@@ -27,38 +24,22 @@ class Connection(private val service: AriesAgent) {
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createServiceEndpointInvitation(): String {
-        val did = service.createMyDID()
-        openDID = did
-        val res = JSONObject(service.vdrResolveDID(did))
-        val didDoc = JSONObject(res["didDocument"].toString())
-        val service = JSONObject(didDoc["service"].toString().drop(1).dropLast(1))
-        val serviceEndpoint = JSONObject(service["serviceEndpoint"].toString())
-        val key = service["recipientKeys"].toString().drop(2).substringBefore('#')
-
-
-        val payload = """{
-            |"serviceEndpoint": "${serviceEndpoint["uri"]}",
-            |"routingKeys": ${service["routingKeys"]},
-            |"recipientKeys": "$key"
-            |}""".trimMargin()
-
-
-        return payload
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun acceptConnectionInvitation(invitation: String): String {
-        val theirDID = service.createTheirDID(invitation)
-
-        // TODO: Test, remove
-        println("My DID: ${service.vdrResolveDID(openDID)}")
-        println("Their DID: ${service.vdrResolveDID(theirDID)}")
-
-        //return createNewConnection(openDID, theirDID)
-        return theirDID
-    }
+    //@RequiresApi(Build.VERSION_CODES.O)
+    //fun createServiceEndpointInvitation(): String {
+    //    val did = service.createMyDID()
+    //    openDID = did
+    //    val res = JSONObject(service.vdrResolveDID(did))
+    //    val didDoc = JSONObject(res["didDocument"].toString())
+    //    val service = JSONObject(didDoc["service"].toString().drop(1).dropLast(1))
+    //    val serviceEndpoint = JSONObject(service["serviceEndpoint"].toString())
+    //    val key = service["recipientKeys"].toString().drop(2).substringBefore('#')
+    //    val payload = """{
+    //        |"serviceEndpoint": "${serviceEndpoint["uri"]}",
+    //        |"routingKeys": ${service["routingKeys"]},
+    //        |"recipientKeys": "$key"
+    //        |}""".trimMargin()
+    //    return payload
+    //}
 
 
 
@@ -83,6 +64,7 @@ class Connection(private val service: AriesAgent) {
 
 
     fun createNewConnection(myDID: String, theirDID: String): String {
+
         val request = """{"my_did": "$myDID", "their_did": "$theirDID"}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.createConnectionV2(data)
