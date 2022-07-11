@@ -28,9 +28,13 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         }
 
         if(topic == "connection_response"){
-            // TODO: Connection Response Handling (call service with complete connection)
             println("Received Connection Response: $jsonMessage" )
             ariesAgent.completeConnectionRequest(jsonMessage["DIDDoc"].toString(),jsonMessage["label"].toString())
+            return
+        }
+
+        if(topic == "connection_complete"){
+            ariesAgent.sendConnectionCompletedMessage()
             return
         }
 

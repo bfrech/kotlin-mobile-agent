@@ -1,11 +1,16 @@
 package com.example.kotlin_agent
 
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 
@@ -19,6 +24,10 @@ class NewInvitationActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_invitation)
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+            IntentFilter("connection_completed")
+        )
 
         // Render PeerDID as QR Code
         qrImageView = findViewById(R.id.qrCodeImage)
@@ -41,5 +50,27 @@ class NewInvitationActivity : AppCompatActivity() {
             }
         }
     }
+
+
+    // Handler for received Intents. This will be called whenever an Intent
+    // with an action named "connection_completed" is broadcasted.
+    private val mMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            // Get extra data included in the Intent
+            val message = intent.getStringExtra("message")
+            println("Receiver Got message: $message")
+
+            // Go to invitation Screen
+            val intent = Intent(this@NewInvitationActivity, ContactsActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    override fun onDestroy() {
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver)
+        super.onDestroy()
+    }
+
 
 }

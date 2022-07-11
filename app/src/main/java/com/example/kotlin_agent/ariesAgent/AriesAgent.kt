@@ -1,24 +1,26 @@
 package com.example.kotlin_agent.ariesAgent
 
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
 
 
-class AriesAgent {
+class AriesAgent(private val context: Context) {
 
-    companion object {
-        private var INSTANCE: AriesAgent? = null
-
-        fun getInstance(): AriesAgent? {
-            if (INSTANCE == null) {
-                INSTANCE = AriesAgent()
-            }
-            return INSTANCE
-        }
-    }
+    //companion object {
+    //    private var INSTANCE: AriesAgent? = null
+    //    fun getInstance(): AriesAgent? {
+    //        if (INSTANCE == null) {
+    //            INSTANCE = AriesAgent()
+    //        }
+    //        return INSTANCE
+    //    }
+    //}
 
     var ariesAgent: AriesController? = null
     var agentlabel: String = ""
@@ -92,7 +94,6 @@ class AriesAgent {
         val connectionID = connection.createNewConnection(myDID, theirDID)
         println("Created Connection with: $connectionID")
 
-        // TODO: send message back with myDID and mylabel
         val myDIDDoc = didHandler.vdrResolveDID(myDID)
         messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
     }
@@ -109,6 +110,15 @@ class AriesAgent {
         println("Created Connection with: $connectionID")
 
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
+    }
+
+    /*
+        Communicate to Activity that connection was completed
+     */
+    fun sendConnectionCompletedMessage(){
+        println("sender: Broadcasting message")
+        val intent = Intent("connection_completed")
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
     }
 
 

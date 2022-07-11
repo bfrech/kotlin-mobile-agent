@@ -14,12 +14,13 @@ class AgentService: Service(){
 
     var agentlabel: String = ""
     var mediatorURL = ""
+    var ariesAgent = AriesAgent(this)
 
 
     private val backgroundSetup = object: Thread(){
         override fun run(){
-            AriesAgent.getInstance()?.createNewAgent(agentlabel)
-            AriesAgent.getInstance()?.connectToMediator(mediatorURL)
+            ariesAgent.createNewAgent(agentlabel)
+            ariesAgent.connectToMediator(mediatorURL)
         }
     }.start()
 
@@ -53,7 +54,7 @@ class AgentService: Service(){
             }
 
             if (action.equals("createInvitation")) {
-                val invitation = AriesAgent.getInstance()?.createDIDExchangeInvitation()
+                val invitation = ariesAgent.createDIDExchangeInvitation()
                 println("Created Invitation: $invitation")
 
                 if (invitation != null) {
@@ -68,30 +69,11 @@ class AgentService: Service(){
                 } else {
                     var invitation = extras["did"].toString()
                     println("Got Invitation: $invitation")
-                    AriesAgent.getInstance()?.createAndSendConnectionRequest(invitation)
+                    ariesAgent.createAndSendConnectionRequest(invitation)
                 }
             }
 
 
-            //if (action.equals("completeInvitation")) {
-            //    val extras = intent.extras
-            //    if (extras == null) {
-            //        println("No Value was given")
-            //    } else {
-            //        val invitation = extras["did"].toString()
-
-                    // Create Their DID and My DID and store connection
-                    //val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
-                    //println("Completed Invitation with Connection ID: $connectionID")
-
-                    // "completed-invitation" and trigger message to other agent with connectionID
-                    //if (connectionID != null) {
-                    //    sendCompletedInvitationMessage(connectionID)
-                    //}
-
-                    // TODO: Save Connection ID and Name in Store
-            //    }
-            //}
 
         } else {
             println(
@@ -110,5 +92,6 @@ class AgentService: Service(){
         intent.putExtra("message", peerDIDDocEncoded)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
+
 
 }
