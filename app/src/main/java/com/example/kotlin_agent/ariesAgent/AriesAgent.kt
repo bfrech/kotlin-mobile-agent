@@ -28,7 +28,10 @@ class AriesAgent {
     var mediator: Mediator = Mediator(this)
     var connection: Connection = Connection(this)
     var messaging: Messaging = Messaging(this)
+    var didHandler: DidHandler = DidHandler(this)
+    var keyHandler: KeyHandler = KeyHandler(this)
 
+    var openDID = ""
 
     fun createNewAgent(label: String) {
         agentlabel = label
@@ -39,19 +42,80 @@ class AriesAgent {
         opts.addOutboundTransport("ws")
         opts.mediaTypeProfiles = "didcomm/v2"
 
-        //opts.mediaTypeProfiles = "didcomm/aip1"
-        //opts.autoAccept = true  --> default value?
-
         try {
             ariesAgent = Ariesagent.new_(opts)
             val handler = NotificationHandler(this)
             val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
-            println("registered handler with registration id: $registrationID")
+            println("registered didExchange handler with registration id: $registrationID")
+
+            val messagingRegistrationID = ariesAgent?.registerHandler(handler, "basicmessage")
+            println("registered didExchange handler with registration id: $messagingRegistrationID")
+
+            val connectionRegID = ariesAgent?.registerHandler(handler, "connection_request")
+            println("registered connection handler with registration id: $connectionRegID")
+
+            val connectionResID = ariesAgent?.registerHandler(handler, "connection_response")
+            println("registered connection handler with registration id: $connectionResID")
+
+            val connectionCompleteID = ariesAgent?.registerHandler(handler, "connection_complete")
+            println("registered connection handler with registration id: $connectionCompleteID")
+
         }catch (e: Exception){
             e.printStackTrace()
         }
     }
 
+
+    /*
+        Establish Connection
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createAndSendConnectionRequest(invitation: String){
+
+        val myDID = didHandler.createMyDID()
+        println("Created myDID: $myDID")
+        openDID = myDID
+        val myDIDDoc = didHandler.vdrResolveDID(myDID)
+        println("MyDIDDoc: $myDIDDoc")
+
+        mediator.reconnectToMediator()
+        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(myDIDDoc), invitation, "connection_request")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createAndSendConnectionResponse(didDocEnc: String, label: String){
+        val didDoc = Utils.decodeBase64(didDocEnc)
+        println("Got Connection Request from $label with theirDID: $didDoc")
+
+        val theirDID = didHandler.createTheirDIDFromDoc(didDoc)
+        val myDID = didHandler.createMyDID()
+        val connectionID = connection.createNewConnection(myDID, theirDID)
+        println("Created Connection with: $connectionID")
+
+        // TODO: send message back with myDID and mylabel
+        val myDIDDoc = didHandler.vdrResolveDID(myDID)
+        messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun completeConnectionRequest(didDocEnc: String, label: String){
+        // Use openDID here!
+        if(openDID == "") {
+            println("No Open Connection Request!")
+        }
+        val theirDidDoc = Utils.decodeBase64(didDocEnc)
+        val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc)
+        val connectionID = connection.createNewConnection(openDID, theirDID)
+        println("Created Connection with: $connectionID")
+
+        messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
+    }
+
+
+
+    /*
+        Mediator Functions
+     */
     fun connectToMediator(mediatorUrl: String){
         this.mediatorURL = mediatorUrl
         mediator.connectToMediator(mediatorUrl)
@@ -61,64 +125,39 @@ class AriesAgent {
         mediator.registerMediator()
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createOOBV2InvitationForMobileAgent() {
-      connection.createOOBV2InvitationForMobileAgent("Connect", "connect")
-    }
+
+
 
     fun getConnection(connectionID: String): String {
         return connection.getConnection(connectionID)
     }
 
-    fun getRouterConnection(): String {
-        return connection.getConnection(routerConnectionId)
-    }
 
-    fun createNewConnection(myDID: String, theirDID: String): String {
-        return connection.createNewConnection(myDID, theirDID)
-    }
 
-    fun saveDID(did: String, name: String){
-        connection.saveDIDInStore(did, name)
-    }
 
-    fun getDID(did: String){
-        connection.getDID(did)
-    }
+
 
     fun vdrResolveDID(did: String): String {
-        return connection.vdrResolveDID(did)
+        return didHandler.vdrResolveDID(did)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createMyDID(): String {
-        return connection.createMyDID()
+        return didHandler.createMyDID()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createTheirDID(didDoc: String): String {
-        return connection.createTheirDID(didDoc)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createDIDInVdr(didDoc: String): String {
-        return connection.createDIDInVDR(didDoc)
-    }
-
-    fun storeDIDInVdr(didDoc: String): String {
-        return connection.storeDIDInVDR(didDoc)
+        return didHandler.createTheirDIDFromDoc(didDoc)
     }
 
 
-    /*
-        Messaging Functions
-     */
-    fun registerService(name: String, purpose: String){
-        println("Register Service Called")
-        messaging.registerMessagingService(name, purpose)
+
+    fun createDIDExchangeInvitation(): String {
+        return connection.createDIDExchangeInvitation()
     }
 
-    fun sendMessage(message: String, connectionID: String){
-        messaging.sendMessage(message, connectionID)
-    }
+
+
+
 }

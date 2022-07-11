@@ -55,4 +55,39 @@ class Mediator(private val service: AriesAgent) {
     }
 
 
+    fun reconnectToMediator() {
+        val mediatorController = service.ariesAgent?.mediatorController
+        val mediatorRequest = """ {"connectionID":"${service.routerConnectionId}"} """
+
+        val data = mediatorRequest.toByteArray(StandardCharsets.UTF_8)
+        val res = mediatorController?.reconnect(data)
+
+        if (res != null) {
+            if(res.error != null){
+                println("There was an error with the Router Reconnection ${res.error.message}")
+            } else {
+                println("Reconnected to Router with: ${service.routerConnectionId}")
+
+            }
+        }
+    }
+
+    fun addKeyToMediator(didKey: String) {
+        val mediatorController = service.ariesAgent?.mediatorController
+        val request = """ {"connectionID":"${service.routerConnectionId}", "did_key": "$didKey"} """
+
+        val data = request.toByteArray(StandardCharsets.UTF_8)
+        val res = mediatorController?.registerKey(data)
+
+        if (res != null) {
+            if(res.error != null){
+                println("There was an error with the Key Registration ${res.error.message}")
+            } else {
+                println("Registered Key with mediator: $didKey")
+
+            }
+        }
+    }
+
+
 }
