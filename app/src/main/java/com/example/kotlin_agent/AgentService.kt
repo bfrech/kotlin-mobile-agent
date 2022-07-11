@@ -73,12 +73,12 @@ class AgentService: Service(){
             }
 
 
-            if (action.equals("completeInvitation")) {
-                val extras = intent.extras
-                if (extras == null) {
-                    println("No Value was given")
-                } else {
-                    val invitation = extras["did"].toString()
+            //if (action.equals("completeInvitation")) {
+            //    val extras = intent.extras
+            //    if (extras == null) {
+            //        println("No Value was given")
+            //    } else {
+            //        val invitation = extras["did"].toString()
 
                     // Create Their DID and My DID and store connection
                     //val connectionID = AriesAgent.getInstance()?.acceptConnectionInvitation(invitation)
@@ -90,8 +90,8 @@ class AgentService: Service(){
                     //}
 
                     // TODO: Save Connection ID and Name in Store
-                }
-            }
+            //    }
+            //}
 
         } else {
             println(
@@ -110,20 +110,5 @@ class AgentService: Service(){
         intent.putExtra("message", peerDIDDocEncoded)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
-
-    private fun sendAcceptedInvitationMessage(myDid: String) {
-        println("sender: Broadcasting message")
-        val intent = Intent("accepted-invitation")
-        intent.putExtra("message", myDid)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
-    private fun sendCompletedInvitationMessage(myDid: String) {
-        println("sender: Broadcasting message")
-        val intent = Intent("accepted-invitation")
-        intent.putExtra("message", myDid)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-    }
-
 
 }

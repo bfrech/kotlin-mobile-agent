@@ -29,6 +29,7 @@ class AriesAgent {
     var connection: Connection = Connection(this)
     var messaging: Messaging = Messaging(this)
     var didHandler: DidHandler = DidHandler(this)
+    var keyHandler: KeyHandler = KeyHandler(this)
 
     var openDID = ""
 
@@ -50,8 +51,14 @@ class AriesAgent {
             val messagingRegistrationID = ariesAgent?.registerHandler(handler, "basicmessage")
             println("registered didExchange handler with registration id: $messagingRegistrationID")
 
-            val connectionRegistrationID = ariesAgent?.registerHandler(handler, "connection")
-            println("registered connection handler with registration id: $connectionRegistrationID")
+            val connectionRegID = ariesAgent?.registerHandler(handler, "connection_request")
+            println("registered connection handler with registration id: $connectionRegID")
+
+            val connectionResID = ariesAgent?.registerHandler(handler, "connection_response")
+            println("registered connection handler with registration id: $connectionResID")
+
+            val connectionCompleteID = ariesAgent?.registerHandler(handler, "connection_complete")
+            println("registered connection handler with registration id: $connectionCompleteID")
 
         }catch (e: Exception){
             e.printStackTrace()
@@ -64,12 +71,15 @@ class AriesAgent {
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
+
         val myDID = didHandler.createMyDID()
+        println("Created myDID: $myDID")
         openDID = myDID
         val myDIDDoc = didHandler.vdrResolveDID(myDID)
+        println("MyDIDDoc: $myDIDDoc")
 
         mediator.reconnectToMediator()
-        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(myDIDDoc), invitation)
+        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(myDIDDoc), invitation, "connection_request")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -78,11 +88,27 @@ class AriesAgent {
         println("Got Connection Request from $label with theirDID: $didDoc")
 
         val theirDID = didHandler.createTheirDIDFromDoc(didDoc)
-        val connectionID = connection.createNewConnection(openDID, theirDID)
+        val myDID = didHandler.createMyDID()
+        val connectionID = connection.createNewConnection(myDID, theirDID)
         println("Created Connection with: $connectionID")
 
         // TODO: send message back with myDID and mylabel
-        messaging.sendMessage(Utils.encodeBase64(openDID), connectionID)
+        val myDIDDoc = didHandler.vdrResolveDID(myDID)
+        messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun completeConnectionRequest(didDocEnc: String, label: String){
+        // Use openDID here!
+        if(openDID == "") {
+            println("No Open Connection Request!")
+        }
+        val theirDidDoc = Utils.decodeBase64(didDocEnc)
+        val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc)
+        val connectionID = connection.createNewConnection(openDID, theirDID)
+        println("Created Connection with: $connectionID")
+
+        messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
 

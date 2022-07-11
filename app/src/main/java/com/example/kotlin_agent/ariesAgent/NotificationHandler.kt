@@ -18,10 +18,19 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         val json = JSONObject(String(message, StandardCharsets.UTF_8))
         val jsonMessage = JSONObject(json["message"].toString())
 
-        if(topic == "connection"){
-            // TODO: Connection Request Handling (call service with complete connection)
+        if(topic == "connection_request"){
             println("Recieved Connection Request: $jsonMessage" )
+
+            // TODO: Check request acceptance?
+
             ariesAgent.createAndSendConnectionResponse(jsonMessage["DIDDoc"].toString(),jsonMessage["label"].toString())
+            return
+        }
+
+        if(topic == "connection_response"){
+            // TODO: Connection Response Handling (call service with complete connection)
+            println("Received Connection Response: $jsonMessage" )
+            ariesAgent.completeConnectionRequest(jsonMessage["DIDDoc"].toString(),jsonMessage["label"].toString())
             return
         }
 
@@ -31,6 +40,9 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
             return
         }
 
+        /*
+            Mediator Connection Handling
+         */
         val properties = JSONObject(jsonMessage["Properties"].toString())
         if(jsonMessage["StateID"].equals("completed")) {
             if(properties["connectionID"].equals(ariesAgent.routerConnectionId)){

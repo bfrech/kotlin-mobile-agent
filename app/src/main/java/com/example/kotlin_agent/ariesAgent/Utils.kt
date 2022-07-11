@@ -18,6 +18,7 @@ class Utils {
        fun decodeBase64(str: String): String {
            return String(Base64.getDecoder().decode(str.toByteArray()), StandardCharsets.UTF_8)
        }
+
    }
 
 

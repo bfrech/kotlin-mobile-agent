@@ -43,10 +43,11 @@ class Messaging(private val service: AriesAgent) {
     /*
         Send Message
      */
-    fun sendMessage(message: String, connectionID: String) {
+    fun sendConnectionMessage(message: String, connectionID: String, purpose: String) {
         val messageController = service.ariesAgent?.messagingController
         val messageBody = """ {
 			    "@type": "https://didcomm.org/connection/2.0/message",
+                "purpose": "$purpose",
                 "body": {
 			        "did_doc": "$message",
                     "label": "${service.agentlabel}"
@@ -68,10 +69,11 @@ class Messaging(private val service: AriesAgent) {
     }
 
 
-    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String) {
+    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String, purpose: String) {
         val messageController = service.ariesAgent?.messagingController
         val messageBody = """ {
 			    "@type": "https://didcomm.org/connection/2.0/message",
+                "purpose": "$purpose",
                 "body": {
 			        "did_doc": "$message",
                     "label": "${service.agentlabel}"
@@ -88,20 +90,6 @@ class Messaging(private val service: AriesAgent) {
     }
 
 
-        fun sendMessageViaTheirDID(message: String, theirDID: String) {
-            val messageController = service.ariesAgent?.messagingController
-            val payload =
-                """ {"message_body": {"text":"$message", "type": "https://didcomm.org/generic/1.0/message", "purpose": "event"}, "their_did": "$theirDID"} """
-            val data = payload.toByteArray(StandardCharsets.UTF_8)
-            val res = messageController?.send(data)
-            if (res != null) {
-                if (res.error != null) {
-                    println(res.error)
-                } else {
-                    val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                }
-            }
-        }
 
 
     /*
