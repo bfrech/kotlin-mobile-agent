@@ -40,6 +40,8 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         if(topic == "basicmessage"){
             // TODO: do something with message
             println("Got a Message: $jsonMessage")
+
+
             return
         }
 

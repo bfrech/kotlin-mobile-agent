@@ -7,12 +7,11 @@ import android.os.IBinder
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.ariesAgent.AriesAgent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import org.json.JSONObject
 
 
 class AgentService: Service(){
 
-    var agentlabel: String = ""
+    var agentlabel: String = "Bob"
     var mediatorURL = ""
     var ariesAgent = AriesAgent(this)
 
@@ -54,7 +53,7 @@ class AgentService: Service(){
             }
 
             if (action.equals("createInvitation")) {
-                val invitation = ariesAgent.createDIDExchangeInvitation()
+                val invitation = ariesAgent.createConnectionInvitation()
                 println("Created Invitation: $invitation")
 
                 if (invitation != null) {

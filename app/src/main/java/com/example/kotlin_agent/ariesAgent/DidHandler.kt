@@ -54,7 +54,7 @@ class DidHandler(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun createMyDID(): String {
         // Get the Router Connection to create Service Endpoint
-        val routerConnection = service.getConnection(service.routerConnectionId)
+        val routerConnection = service.connection.getConnection(service.routerConnectionId)
         val jsonRouterConnection = JSONObject(routerConnection)
         val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
         val serviceEndpointJson = JSONObject(serviceEndpointObject)

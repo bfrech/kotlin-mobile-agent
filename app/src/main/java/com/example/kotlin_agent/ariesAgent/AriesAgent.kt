@@ -13,7 +13,7 @@ import org.hyperledger.aries.config.Options
 class AriesAgent(private val context: Context) {
 
     // TODO: replace with Database
-
+    val contacts = mutableMapOf<String,String>()
 
     var ariesAgent: AriesController? = null
     var agentlabel: String = ""
@@ -28,7 +28,7 @@ class AriesAgent(private val context: Context) {
 
     var openDID = ""
 
-    var testConnectionID= ""
+    //var testConnectionID= ""
 
     fun createNewAgent(label: String) {
         agentlabel = label
@@ -66,6 +66,10 @@ class AriesAgent(private val context: Context) {
     /*
         Establish Connection
      */
+    fun createConnectionInvitation(): String {
+        return connection.createDIDExchangeInvitation()
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
 
@@ -89,7 +93,7 @@ class AriesAgent(private val context: Context) {
         val connectionID = connection.createNewConnection(myDID, theirDID)
         println("Created Connection with: $connectionID")
 
-        testConnectionID = connectionID
+        addContact(label, connectionID)
 
         val myDIDDoc = didHandler.vdrResolveDID(myDID)
         messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
@@ -106,7 +110,24 @@ class AriesAgent(private val context: Context) {
         val connectionID = connection.createNewConnection(openDID, theirDID)
         println("Created Connection with: $connectionID")
 
+        addContact(label, connectionID)
+
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
+    }
+
+    fun addContact(label: String, connectionID: String){
+        if(contacts.containsKey(label)){
+            // TODO: Duplicate Handling
+        }
+        contacts[label] = connectionID
+    }
+
+    private fun getConnectionIDFromLabel(label: String): String {
+        return if(contacts.containsKey(label)){
+            contacts[label].toString()
+        } else {
+            ""
+        }
     }
 
     /*
@@ -114,14 +135,14 @@ class AriesAgent(private val context: Context) {
      */
     fun sendConnectionCompletedMessage(theirLabel: String){
 
-        // TODO: get connectionIDForLabel
+        val connectionID = getConnectionIDFromLabel(theirLabel)
 
         // DID Rotation
-        val newDID = connection.rotateDIDForConnection(testConnectionID)
+        val newDID = connection.rotateDIDForConnection(connectionID)
         val newDIDDoc = didHandler.vdrResolveDID(newDID)
         println("New DID Doc: $newDIDDoc")
 
-        messaging.sendMessage("Hey, I rotated my DID", testConnectionID)
+        messaging.sendMessage("Hey, I rotated my DID", connectionID)
 
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
@@ -142,13 +163,16 @@ class AriesAgent(private val context: Context) {
         mediator.registerMediator()
     }
 
-    fun getConnection(connectionID: String): String {
-        return connection.getConnection(connectionID)
+
+
+    /*
+        Messaging
+     */
+    fun processBasicMessage(theirLabel: String){
+
     }
 
-    fun createDIDExchangeInvitation(): String {
-        return connection.createDIDExchangeInvitation()
-    }
+
 
 
 
