@@ -1,6 +1,5 @@
 package com.example.kotlin_agent.ariesAgent
 
-import org.hyperledger.aries.models.RequestEnvelope
 import java.nio.charset.StandardCharsets
 
 class Messaging(private val service: AriesAgent) {
@@ -40,11 +39,33 @@ class Messaging(private val service: AriesAgent) {
         }
     }
 
+    fun sendMessage(message: String, connectionID: String){
+        val messageBody = """ {
+			    "@type": "https://didcomm.org/basicmessage/2.0/message",
+                "body": {
+			        "content": "$message"
+                }
+			} """
+        sendViaConnectionID(messageBody, connectionID)
+    }
+
+    private fun sendViaConnectionID(messageBody: String, connectionID: String){
+        val payload = """ {"message_body": $messageBody, "connection_id": "$connectionID"} """
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.messagingController?.send(data)
+        if (res != null) {
+            if (res.error != null) {
+                println(res.error)
+            } else {
+                // Returns empty JSON
+            }
+        }
+    }
+
     /*
-        Send Message
+        Connection Messages Message
      */
     fun sendConnectionMessage(message: String, connectionID: String, purpose: String) {
-        val messageController = service.ariesAgent?.messagingController
         val messageBody = """ {
 			    "@type": "https://didcomm.org/connection/2.0/message",
                 "purpose": "$purpose",
@@ -53,19 +74,7 @@ class Messaging(private val service: AriesAgent) {
                     "label": "${service.agentlabel}"
                 }
 			} """
-        val payload = """ {"message_body": $messageBody, "connection_id": "$connectionID"} """
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = messageController?.send(data)
-        if (res != null) {
-            if (res.error != null) {
-                println(res.error)
-            } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-
-                // Should return empty json
-                println(actionsResponse)
-            }
-        }
+        sendViaConnectionID(messageBody, connectionID)
     }
 
 
@@ -89,11 +98,5 @@ class Messaging(private val service: AriesAgent) {
         }
     }
 
-
-
-
-    /*
-        Reply to message?
-     */
 
 }

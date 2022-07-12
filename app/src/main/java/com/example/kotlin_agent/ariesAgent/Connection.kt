@@ -2,6 +2,7 @@ package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
@@ -62,7 +63,6 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-
     fun createNewConnection(myDID: String, theirDID: String): String {
 
         val request = """{"my_did": "$myDID", "their_did": "$theirDID"}"""
@@ -82,6 +82,58 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
+
+    fun rotateDIDForConnection(connectionID: String): String {
+
+        val kid = getOldKidForConnection(connectionID)
+
+        // TODO: pass whole service Endpoint, not single values
+        val serviceEndpoint = JSONObject(getServiceEndpointForConnection(connectionID))
+        println(serviceEndpoint)
+
+        val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "", "create_peer_did": true, "service_endpoint": "${serviceEndpoint["uri"]}", "routing_keys": ${serviceEndpoint["routingKeys"]}}"""
+        println(request)
+
+        val data = request.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.connectionController?.rotateDID(data)
+        if(res != null){
+            if(res.error != null){
+                println(res.error)
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                println("Rotate DID response: $jsonObject")
+                return jsonObject["new_did"].toString()
+            }
+        } else {
+            println("Res is null")
+        }
+        return ""
+    }
+
+    private fun getMyDIDForConnection(connectionID: String): String{
+        val connection = JSONObject(getConnection(connectionID))
+        return connection["MyDID"].toString()
+    }
+
+    private fun getOldKidForConnection(connectionID: String): String {
+        val myDID = getMyDIDForConnection(connectionID)
+        val myDIDDoc = JSONObject(service.didHandler.vdrResolveDID(myDID))
+        val assertionMethod = JSONArray(myDIDDoc["assertionMethod"].toString())
+        return assertionMethod[0].toString()
+    }
+
+    private fun getServiceEndpointForConnection(connectionID: String): String {
+        val services = JSONArray(getServiceForConnection(connectionID))
+        val service = JSONObject(services[0].toString())
+        return service["serviceEndpoint"].toString()
+    }
+
+    private fun getServiceForConnection(connectionID: String): String {
+        val myDID = getMyDIDForConnection(connectionID)
+        val myDIDDoc = JSONObject(service.didHandler.vdrResolveDID(myDID))
+        return myDIDDoc["service"].toString()
+    }
 
 
 

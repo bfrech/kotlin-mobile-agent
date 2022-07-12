@@ -12,15 +12,8 @@ import org.hyperledger.aries.config.Options
 
 class AriesAgent(private val context: Context) {
 
-    //companion object {
-    //    private var INSTANCE: AriesAgent? = null
-    //    fun getInstance(): AriesAgent? {
-    //        if (INSTANCE == null) {
-    //            INSTANCE = AriesAgent()
-    //        }
-    //        return INSTANCE
-    //    }
-    //}
+    // TODO: replace with Database
+
 
     var ariesAgent: AriesController? = null
     var agentlabel: String = ""
@@ -34,6 +27,8 @@ class AriesAgent(private val context: Context) {
     var keyHandler: KeyHandler = KeyHandler(this)
 
     var openDID = ""
+
+    var testConnectionID= ""
 
     fun createNewAgent(label: String) {
         agentlabel = label
@@ -94,6 +89,8 @@ class AriesAgent(private val context: Context) {
         val connectionID = connection.createNewConnection(myDID, theirDID)
         println("Created Connection with: $connectionID")
 
+        testConnectionID = connectionID
+
         val myDIDDoc = didHandler.vdrResolveDID(myDID)
         messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
     }
@@ -113,9 +110,19 @@ class AriesAgent(private val context: Context) {
     }
 
     /*
-        Communicate to Activity that connection was completed
+        Communicate to Activity that connection was completed to go back to contacts screen
      */
-    fun sendConnectionCompletedMessage(){
+    fun sendConnectionCompletedMessage(theirLabel: String){
+
+        // TODO: get connectionIDForLabel
+
+        // DID Rotation
+        val newDID = connection.rotateDIDForConnection(testConnectionID)
+        val newDIDDoc = didHandler.vdrResolveDID(newDID)
+        println("New DID Doc: $newDIDDoc")
+
+        messaging.sendMessage("Hey, I rotated my DID", testConnectionID)
+
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
@@ -135,33 +142,9 @@ class AriesAgent(private val context: Context) {
         mediator.registerMediator()
     }
 
-
-
-
     fun getConnection(connectionID: String): String {
         return connection.getConnection(connectionID)
     }
-
-
-
-
-
-
-    fun vdrResolveDID(did: String): String {
-        return didHandler.vdrResolveDID(did)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createMyDID(): String {
-        return didHandler.createMyDID()
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createTheirDID(didDoc: String): String {
-        return didHandler.createTheirDIDFromDoc(didDoc)
-    }
-
-
 
     fun createDIDExchangeInvitation(): String {
         return connection.createDIDExchangeInvitation()

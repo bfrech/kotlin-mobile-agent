@@ -13,8 +13,6 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         println("received notification topic: $topic")
         println("received notification message: " + String(message, StandardCharsets.UTF_8))
 
-
-
         val json = JSONObject(String(message, StandardCharsets.UTF_8))
         val jsonMessage = JSONObject(json["message"].toString())
 
@@ -34,7 +32,8 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         }
 
         if(topic == "connection_complete"){
-            ariesAgent.sendConnectionCompletedMessage()
+            println("Received Connection Completed Message: $jsonMessage" )
+            ariesAgent.sendConnectionCompletedMessage(jsonMessage["label"].toString())
             return
         }
 
