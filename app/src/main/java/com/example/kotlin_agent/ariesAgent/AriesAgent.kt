@@ -13,7 +13,7 @@ import org.hyperledger.aries.config.Options
 class AriesAgent(private val context: Context) {
 
     // TODO: replace with Database
-    val contacts = mutableMapOf<String,String>()
+    private val contacts = mutableMapOf<String,String>()
 
     var ariesAgent: AriesController? = null
     var agentlabel: String = ""
@@ -115,7 +115,7 @@ class AriesAgent(private val context: Context) {
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
-    fun addContact(label: String, connectionID: String){
+    private fun addContact(label: String, connectionID: String){
         if(contacts.containsKey(label)){
             // TODO: Duplicate Handling
         }
@@ -134,15 +134,7 @@ class AriesAgent(private val context: Context) {
         Communicate to Activity that connection was completed to go back to contacts screen
      */
     fun sendConnectionCompletedMessage(theirLabel: String){
-
-        val connectionID = getConnectionIDFromLabel(theirLabel)
-
-        // DID Rotation
-        val newDID = connection.rotateDIDForConnection(connectionID)
-        val newDIDDoc = didHandler.vdrResolveDID(newDID)
-        println("New DID Doc: $newDIDDoc")
-
-        messaging.sendMessage("Hey, I rotated my DID", connectionID)
+        rotateDIDForConnection(theirLabel)
 
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
@@ -169,7 +161,24 @@ class AriesAgent(private val context: Context) {
         Messaging
      */
     fun processBasicMessage(theirLabel: String){
+        // TODO: do something with message
 
+        // rotate DIDs
+        rotateDIDForConnection(theirLabel)
+    }
+
+
+    /*
+        Rotation
+     */
+    private fun rotateDIDForConnection(theirLabel: String){
+        val connectionID = getConnectionIDFromLabel(theirLabel)
+        val newDID = connection.rotateDIDForConnection(connectionID)
+        val newDIDDoc = didHandler.vdrResolveDID(newDID)
+        println("New DID Doc: $newDIDDoc")
+
+        // Only for testing, will be sent with next message normally
+        messaging.sendMessage("Hey, I rotated my DID", connectionID)
     }
 
 

@@ -11,7 +11,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class AgentService: Service(){
 
-    var agentlabel: String = "Bob"
+    var agentlabel: String = ""
     var mediatorURL = ""
     var ariesAgent = AriesAgent(this)
 

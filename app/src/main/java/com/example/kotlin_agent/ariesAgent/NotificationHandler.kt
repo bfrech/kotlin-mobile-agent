@@ -17,7 +17,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         val jsonMessage = JSONObject(json["message"].toString())
 
         if(topic == "connection_request"){
-            println("Recieved Connection Request: $jsonMessage" )
+            println("Received Connection Request: $jsonMessage" )
 
             // TODO: Check request acceptance?
 
@@ -38,10 +38,11 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         }
 
         if(topic == "basicmessage"){
-            // TODO: do something with message
+
             println("Got a Message: $jsonMessage")
 
-
+            // TODO: Need to add label to basicmessage
+            ariesAgent.processBasicMessage("")
             return
         }
 
