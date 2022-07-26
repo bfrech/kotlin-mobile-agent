@@ -22,9 +22,6 @@ class AriesAgent(private val context: Context) {
         )
     }
 
-    // TODO: replace with Database
-    private val contacts = mutableMapOf<String,String>()
-
     var ariesAgent: AriesController? = null
     var agentlabel: String = ""
     var routerConnectionId = ""
@@ -138,9 +135,9 @@ class AriesAgent(private val context: Context) {
         sendConnectionCompletedMessage(label)
     }
 
-    private fun getConnectionIDFromLabel(label: String): String {
-        return if(contacts.containsKey(label)){
-            contacts[label].toString()
+    private fun getConnectionIDFromLabel(label: String): String? {
+        return if(sharedPref.all.containsKey(label)){
+            sharedPref.getString(label, "")
         } else {
             ""
         }
@@ -189,12 +186,15 @@ class AriesAgent(private val context: Context) {
      */
     private fun rotateDIDForConnection(theirLabel: String){
         val connectionID = getConnectionIDFromLabel(theirLabel)
-        val newDID = connection.rotateDIDForConnection(connectionID)
-        val newDIDDoc = didHandler.vdrResolveDID(newDID)
+
+        val newDID = connectionID?.let { connection.rotateDIDForConnection(it) }
+        val newDIDDoc = newDID?.let { didHandler.vdrResolveDID(it) }
         println("New DID Doc: $newDIDDoc")
 
         // Only for testing, will be sent with next message normally
-        messaging.sendMessage("Hey, I rotated my DID", connectionID)
+        if (connectionID != null) {
+            messaging.sendMessage("Hey, I rotated my DID", connectionID)
+        }
     }
 
 
