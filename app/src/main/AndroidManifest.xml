@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotlin_Agent">
         <activity
+            android:name=".MessageActivity"
+            android:exported="false" />
+        <activity
             android:name=".AcceptInvitationActivity"
             android:exported="false" />
         <activity

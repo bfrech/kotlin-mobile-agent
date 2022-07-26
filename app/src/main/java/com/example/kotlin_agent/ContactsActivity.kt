@@ -1,12 +1,12 @@
 package com.example.kotlin_agent
 
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.preference.PreferenceManager
+import android.widget.ArrayAdapter
+import android.widget.ListView
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.Toast
@@ -14,6 +14,13 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.journeyapps.barcodescanner.ScanIntentResult
 class ContactsActivity : AppCompatActivity() {
+
+    private val sharedPref: SharedPreferences by lazy {
+        getSharedPreferences(
+            "${BuildConfig.APPLICATION_ID}_sharedPreferences",
+            Context.MODE_PRIVATE
+        )
+    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,9 +45,17 @@ class ContactsActivity : AppCompatActivity() {
             options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
             barcodeLauncher.launch(options)
         }
+
+
+        // Display Contacts List
+        val values: MutableMap<String, *> = sharedPref.all
+        val contacts = values.keys
+        val adapter = ArrayAdapter(this, R.layout.contacts_item, contacts.toTypedArray())
+        val listView: ListView = findViewById(R.id.listview_contacts)
+        listView.adapter = adapter
     }
 
-    // Register the launcher and result handler
+    // Barcode
     private val barcodeLauncher = registerForActivityResult(
         ScanContract()
     ) { result: ScanIntentResult ->

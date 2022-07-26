@@ -1,7 +1,5 @@
 package com.example.kotlin_agent.ariesAgent
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets

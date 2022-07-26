@@ -11,18 +11,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class AgentService: Service(){
 
-    var agentlabel: String = ""
-    var mediatorURL = ""
     var ariesAgent = AriesAgent(this)
-
-
-    private val backgroundSetup = object: Thread(){
-        override fun run(){
-            ariesAgent.createNewAgent(agentlabel)
-            ariesAgent.connectToMediator(mediatorURL)
-        }
-    }.start()
-
 
     /*
         Android Service Functions
@@ -45,9 +34,14 @@ class AgentService: Service(){
                 if (extras == null) {
                     println("No mediator URL or Label given")
                 } else {
-                    mediatorURL = extras["mediatorURL"].toString()
-                    agentlabel = extras["label"].toString()
-                    val setup = backgroundSetup
+
+                    val backgroundSetup = object: Thread(){
+                        override fun run(){
+                            ariesAgent.createNewAgent(extras["label"].toString())
+                            ariesAgent.connectToMediator(extras["mediatorURL"].toString())
+                        }
+                    }.start()
+
                 }
 
             }
@@ -71,8 +65,6 @@ class AgentService: Service(){
                     ariesAgent.createAndSendConnectionRequest(invitation)
                 }
             }
-
-
 
         } else {
             println(

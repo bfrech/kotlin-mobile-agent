@@ -2,15 +2,25 @@ package com.example.kotlin_agent.ariesAgent
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.kotlin_agent.BuildConfig
+import com.example.kotlin_agent.store.MyStorageProvider
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
 
 
 class AriesAgent(private val context: Context) {
+
+    private val sharedPref: SharedPreferences by lazy {
+        context.getSharedPreferences(
+            "${BuildConfig.APPLICATION_ID}_sharedPreferences",
+            Context.MODE_PRIVATE
+        )
+    }
 
     // TODO: replace with Database
     private val contacts = mutableMapOf<String,String>()
@@ -28,7 +38,6 @@ class AriesAgent(private val context: Context) {
 
     var openDID = ""
 
-    //var testConnectionID= ""
 
     fun createNewAgent(label: String) {
         agentlabel = label
@@ -38,8 +47,11 @@ class AriesAgent(private val context: Context) {
         opts.label = agentlabel
         opts.addOutboundTransport("ws")
         opts.mediaTypeProfiles = "didcomm/v2"
+        //opts.storage = MyStorageProvider()
 
         try {
+
+            println("Starting Agent with: $agentlabel")
             ariesAgent = Ariesagent.new_(opts)
             val handler = NotificationHandler(this)
             val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
@@ -115,11 +127,15 @@ class AriesAgent(private val context: Context) {
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
+
     private fun addContact(label: String, connectionID: String){
-        if(contacts.containsKey(label)){
+        if(sharedPref.all.containsKey(label)){
             // TODO: Duplicate Handling
         }
-        contacts[label] = connectionID
+        sharedPref.edit().putString(label, connectionID).apply()
+
+        // TODO: relaod contacts page
+        sendConnectionCompletedMessage(label)
     }
 
     private fun getConnectionIDFromLabel(label: String): String {

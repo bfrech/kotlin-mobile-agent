@@ -4,9 +4,10 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/layout/activity_accept_invitation.xml" value="0.143359375" />
-        <entry key="app/src/main/res/layout/activity_contacts.xml" value="0.24010416666666667" />
+        <entry key="app/src/main/res/layout/activity_contacts.xml" value="0.1" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.165" />
         <entry key="app/src/main/res/layout/activity_new_invitation.xml" value="0.2857142857142857" />
+        <entry key="app/src/main/res/layout/contacts_item.xml" value="0.1" />
         <entry key="app/src/main/res/layout/content_contacts.xml" value="0.24010416666666667" />
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.24010416666666667" />
         <entry key="app/src/main/res/layout/fragment_second.xml" value="0.24010416666666667" />

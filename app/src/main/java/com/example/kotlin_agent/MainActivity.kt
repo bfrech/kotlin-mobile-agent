@@ -1,6 +1,8 @@
 package com.example.kotlin_agent
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -12,30 +14,44 @@ class MainActivity : AppCompatActivity() {
     lateinit var mediatorURLEdit: EditText
     lateinit var labelEdit: EditText
 
+    val sharedPref by lazy {
+        getSharedPreferences(
+            "${BuildConfig.APPLICATION_ID}_sharedPreferences",
+            Context.MODE_PRIVATE
+        )
+    }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        override fun onCreate(savedInstanceState: Bundle?) {
+            super.onCreate(savedInstanceState)
+            setContentView(R.layout.activity_main)
 
-        mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
-        labelEdit = findViewById(R.id.yourLabelEditText)
+            // TEST
+            with (sharedPref.edit()) {
+                putString("Bob", "BobsID")
+                putString("Claire", "ClairesID")
+                apply()
+            }
 
-        val ariesService = Intent(this, AgentService::class.java)
+            mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
+            labelEdit = findViewById(R.id.yourLabelEditText)
 
-        connectButton = findViewById(R.id.connectbutton)
-        connectButton.setOnClickListener {
+            val ariesService = Intent(this, AgentService::class.java)
 
-            // TODO: TEST Case
-            ariesService.putExtra("mediatorURL","http://93e7-88-78-13-247.eu.ngrok.io/invitation")
-            //service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
+            connectButton = findViewById(R.id.connectbutton)
+            connectButton.setOnClickListener {
 
-            ariesService.putExtra("label",labelEdit.text.toString())
-            ariesService.action = "startAgent"
-            startService(ariesService)
+                // TODO: TEST Case
+                ariesService.putExtra("mediatorURL","http://44e7-88-78-13-247.eu.ngrok.io/invitation")
+                //service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
 
-            // Screen 2
-            val intent = Intent(this, ContactsActivity::class.java)
-            startActivity(intent)
+                ariesService.putExtra("label",labelEdit.text.toString())
+                ariesService.action = "startAgent"
+                startService(ariesService)
+
+                // Screen 2
+                val intent = Intent(this, ContactsActivity::class.java)
+                startActivity(intent)
+            }
         }
     }
 
@@ -43,4 +59,3 @@ class MainActivity : AppCompatActivity() {
 
 
 
-}
