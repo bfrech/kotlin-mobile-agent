@@ -26,11 +26,13 @@ class MainActivity : AppCompatActivity() {
             setContentView(R.layout.activity_main)
 
             // TEST
-            with (sharedPref.edit()) {
-                putString("Bob", "BobsID")
-                putString("Claire", "ClairesID")
-                apply()
-            }
+            //with (sharedPref.edit()) {
+            //    putString("Bob", "BobsID")
+            //    putString("Claire", "ClairesID")
+            //    apply()
+            //}
+
+            sharedPref.edit().clear().apply()
 
             mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
             labelEdit = findViewById(R.id.yourLabelEditText)
@@ -41,7 +43,7 @@ class MainActivity : AppCompatActivity() {
             connectButton.setOnClickListener {
 
                 // TODO: TEST Case
-                ariesService.putExtra("mediatorURL","http://44e7-88-78-13-247.eu.ngrok.io/invitation")
+                ariesService.putExtra("mediatorURL","http://6c32-88-78-13-247.eu.ngrok.io/invitation")
                 //service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
 
                 ariesService.putExtra("label",labelEdit.text.toString())

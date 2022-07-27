@@ -22,6 +22,8 @@ class ContactsActivity : AppCompatActivity() {
         )
     }
 
+    lateinit var adapter: ArrayAdapter<String>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +31,10 @@ class ContactsActivity : AppCompatActivity() {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
             IntentFilter("created-peer-did")
+        )
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(completedConnectionMessageReceiver,
+            IntentFilter("connection_completed")
         )
 
         val addContactButton: FloatingActionButton = findViewById(R.id.addContactActionButton)
@@ -48,10 +54,10 @@ class ContactsActivity : AppCompatActivity() {
 
 
         // Display Contacts List
+        val listView: ListView = findViewById(R.id.listview_contacts)
         val values: MutableMap<String, *> = sharedPref.all
         val contacts = values.keys
-        val adapter = ArrayAdapter(this, R.layout.contacts_item, contacts.toTypedArray())
-        val listView: ListView = findViewById(R.id.listview_contacts)
+        adapter = ArrayAdapter(this, R.layout.contacts_item, contacts.toTypedArray())
         listView.adapter = adapter
     }
 
@@ -95,9 +101,20 @@ class ContactsActivity : AppCompatActivity() {
         }
     }
 
+    private val completedConnectionMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent) {
+            println("Receiver Got message connection_completed message")
+            adapter.notifyDataSetChanged()
+            val intent = Intent(this@ContactsActivity, ContactsActivity::class.java)
+            startActivity(intent)
+
+        }
+    }
+
     override fun onDestroy() {
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver)
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(completedConnectionMessageReceiver)
         super.onDestroy()
     }
 
