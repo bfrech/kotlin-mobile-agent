@@ -59,3 +59,32 @@
 }
 
 ```
+
+
+```
+{
+    "type": "https://didcomm.org/routing/2.0/forward",
+    "id": "12345678",
+    "to": ["did:peer:mediator"],
+    "expires_time": 1516385931,
+    "body":{
+        "next": "did:peer:Bob"
+    },
+    "attachments": [
+        // The payload to be forwarded
+    ]
+}
+
+```
+
+
+```
+{
+  "@type": "https://didcomm.org/connection/2.0/message",
+  "purpose": "connection-request",
+  "body": {
+		"did_doc": "<Base64 encoded DID document>",
+    "label": "Alice"
+  }
+}
+```
