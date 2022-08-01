@@ -83,10 +83,10 @@ class AriesAgent(private val context: Context) {
     fun createAndSendConnectionRequest(invitation: String){
 
         val myDID = didHandler.createMyDID()
-        println("Created myDID: $myDID")
+        //println("Created myDID: $myDID")
         openDID = myDID
         val myDIDDoc = didHandler.vdrResolveDID(myDID)
-        println("MyDIDDoc: $myDIDDoc")
+        //println("MyDIDDoc: $myDIDDoc")
 
         mediator.reconnectToMediator()
         messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(myDIDDoc), invitation, "connection_request")
@@ -120,7 +120,6 @@ class AriesAgent(private val context: Context) {
         println("Created Connection with: $connectionID")
 
         addContact(label, connectionID)
-
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
@@ -130,8 +129,6 @@ class AriesAgent(private val context: Context) {
             // TODO: Duplicate Handling
         }
         sharedPref.edit().putString(label, connectionID).apply()
-
-        // TODO: relaod contacts page
         sendConnectionCompletedMessage(label)
     }
 
@@ -147,11 +144,11 @@ class AriesAgent(private val context: Context) {
         Communicate to Activity that connection was completed to go back to contacts screen
      */
     fun sendConnectionCompletedMessage(theirLabel: String){
-        rotateDIDForConnection(theirLabel)
 
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+        rotateDIDForConnection(theirLabel)
     }
 
 
@@ -173,12 +170,20 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processBasicMessage(theirLabel: String){
-        // TODO: do something with message
+    fun processBasicMessage(theirDID: String){
+        println("TheirDID: $theirDID")
+
+        // TODO: get connectionID and Label for TheirDID
+        val connectionID = connection.getConnectionID(theirDID)
+
+        // TODO: notification of message and Label
+
+        // TODO: display message on screen for connectionID + Label
 
         // rotate DIDs
-        rotateDIDForConnection(theirLabel)
+        rotateDIDForConnection(connectionID)
     }
+
 
 
     /*
@@ -187,12 +192,11 @@ class AriesAgent(private val context: Context) {
     private fun rotateDIDForConnection(theirLabel: String){
         val connectionID = getConnectionIDFromLabel(theirLabel)
 
-        val newDID = connectionID?.let { connection.rotateDIDForConnection(it) }
-        val newDIDDoc = newDID?.let { didHandler.vdrResolveDID(it) }
-        println("New DID Doc: $newDIDDoc")
-
         // Only for testing, will be sent with next message normally
         if (connectionID != null) {
+            val newDID =  connection.rotateDIDForConnection(connectionID)
+            val newDIDDoc = didHandler.vdrResolveDID(newDID)
+            println("New DID Doc: $newDIDDoc")
             messaging.sendMessage("Hey, I rotated my DID", connectionID)
         }
     }

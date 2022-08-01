@@ -17,6 +17,7 @@ class AgentService: Service(){
         Android Service Functions
      */
     override fun onBind(intent: Intent?): IBinder? {
+
         println("Some component wants to bind this service")
         return null
     }

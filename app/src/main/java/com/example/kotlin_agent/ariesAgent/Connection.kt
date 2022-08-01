@@ -80,6 +80,24 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
+    fun getConnectionID(theirDID: String): String {
+        val request = """{"their_did": "$theirDID"}"""
+        val data = request.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.connectionController?.getConnectionIdByTheirDID(data)
+        if(res != null){
+            if(res.error != null){
+                println(res.error)
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                return jsonObject["id"].toString()
+            }
+        } else {
+            println("Res is null")
+        }
+        return ""
+    }
+
 
     fun rotateDIDForConnection(connectionID: String): String {
 
