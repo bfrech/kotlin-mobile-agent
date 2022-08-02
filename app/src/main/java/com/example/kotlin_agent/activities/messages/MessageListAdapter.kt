@@ -21,7 +21,7 @@ class MessageListAdapter(context: Context, userMessageList: List<UserMessage>) :
 
     override fun getItemViewType(position: Int): Int {
         val userMessage: UserMessage = mUserMessageList[position]
-        return if (userMessage.sender == "Alice") {
+        return if (userMessage.sender == "sent") {
             VIEW_TYPE_MESSAGE_SENT
         } else {
             VIEW_TYPE_MESSAGE_RECEIVED

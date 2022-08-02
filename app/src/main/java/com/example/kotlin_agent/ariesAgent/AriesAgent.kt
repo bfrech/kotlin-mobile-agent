@@ -166,7 +166,7 @@ class AriesAgent(private val context: Context) {
         val connectionID = connection.getConnectionID(theirDID)
         val label = ""
 
-        Utils.storeMessageToSharedPrefs(context, message, label)
+        Utils.storeMessageToSharedPrefs(context, message, false, label)
 
         // notification of message: refresh messages page if open
         sendMessageReceivedMessage()

@@ -52,7 +52,7 @@ class MessageActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             val message = messageEdit.text.toString()
-            Utils.storeMessageToSharedPrefs(this, message, theirLabel)
+            Utils.storeMessageToSharedPrefs(this, message, true ,theirLabel)
             ariesService.putExtra("message", message)
             ariesService.putExtra("label", theirLabel)
             ariesService.action = "writeMessage"
@@ -60,7 +60,7 @@ class MessageActivity : AppCompatActivity() {
 
             // refresh page to display message
             updateAdapter()
-            messageEdit.text.clear();
+            messageEdit.text.clear()
         }
     }
 

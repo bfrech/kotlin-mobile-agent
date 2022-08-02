@@ -11,6 +11,8 @@ import java.util.*
 class Utils {
 
    companion object {
+
+
        @RequiresApi(Build.VERSION_CODES.O)
        fun encodeBase64(str: String): String{
            return Base64.getEncoder().encodeToString(str.toByteArray())
@@ -30,12 +32,18 @@ class Utils {
 
 
 
-       fun storeMessageToSharedPrefs(context: Context, message: String, label: String){
+       fun storeMessageToSharedPrefs(context: Context, message: String, sent: Boolean, sharedPreflabel: String){
            val sharedPrefs = context.getSharedPreferences(
-               "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$label",
+               "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$sharedPreflabel",
                Context.MODE_PRIVATE
            )
            val currentTimestamp = System.currentTimeMillis()
+
+           val label = if ( sent ) {
+               "sent"
+           } else {
+               sharedPreflabel
+           }
 
            with (sharedPrefs.edit()) {
                putStringSet(currentTimestamp.toString(), setOf("0000$label", "1111$message"))
@@ -44,10 +52,10 @@ class Utils {
        }
 
 
-       fun getMessagesFromSharedPrefs(context: Context, label: String): MutableList<UserMessage> {
+       fun getMessagesFromSharedPrefs(context: Context, sharedPreflabel: String): MutableList<UserMessage> {
            val messageList = mutableListOf<UserMessage>()
            val sharedPrefs = context.getSharedPreferences(
-               "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$label",
+               "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$sharedPreflabel",
                Context.MODE_PRIVATE
            )
 
