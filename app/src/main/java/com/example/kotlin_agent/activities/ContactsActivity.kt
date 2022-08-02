@@ -61,6 +61,13 @@ class ContactsActivity : AppCompatActivity() {
         val contacts = values.keys
         adapter = ArrayAdapter(this, R.layout.contacts_item, contacts.toTypedArray())
         listView.adapter = adapter
+
+        // Open Messaging Screen for Label
+        listView.setOnItemClickListener { parent, view, position, id ->
+            val intent = Intent(this, MessageActivity::class.java)
+            intent.putExtra("Label",parent.getItemAtPosition(position).toString() )
+            startActivity(intent)
+        }
     }
 
     // Barcode

@@ -7,7 +7,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.kotlin_agent.BuildConfig
-import com.example.kotlin_agent.store.MyStorageProvider
+import com.example.kotlin_agent.Utils
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
@@ -15,7 +15,7 @@ import org.hyperledger.aries.config.Options
 
 class AriesAgent(private val context: Context) {
 
-    private val sharedPref: SharedPreferences by lazy {
+    private val sharedPrefContacts: SharedPreferences by lazy {
         context.getSharedPreferences(
             "${BuildConfig.APPLICATION_ID}_sharedPreferences",
             Context.MODE_PRIVATE
@@ -110,7 +110,6 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun completeConnectionRequest(didDocEnc: String, label: String){
-        // Use openDID here!
         if(openDID == "") {
             println("No Open Connection Request!")
         }
@@ -125,31 +124,21 @@ class AriesAgent(private val context: Context) {
 
 
     private fun addContact(label: String, connectionID: String){
-        if(sharedPref.all.containsKey(label)){
+        if(sharedPrefContacts.all.containsKey(label)){
             // TODO: Duplicate Handling
         }
-        sharedPref.edit().putString(label, connectionID).apply()
+        sharedPrefContacts.edit().putString(label, connectionID).apply()
         sendConnectionCompletedMessage(label)
     }
 
     private fun getConnectionIDFromLabel(label: String): String? {
-        return if(sharedPref.all.containsKey(label)){
-            sharedPref.getString(label, "")
+        return if(sharedPrefContacts.all.containsKey(label)){
+            sharedPrefContacts.getString(label, "")
         } else {
             ""
         }
     }
 
-    /*
-        Communicate to Activity that connection was completed to go back to contacts screen
-     */
-    fun sendConnectionCompletedMessage(theirLabel: String){
-
-        println("sender: Broadcasting message")
-        val intent = Intent("connection_completed")
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
-        rotateDIDForConnection(theirLabel)
-    }
 
 
 
@@ -170,18 +159,29 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processBasicMessage(theirDID: String){
+    fun processBasicMessage(theirDID: String, message: String){
         println("TheirDID: $theirDID")
 
         // TODO: get connectionID and Label for TheirDID
         val connectionID = connection.getConnectionID(theirDID)
+        val label = ""
 
-        // TODO: notification of message and Label
+        Utils.storeMessageToSharedPrefs(context, message, label)
 
-        // TODO: display message on screen for connectionID + Label
+        // notification of message: refresh messages page if open
+        sendMessageReceivedMessage()
 
-        // rotate DIDs
-        rotateDIDForConnection(connectionID)
+    }
+
+    fun sendMessage(message: String, recipient: String){
+
+        // TODO: rotate DIDs
+        //rotateDIDForConnection(connectionID)
+
+        val connectionID = getConnectionIDFromLabel(recipient)
+        if (connectionID != null) {
+            messaging.sendMessage(message, connectionID)
+        }
     }
 
 
@@ -202,6 +202,23 @@ class AriesAgent(private val context: Context) {
     }
 
 
+    /*
+         Communicate to Activity that connection was completed to go back to contacts screen
+    */
+    fun sendConnectionCompletedMessage(theirLabel: String){
+        println("sender: Broadcasting message")
+        val intent = Intent("connection_completed")
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+        //rotateDIDForConnection(theirLabel)
+    }
+
+    /*
+        Communicate to MessagingActivity that a message was received
+    */
+    private fun sendMessageReceivedMessage(){
+        val intent = Intent("received_new_message")
+        LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
+    }
 
 
 

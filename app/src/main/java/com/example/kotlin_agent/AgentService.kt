@@ -67,6 +67,20 @@ class AgentService: Service(){
                 }
             }
 
+
+            if (action.equals("writeMessage")) {
+                val extras = intent.extras
+                if (extras == null) {
+                    println("No Value was given")
+                } else {
+                    val message = extras["message"].toString()
+                    val label = extras["label"].toString()
+                    println("Sending Message $message to $label")
+                    ariesAgent.sendMessage(message, label)
+                }
+            }
+
+
         } else {
             println(
                 "with a null intent. It has been probably restarted by the system."

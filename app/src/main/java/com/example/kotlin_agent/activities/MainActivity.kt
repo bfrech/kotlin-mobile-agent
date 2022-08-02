@@ -2,6 +2,7 @@ package com.example.kotlin_agent.activities
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
@@ -16,9 +17,18 @@ class MainActivity : AppCompatActivity() {
     lateinit var mediatorURLEdit: EditText
     lateinit var labelEdit: EditText
 
-    val sharedPref by lazy {
+    // TEST
+    private val sharedPrefContacts: SharedPreferences by lazy {
         getSharedPreferences(
             "${BuildConfig.APPLICATION_ID}_sharedPreferences",
+            Context.MODE_PRIVATE
+        )
+    }
+
+    // TEST
+    private val sharedPrefMessages: SharedPreferences by lazy {
+        getSharedPreferences(
+            "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_Alice",
             Context.MODE_PRIVATE
         )
     }
@@ -27,14 +37,16 @@ class MainActivity : AppCompatActivity() {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_main)
 
-            // TEST
-            //with (sharedPref.edit()) {
-            //    putString("Bob", "BobsID")
-            //    putString("Claire", "ClairesID")
-            //    apply()
-            //}
+            sharedPrefMessages.edit().clear().apply()
 
-            sharedPref.edit().clear().apply()
+            // TEST
+            with (sharedPrefMessages.edit()) {
+                putStringSet("1659429799", setOf("0000Bob", "1111Hello"))
+                putStringSet("1659429830", setOf("0000Alice", "1111Hi, Bob!"))
+                apply()
+            }
+
+            //sharedPrefContacts.edit().clear().apply()
 
             mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
             labelEdit = findViewById(R.id.yourLabelEditText)
@@ -45,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             connectButton.setOnClickListener {
 
                 // TODO: TEST Case
-                ariesService.putExtra("mediatorURL","http://bb93-88-78-13-247.eu.ngrok.io/invitation")
+                ariesService.putExtra("mediatorURL","https://a892-88-78-13-247.eu.ngrok.io/invitation")
                 //service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
 
                 ariesService.putExtra("label",labelEdit.text.toString())
