@@ -33,7 +33,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
 
         if(topic == "connection_complete"){
             println("Received Connection Completed Message: $jsonMessage" )
-            ariesAgent.sendConnectionCompletedMessage(jsonMessage["label"].toString())
+            ariesAgent.acknowledgeConnectionCompletion(jsonMessage["label"].toString())
             return
         }
 

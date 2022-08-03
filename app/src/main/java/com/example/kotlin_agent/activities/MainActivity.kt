@@ -41,12 +41,11 @@ class MainActivity : AppCompatActivity() {
 
             // TEST
             with (sharedPrefMessages.edit()) {
-                putStringSet("1659429799", setOf("0000Bob", "1111Hello"))
-                putStringSet("1659429830", setOf("0000Alice", "1111Hi, Bob!"))
+                clear()
                 apply()
             }
 
-            //sharedPrefContacts.edit().clear().apply()
+            sharedPrefContacts.edit().clear().apply()
 
             mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
             labelEdit = findViewById(R.id.yourLabelEditText)

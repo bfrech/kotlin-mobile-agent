@@ -73,7 +73,7 @@ class AriesAgent(private val context: Context) {
 
 
     /*
-        Establish Connection
+        Connection Messages
      */
     fun createConnectionInvitation(): String {
         return connection.createDIDExchangeInvitation()
@@ -119,7 +119,16 @@ class AriesAgent(private val context: Context) {
         println("Created Connection with: $connectionID")
 
         addContact(label, connectionID)
+
+        // TEST:
+        rotateDIDForConnection(label)
+
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
+    }
+
+    fun acknowledgeConnectionCompletion(label: String){
+        rotateDIDForConnection(label)
+        sendConnectionCompletedBroadcast(label)
     }
 
 
@@ -128,7 +137,10 @@ class AriesAgent(private val context: Context) {
             // TODO: Duplicate Handling
         }
         sharedPrefContacts.edit().putString(label, connectionID).apply()
-        sendConnectionCompletedMessage(label)
+
+
+
+        sendConnectionCompletedBroadcast(label)
     }
 
     private fun getConnectionIDFromLabel(label: String): String? {
@@ -197,7 +209,7 @@ class AriesAgent(private val context: Context) {
             val newDID =  connection.rotateDIDForConnection(connectionID)
             val newDIDDoc = didHandler.vdrResolveDID(newDID)
             println("New DID Doc: $newDIDDoc")
-            messaging.sendMessage("Hey, I rotated my DID", connectionID)
+            //messaging.sendMessage("Hey, I rotated my DID", connectionID)
         }
     }
 
@@ -205,7 +217,7 @@ class AriesAgent(private val context: Context) {
     /*
          Communicate to Activity that connection was completed to go back to contacts screen
     */
-    fun sendConnectionCompletedMessage(theirLabel: String){
+    fun sendConnectionCompletedBroadcast(theirLabel: String){
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
