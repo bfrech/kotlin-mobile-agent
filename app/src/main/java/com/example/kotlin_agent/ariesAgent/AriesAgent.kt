@@ -175,8 +175,15 @@ class AriesAgent(private val context: Context) {
         println("TheirDID: $theirDID")
 
         // TODO: get connectionID and Label for TheirDID
-        val connectionID = connection.getConnectionID(theirDID)
+        //val connectionID = connection.getConnectionID(theirDID)
+        //println(connectionID)
         val label = ""
+        val theirDIDDoc = didHandler.vdrResolveDID(theirDID)
+        println("TheirDID DOC: $theirDIDDoc")
+
+        // TEST:
+        val connection = getConnectionIDFromLabel("Bob")?.let { connection.getConnection(it) }
+        println(connection)
 
         Utils.storeMessageToSharedPrefs(context, message, false, label)
 

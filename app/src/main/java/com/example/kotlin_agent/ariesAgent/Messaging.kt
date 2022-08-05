@@ -40,8 +40,13 @@ class Messaging(private val service: AriesAgent) {
     }
 
     fun sendMessage(message: String, connectionID: String){
+
+        val theirDID = service.connection.getTheirDIDForConnection(connectionID)
+        println(theirDID)
+
         val messageBody = """ {
 			    "@type": "https://didcomm.org/basicmessage/2.0/message",
+                "to": "$theirDID"
                 "body": {
 			        "content": "$message"
                 }
