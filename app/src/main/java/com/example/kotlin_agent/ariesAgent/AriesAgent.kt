@@ -176,7 +176,7 @@ class AriesAgent(private val context: Context) {
         // TODO: get connectionID and Label for TheirDID
         //val connectionID = connection.getConnectionID(theirDID)
         val connectionID = Utils.getConnectionIDForMyOldDID(context, myOldDID)
-        println(connectionID)
+        println("Got connection ID $connectionID")
 
         val label = ""
         val theirDIDDoc = didHandler.vdrResolveDID(theirDID)
@@ -231,7 +231,7 @@ class AriesAgent(private val context: Context) {
     /*
          Communicate to Activity that connection was completed to go back to contacts screen
     */
-    fun sendConnectionCompletedBroadcast(theirLabel: String){
+    private fun sendConnectionCompletedBroadcast(theirLabel: String){
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)

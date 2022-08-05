@@ -41,15 +41,19 @@ class Utils {
                putString(oldDID, connectionID)
                apply()
            }
+
+           println("Added $oldDID: $connectionID to Shared Prefs")
        }
 
-       fun getConnectionIDForMyOldDID(context: Context, did: String){
+       fun getConnectionIDForMyOldDID(context: Context, did: String): String? {
            val sharedPrefs = context.getSharedPreferences(
                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
                Context.MODE_PRIVATE
            )
 
-           sharedPrefs.getString(did, "")
+           println("Fetching $did from SharedPrefs")
+
+           return sharedPrefs.getString(did, "")
        }
 
        fun storeMessageToSharedPrefs(context: Context, message: String, sent: Boolean, sharedPreflabel: String){
