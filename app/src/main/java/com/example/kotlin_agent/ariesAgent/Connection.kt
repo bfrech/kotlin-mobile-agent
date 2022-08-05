@@ -131,7 +131,7 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-    private fun getMyDIDForConnection(connectionID: String): String{
+    fun getMyDIDForConnection(connectionID: String): String{
         val connection = JSONObject(getConnection(connectionID))
         return connection["MyDID"].toString()
     }

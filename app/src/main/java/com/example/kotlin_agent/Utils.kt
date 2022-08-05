@@ -31,6 +31,26 @@ class Utils {
        }
 
 
+       fun storeConnectionIDForOldDID(context: Context, connectionID: String, oldDID: String){
+           val sharedPrefs = context.getSharedPreferences(
+               "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
+               Context.MODE_PRIVATE
+           )
+
+           with (sharedPrefs.edit()) {
+               putString(oldDID, connectionID)
+               apply()
+           }
+       }
+
+       fun getConnectionIDForMyOldDID(context: Context, did: String){
+           val sharedPrefs = context.getSharedPreferences(
+               "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
+               Context.MODE_PRIVATE
+           )
+
+           sharedPrefs.getString(did, "")
+       }
 
        fun storeMessageToSharedPrefs(context: Context, message: String, sent: Boolean, sharedPreflabel: String){
            val sharedPrefs = context.getSharedPreferences(

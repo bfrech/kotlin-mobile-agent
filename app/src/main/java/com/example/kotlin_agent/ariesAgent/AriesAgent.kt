@@ -171,12 +171,13 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processBasicMessage(theirDID: String, message: String){
-        println("TheirDID: $theirDID")
+    fun processBasicMessage(theirDID: String, message: String, myOldDID: String){
 
         // TODO: get connectionID and Label for TheirDID
         //val connectionID = connection.getConnectionID(theirDID)
-        //println(connectionID)
+        val connectionID = Utils.getConnectionIDForMyOldDID(context, myOldDID)
+        println(connectionID)
+
         val label = ""
         val theirDIDDoc = didHandler.vdrResolveDID(theirDID)
         println("TheirDID DOC: $theirDIDDoc")
@@ -211,8 +212,14 @@ class AriesAgent(private val context: Context) {
     private fun rotateDIDForConnection(theirLabel: String){
         val connectionID = getConnectionIDFromLabel(theirLabel)
 
+
         // Only for testing, will be sent with next message normally
         if (connectionID != null) {
+
+            // TEST:
+            val myDID = connection.getMyDIDForConnection(connectionID)
+            Utils.storeConnectionIDForOldDID(context, connectionID, myDID)
+
             val newDID =  connection.rotateDIDForConnection(connectionID)
             val newDIDDoc = didHandler.vdrResolveDID(newDID)
             println("New DID Doc: $newDIDDoc")

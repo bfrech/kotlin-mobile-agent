@@ -46,7 +46,7 @@ class Messaging(private val service: AriesAgent) {
 
         val messageBody = """ {
 			    "@type": "https://didcomm.org/basicmessage/2.0/message",
-                "to": "$theirDID"
+                "old_did": "$theirDID",
                 "body": {
 			        "content": "$message"
                 }
