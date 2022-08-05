@@ -171,22 +171,15 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processBasicMessage(theirDID: String, message: String, myOldDID: String){
+    fun processBasicMessage(theirDID: String, message: String, from: String){
 
         // TODO: get connectionID and Label for TheirDID
-        //val connectionID = connection.getConnectionID(theirDID)
-        val connectionID = Utils.getConnectionIDForMyOldDID(context, myOldDID)
+        val connectionID = getConnectionIDFromLabel(from)
         println("Got connection ID $connectionID")
 
-        val label = ""
-        val theirDIDDoc = didHandler.vdrResolveDID(theirDID)
-        println("TheirDID DOC: $theirDIDDoc")
+        Utils.storeMessageToSharedPrefs(context, message, false, from)
 
-        // TEST:
-        val connection = getConnectionIDFromLabel("Bob")?.let { connection.getConnection(it) }
-        println(connection)
-
-        Utils.storeMessageToSharedPrefs(context, message, false, label)
+        // TODO: Store new theirDID in connection Entry under connection ID
 
         // notification of message: refresh messages page if open
         sendMessageReceivedMessage()
@@ -223,7 +216,6 @@ class AriesAgent(private val context: Context) {
             val newDID =  connection.rotateDIDForConnection(connectionID)
             val newDIDDoc = didHandler.vdrResolveDID(newDID)
             println("New DID Doc: $newDIDDoc")
-            //messaging.sendMessage("Hey, I rotated my DID", connectionID)
         }
     }
 

@@ -38,7 +38,13 @@ class MessageActivity : AppCompatActivity() {
         val extras = intent.extras
         if (extras != null) {
             theirLabel = extras.getString("Label").toString()
+
+            println("Starting Messaging Activity for $theirLabel")
+
             val messageList = Utils.getMessagesFromSharedPrefs(this, theirLabel)
+
+            println("Got Message List with size ${messageList.size}")
+
             mMessageRecycler = findViewById<View>(R.id.recycler_messaging) as RecyclerView
             mMessageAdapter = MessageListAdapter(this, messageList)
             mMessageRecycler.layoutManager = LinearLayoutManager(this)
