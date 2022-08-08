@@ -120,13 +120,13 @@ class AriesAgent(private val context: Context) {
         addContact(label, connectionID)
 
         // TEST:
-        rotateDIDForConnection(label)
+        //rotateDIDForConnection(label)
 
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
     fun acknowledgeConnectionCompletion(label: String){
-        rotateDIDForConnection(label)
+        //rotateDIDForConnection(label)
         sendConnectionCompletedBroadcast(label)
     }
 
@@ -136,20 +136,20 @@ class AriesAgent(private val context: Context) {
             // TODO: Duplicate Handling
         }
         sharedPrefContacts.edit().putString(label, connectionID).apply()
-
-
-
         sendConnectionCompletedBroadcast(label)
     }
 
-    private fun getConnectionIDFromLabel(label: String): String? {
+    private fun getConnectionIDFromLabel(label: String): String {
         return if(sharedPrefContacts.all.containsKey(label)){
-            sharedPrefContacts.getString(label, "")
+            sharedPrefContacts.getString(label, "").toString()
         } else {
             ""
         }
     }
 
+    private fun updateContact(label: String, connectionID: String){
+        sharedPrefContacts.edit().putString(label, connectionID).apply()
+    }
 
 
 
@@ -166,20 +166,32 @@ class AriesAgent(private val context: Context) {
     }
 
 
-
     /*
         Messaging
      */
     fun processBasicMessage(theirDID: String, message: String, from: String){
 
-        // TODO: get connectionID and Label for TheirDID
+        // Get connectionID and Label for TheirDID
         val connectionID = getConnectionIDFromLabel(from)
-        println("Got connection ID $connectionID")
+
+        if(connectionID == ""){
+            // TODO: ignore message?
+            println("Not connection Entry for This Label")
+            return
+        } else {
+            val myDID = connection.getMyDIDForConnection(connectionID)
+            val theirOldDID = connection.getTheirDIDForConnection(connectionID)
+            if(theirOldDID != theirDID){
+
+                val newConnectionID = connection.createNewConnection(myDID, theirDID)
+                println("They rotated DIDs, Updating Connection Entry with new connectionID: $newConnectionID!")
+                updateContact(from, newConnectionID)
+
+                // TODO: remove old entry
+            }
+        }
 
         Utils.storeMessageToSharedPrefs(context, message, false, from)
-
-        // TODO: Store new theirDID in connection Entry under connection ID
-
         // notification of message: refresh messages page if open
         sendMessageReceivedMessage()
 
@@ -187,11 +199,10 @@ class AriesAgent(private val context: Context) {
 
     fun sendMessage(message: String, recipient: String){
 
-        // TODO: rotate DIDs
-        //rotateDIDForConnection(connectionID)
-
         val connectionID = getConnectionIDFromLabel(recipient)
         if (connectionID != null) {
+
+            rotateDIDForConnection(recipient)
             messaging.sendMessage(message, connectionID)
         }
     }
