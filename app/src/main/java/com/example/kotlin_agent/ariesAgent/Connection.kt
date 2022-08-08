@@ -1,5 +1,7 @@
 package com.example.kotlin_agent.ariesAgent
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
@@ -120,16 +122,18 @@ class Connection(private val service: AriesAgent) {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun rotateDIDForConnection(connectionID: String): String {
 
         val kid = getOldKidForConnection(connectionID)
 
-        // TODO: pass whole service Endpoint, not single values
+        // TODO: remove Service Endpoint
         val serviceEndpoint = JSONObject(getServiceEndpointForConnection(connectionID))
         println(serviceEndpoint)
 
-        val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "", "create_peer_did": true, "service_endpoint": "${serviceEndpoint["uri"]}", "routing_keys": ${serviceEndpoint["routingKeys"]}}"""
-        println(request)
+        val newDID = service.didHandler.createMyDID()
+
+        val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "$newDID", "create_peer_did": false, "service_endpoint": "${serviceEndpoint["uri"]}", "routing_keys": ${serviceEndpoint["routingKeys"]}}"""
 
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.rotateDID(data)

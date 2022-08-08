@@ -110,14 +110,4 @@ class DidHandler(private val service: AriesAgent) {
         return createDIDInVDR(payload)
     }
 
-
-    //fun storeDID(didDoc: String): String {
-    //    val payload =
-    //}
-
-
-
-
-
-
 }

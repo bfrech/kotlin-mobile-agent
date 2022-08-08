@@ -85,7 +85,7 @@ class AriesAgent(private val context: Context) {
         val myDID = didHandler.createMyDID()
         openDID = myDID
         val myDIDDoc = didHandler.vdrResolveDID(myDID)
-        //println("MyDIDDoc: $myDIDDoc")
+        println("MyDIDDoc: $myDIDDoc")
 
         mediator.reconnectToMediator()
         messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(myDIDDoc), invitation, "connection_request")
