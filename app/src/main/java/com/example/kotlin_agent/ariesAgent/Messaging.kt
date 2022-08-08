@@ -23,7 +23,7 @@ class Messaging(private val service: AriesAgent) {
         getRegisteredServices()
     }
 
-    fun getRegisteredServices() {
+    private fun getRegisteredServices() {
         val messageController = service.ariesAgent?.messagingController
         val payload = """ {} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
@@ -40,8 +40,13 @@ class Messaging(private val service: AriesAgent) {
     }
 
     fun sendMessage(message: String, connectionID: String){
+
+        val theirDID = service.connection.getTheirDIDForConnection(connectionID)
+        println(theirDID)
+
         val messageBody = """ {
 			    "@type": "https://didcomm.org/basicmessage/2.0/message",
+                "label": "${service.agentlabel}",
                 "body": {
 			        "content": "$message"
                 }
@@ -51,6 +56,19 @@ class Messaging(private val service: AriesAgent) {
 
     private fun sendViaConnectionID(messageBody: String, connectionID: String){
         val payload = """ {"message_body": $messageBody, "connection_id": "$connectionID"} """
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.messagingController?.send(data)
+        if (res != null) {
+            if (res.error != null) {
+                println(res.error)
+            } else {
+                // Returns empty JSON
+            }
+        }
+    }
+
+    private fun sendViaTheirDID(messageBody: String, theirDID: String){
+        val payload = """ {"message_body": $messageBody, "their_did": "$theirDID"} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.messagingController?.send(data)
         if (res != null) {

@@ -13,10 +13,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Kotlin_Agent">
         <activity
+            android:name=".activities.MessageActivity"
+            android:exported="false" />
+        <activity
             android:name=".AcceptInvitationActivity"
             android:exported="false" />
         <activity
-            android:name=".NewInvitationActivity"
+            android:name=".activities.NewInvitationActivity"
             android:exported="false" />
 
         <service
@@ -25,12 +28,12 @@
             android:exported="false" />
 
         <activity
-            android:name=".ContactsActivity"
+            android:name=".activities.ContactsActivity"
             android:exported="false"
             android:label="@string/title_activity_contacts"
             android:theme="@style/Theme.Kotlin_Agent.NoActionBar" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

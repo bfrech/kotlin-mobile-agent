@@ -1,7 +1,5 @@
 package com.example.kotlin_agent.ariesAgent
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
@@ -43,6 +41,10 @@ class Connection(private val service: AriesAgent) {
     //}
 
 
+    fun getTheirDIDForConnection(connectionID: String): String {
+        val connection = JSONObject(getConnection(connectionID))
+        return connection["TheirDID"].toString()
+    }
 
     fun getConnection(connectionID: String): String{
         val request = """{"id": "$connectionID"}"""
@@ -68,6 +70,24 @@ class Connection(private val service: AriesAgent) {
         val request = """{"my_did": "$myDID", "their_did": "$theirDID"}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.createConnectionV2(data)
+        if(res != null){
+            if(res.error != null){
+                println(res.error)
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                val jsonObject = JSONObject(actionsResponse)
+                return jsonObject["id"].toString()
+            }
+        } else {
+            println("Res is null")
+        }
+        return ""
+    }
+
+    fun getConnectionID(theirDID: String): String {
+        val request = """{"their_did": "$theirDID"}"""
+        val data = request.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.connectionController?.getConnectionIdByTheirDID(data)
         if(res != null){
             if(res.error != null){
                 println(res.error)
@@ -111,7 +131,7 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-    private fun getMyDIDForConnection(connectionID: String): String{
+    fun getMyDIDForConnection(connectionID: String): String{
         val connection = JSONObject(getConnection(connectionID))
         return connection["MyDID"].toString()
     }

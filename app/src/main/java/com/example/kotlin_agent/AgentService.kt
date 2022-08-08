@@ -11,23 +11,13 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class AgentService: Service(){
 
-    var agentlabel: String = ""
-    var mediatorURL = ""
     var ariesAgent = AriesAgent(this)
-
-
-    private val backgroundSetup = object: Thread(){
-        override fun run(){
-            ariesAgent.createNewAgent(agentlabel)
-            ariesAgent.connectToMediator(mediatorURL)
-        }
-    }.start()
-
 
     /*
         Android Service Functions
      */
     override fun onBind(intent: Intent?): IBinder? {
+
         println("Some component wants to bind this service")
         return null
     }
@@ -45,9 +35,14 @@ class AgentService: Service(){
                 if (extras == null) {
                     println("No mediator URL or Label given")
                 } else {
-                    mediatorURL = extras["mediatorURL"].toString()
-                    agentlabel = extras["label"].toString()
-                    val setup = backgroundSetup
+
+                    val backgroundSetup = object: Thread(){
+                        override fun run(){
+                            ariesAgent.createNewAgent(extras["label"].toString())
+                            ariesAgent.connectToMediator(extras["mediatorURL"].toString())
+                        }
+                    }.start()
+
                 }
 
             }
@@ -72,6 +67,18 @@ class AgentService: Service(){
                 }
             }
 
+
+            if (action.equals("writeMessage")) {
+                val extras = intent.extras
+                if (extras == null) {
+                    println("No Value was given")
+                } else {
+                    val message = extras["message"].toString()
+                    val label = extras["label"].toString()
+                    println("Sending Message $message to $label")
+                    ariesAgent.sendMessage(message, label)
+                }
+            }
 
 
         } else {
