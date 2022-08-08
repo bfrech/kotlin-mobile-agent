@@ -118,15 +118,10 @@ class AriesAgent(private val context: Context) {
         println("Created Connection with: $connectionID")
 
         addContact(label, connectionID)
-
-        // TEST:
-        //rotateDIDForConnection(label)
-
         messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
     fun acknowledgeConnectionCompletion(label: String){
-        //rotateDIDForConnection(label)
         sendConnectionCompletedBroadcast(label)
     }
 
@@ -146,11 +141,6 @@ class AriesAgent(private val context: Context) {
             ""
         }
     }
-
-    private fun updateContact(label: String, connectionID: String){
-        sharedPrefContacts.edit().putString(label, connectionID).apply()
-    }
-
 
 
     /*
@@ -179,29 +169,24 @@ class AriesAgent(private val context: Context) {
             println("Not connection Entry for This Label")
             return
         } else {
-            val myDID = connection.getMyDIDForConnection(connectionID)
             val theirOldDID = connection.getTheirDIDForConnection(connectionID)
             if(theirOldDID != theirDID){
+                println("They rotated DIDs, Updating Connection Entry with new connectionID: $connectionID!")
+                connection.updateTheirDIDForConnection(connectionID, theirDID)
+                println("Updated connection: ${connection.getConnection(connectionID)}")
 
-                val newConnectionID = connection.createNewConnection(myDID, theirDID)
-                println("They rotated DIDs, Updating Connection Entry with new connectionID: $newConnectionID!")
-                updateContact(from, newConnectionID)
-
-                // TODO: remove old entry
             }
         }
-
         Utils.storeMessageToSharedPrefs(context, message, false, from)
-        // notification of message: refresh messages page if open
+
+        // TODO: notification of message: refresh messages page if open
         sendMessageReceivedMessage()
 
     }
 
     fun sendMessage(message: String, recipient: String){
-
         val connectionID = getConnectionIDFromLabel(recipient)
-        if (connectionID != null) {
-
+        if (connectionID != "") {
             rotateDIDForConnection(recipient)
             messaging.sendMessage(message, connectionID)
         }
@@ -215,9 +200,7 @@ class AriesAgent(private val context: Context) {
     private fun rotateDIDForConnection(theirLabel: String){
         val connectionID = getConnectionIDFromLabel(theirLabel)
 
-
-        // Only for testing, will be sent with next message normally
-        if (connectionID != null) {
+        if (connectionID != "null") {
 
             // TEST:
             val myDID = connection.getMyDIDForConnection(connectionID)
@@ -237,7 +220,6 @@ class AriesAgent(private val context: Context) {
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
-        //rotateDIDForConnection(theirLabel)
     }
 
     /*
