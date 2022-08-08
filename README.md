@@ -88,3 +88,40 @@
   }
 }
 ```
+
+
+```
+val payload = """ {"key": "value", ...} """
+val data = payload.toByteArray(StandardCharsets.UTF_8)
+val res = service.ariesAgent.ariesController.send(data)
+if (res != null) {
+   if (res.error != null) {
+      // Handle Error
+   } else {
+     // Handle Return JSON
+}
+```
+
+
+```
+{
+	"ConnectionID":"02b57bcc-d5bb-4aa5-99f4-3946acb11593",
+	"State":"completed",
+	"ThreadID":"",
+	"ParentThreadID":"",
+	"TheirLabel":"",
+	"TheirDID":"did:peer:1zQmaTS93Z5hfQSqnsQPLjbigXkFcEeR2dLtvHEanp6Ydvmf",
+	"MyDID":"did:peer:1zQmW4kMccxHwhhWMmdEFjfFSdkkZ4AuiKBNKiQ1rtgemwDk",
+	"ServiceEndPoint":{
+		"uri":"ws:\/\/MBP-von-Berit.fritz.box:5001",
+		"accept":["didcomm\/v2"],
+		"routingKeys":["did:key:z6LSeJpuVUjP3uebe1rskgXWh3wTK3LVLiRe1xogAobpqzf3"]
+	},
+	"RecipientKeys": ["did:key:z6LSeX4cLFS6w5ni8BxKuw5Aycw4H6Luvuz7uKQLyjCgysGz"],
+	"Implicit":false,
+	"Namespace":"my",
+	"DIDCommVersion":"v2",
+	"PeerDIDInitialState":""
+}
+
+```
