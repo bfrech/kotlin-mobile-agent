@@ -83,7 +83,6 @@ class AriesAgent(private val context: Context) {
     fun createAndSendConnectionRequest(invitation: String){
 
         val myDID = didHandler.createMyDID()
-        //println("Created myDID: $myDID")
         openDID = myDID
         val myDIDDoc = didHandler.vdrResolveDID(myDID)
         //println("MyDIDDoc: $myDIDDoc")

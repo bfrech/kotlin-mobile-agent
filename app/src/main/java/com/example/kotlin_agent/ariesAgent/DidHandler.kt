@@ -79,7 +79,7 @@ class DidHandler(private val service: AriesAgent) {
         val keyAgreement = service.keyHandler.createVerificationMethod("X25519ECDHKW", "X25519KeyAgreementKey2019")
 
         val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], "id": "#id" ,
-            "service": $myService , 
+            "service": $myService ,
             "verificationMethod":  [$verificationMethod],
             "keyAgreement": [$keyAgreement] 
             } """
@@ -109,6 +109,11 @@ class DidHandler(private val service: AriesAgent) {
 
         return createDIDInVDR(payload)
     }
+
+
+    //fun storeDID(didDoc: String): String {
+    //    val payload =
+    //}
 
 
 
