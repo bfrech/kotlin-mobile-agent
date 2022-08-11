@@ -27,6 +27,24 @@ class DidHandler(private val service: AriesAgent) {
         return ""
     }
 
+
+    fun saveDID(did: String, name: String): String {
+        val payload = """ {"name":"$name", "did": $did }"""
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.vdrController?.saveDID(data)
+        if(res != null){
+            if(res.error != null){
+                println("Error: ${res.error}")
+            } else {
+                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                println("Saved DID: $actionsResponse")
+            }
+        } else {
+            println("Res is null")
+        }
+        return ""
+    }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun createDIDInVDR(did: String): String {
         val payload ="""{"method":"peer", "did": $did}"""
@@ -89,25 +107,14 @@ class DidHandler(private val service: AriesAgent) {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createTheirDIDFromDoc(didDoc: String): String {
-
+    fun createTheirDIDFromDoc(didDoc: String, label: String): String {
+        saveDID(didDoc, label)
         val jsonDIDDoc = JSONObject(didDoc)
-        val service = jsonDIDDoc["service"].toString()
         val id = jsonDIDDoc["id"].toString()
 
-        val verificationMethodArray = JSONArray(jsonDIDDoc["verificationMethod"].toString())
-        val verificationMethod = verificationMethodArray[0].toString()
-        val keyAgreement = verificationMethodArray[1].toString()
-
-        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], 
-            "id": "$id" ,
-            "service": $service , 
-            "verificationMethod":  [$verificationMethod],
-            "keyAgreement": [$keyAgreement]
-            } 
-        """
-
-        return createDIDInVDR(payload)
+        // TODO: Test
+        println(vdrResolveDID(id))
+        return id
     }
 
 }
