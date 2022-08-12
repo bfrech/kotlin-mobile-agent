@@ -96,7 +96,7 @@ class AriesAgent(private val context: Context) {
         val didDoc = Utils.decodeBase64(didDocEnc)
         println("Got Connection Request from $label with theirDID: $didDoc")
 
-        val theirDID = didHandler.createTheirDIDFromDoc(didDoc, label)
+        val theirDID = didHandler.createTheirDIDFromDoc(didDoc)
         val myDID = didHandler.createMyDID()
         val connectionID = connection.createNewConnection(myDID, theirDID)
         println("Created Connection with: $connectionID")
@@ -113,7 +113,7 @@ class AriesAgent(private val context: Context) {
             println("No Open Connection Request!")
         }
         val theirDidDoc = Utils.decodeBase64(didDocEnc)
-        val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc, label)
+        val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc)
         val connectionID = connection.createNewConnection(openDID, theirDID)
         println("Created Connection with: $connectionID")
 
@@ -164,8 +164,6 @@ class AriesAgent(private val context: Context) {
         // Get connectionID and Label for TheirDID
         val connectionID = getConnectionIDFromLabel(from)
 
-        // TODO: Get ConnectionID via TheirOldDID?
-
         if(connectionID == ""){
             // TODO: ignore message?
             println("Not connection Entry for This Label")
@@ -186,7 +184,6 @@ class AriesAgent(private val context: Context) {
 
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun sendMessage(message: String, recipient: String){
         val connectionID = getConnectionIDFromLabel(recipient)
         if (connectionID != "") {
@@ -200,7 +197,6 @@ class AriesAgent(private val context: Context) {
     /*
         Rotation
      */
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(theirLabel: String){
         val connectionID = getConnectionIDFromLabel(theirLabel)
 
