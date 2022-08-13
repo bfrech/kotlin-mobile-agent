@@ -2,6 +2,9 @@ package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import com.example.kotlin_agent.Utils
+import org.hyperledger.aries.models.RequestEnvelope
+import org.hyperledger.aries.models.ResponseEnvelope
 import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
@@ -10,6 +13,7 @@ class Connection(private val service: AriesAgent) {
 
     fun createDIDExchangeInvitation(): String {
         val payload = """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}"} """
+
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.didExchangeController?.createInvitation(data)
         if (res != null) {
@@ -20,6 +24,61 @@ class Connection(private val service: AriesAgent) {
                 val invitation = JSONObject(actionsResponse["invitation"].toString())
                 return """{ "label": "${service.agentlabel}", "serviceEndpoint": "${invitation["serviceEndpoint"]}", "recipientKeys": ${invitation["recipientKeys"]}, "routingKeys":  ${invitation["routingKeys"]}}"""
             }
+        }
+        return ""
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun createOOBInvitation(): String {
+
+        val myDID = service.didHandler.createMyDID()
+        val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
+
+        val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
+            |"body": {"accept": ["didcomm/v2"]},
+            | "attachments": [{"id": "request-0", "mime-type": "application/json", 
+            | "data": {"base64": "${Utils.encodeBase64(myDIDDoc)}"}}]
+            | } """.trimMargin()
+
+
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.outOfBandV2Controller?.createInvitation(data)
+        if (res != null) {
+            if (res.error != null) {
+                println(res.error)
+            } else {
+                return String(res.payload, StandardCharsets.UTF_8)
+            }
+        }
+        return ""
+    }
+
+
+
+    fun acceptOOBV2Invitation(inv: String): String{
+
+        val invitation = """ ${inv.dropLast(2)}, "my_label": "${service.agentlabel}" }"""
+        println(invitation)
+
+        var res: ResponseEnvelope
+        try {
+            val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
+            val data = invitation.toByteArray(StandardCharsets.UTF_8)
+            if (outOfBandV2Controller != null) {
+                res = outOfBandV2Controller.acceptInvitation(RequestEnvelope(data))
+                if(res.error != null){
+                    println(res.error.message)
+                } else {
+                    val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+                    val jsonActionResponse = JSONObject(actionsResponse)
+                    val connectionID = jsonActionResponse["connection_id"].toString()
+                    println("""Accepted Invitation of Mobile Agent with: $connectionID""")
+                    return connectionID
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         return ""
     }
@@ -127,13 +186,12 @@ class Connection(private val service: AriesAgent) {
 
         val kid = getOldKidForConnection(connectionID)
 
-        // TODO: remove Service Endpoint
-        val serviceEndpoint = JSONObject(getServiceEndpointForConnection(connectionID))
-        println(serviceEndpoint)
+        // TODO: remove key here? is this good?
+        service.mediator.removeKeyFromMediator(kid)
 
         val newDID = service.didHandler.createMyDID()
 
-        val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "$newDID", "create_peer_did": false, "service_endpoint": "${serviceEndpoint["uri"]}", "routing_keys": ${serviceEndpoint["routingKeys"]}}"""
+        val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "$newDID", "create_peer_did": false}"""
 
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.rotateDID(data)

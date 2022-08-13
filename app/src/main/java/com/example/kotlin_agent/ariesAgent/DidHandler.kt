@@ -53,7 +53,23 @@ class DidHandler(private val service: AriesAgent) {
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createMyDID(): String {
-        // Get the Router Connection to create Service Endpoint
+
+        val verificationMethod = service.keyHandler.createVerificationMethod("ED25519", "Ed25519VerificationKey2018")
+        val keyAgreement = service.keyHandler.createVerificationMethod("X25519ECDHKW", "X25519KeyAgreementKey2019")
+        val service = createMyService()
+
+        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], "id": "#id" ,
+            "service": $service ,
+            "verificationMethod":  [$verificationMethod],
+            "keyAgreement": [$keyAgreement] 
+            } """
+
+        return createDIDInVDR(payload)
+    }
+
+
+    private fun createMyService(): String{
+
         val routerConnection = service.connection.getConnection(service.routerConnectionId)
         val jsonRouterConnection = JSONObject(routerConnection)
         val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
@@ -61,8 +77,7 @@ class DidHandler(private val service: AriesAgent) {
         val serviceEndpointURI = serviceEndpointJson["uri"].toString()
         val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
 
-        // Create Service:
-        val myService = """
+        return """
             [  {
                 "id": "",
                 "type": "DIDCommMessaging",
@@ -73,24 +88,11 @@ class DidHandler(private val service: AriesAgent) {
                 "accept": ["didcomm/v2"]
             } ]
         """.trimIndent()
-
-        // TODO: new way without did:key
-        val verificationMethod = service.keyHandler.createVerificationMethod("ED25519", "Ed25519VerificationKey2018")
-        val keyAgreement = service.keyHandler.createVerificationMethod("X25519ECDHKW", "X25519KeyAgreementKey2019")
-
-        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], "id": "#id" ,
-            "service": $myService ,
-            "verificationMethod":  [$verificationMethod],
-            "keyAgreement": [$keyAgreement] 
-            } """
-
-        return createDIDInVDR(payload)
     }
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createTheirDIDFromDoc(didDoc: String): String {
-
         val jsonDIDDoc = JSONObject(didDoc)
         val service = jsonDIDDoc["service"].toString()
         val id = jsonDIDDoc["id"].toString()
@@ -106,7 +108,6 @@ class DidHandler(private val service: AriesAgent) {
             "keyAgreement": [$keyAgreement]
             } 
         """
-
         return createDIDInVDR(payload)
     }
 

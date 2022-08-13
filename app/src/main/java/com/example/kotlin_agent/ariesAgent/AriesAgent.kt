@@ -11,6 +11,7 @@ import com.example.kotlin_agent.Utils
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
+import org.json.JSONObject
 
 
 class AriesAgent(private val context: Context) {
@@ -75,6 +76,7 @@ class AriesAgent(private val context: Context) {
     /*
         Connection Messages
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createConnectionInvitation(): String {
         return connection.createDIDExchangeInvitation()
     }
@@ -82,13 +84,11 @@ class AriesAgent(private val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
 
-        val myDID = didHandler.createMyDID()
-        openDID = myDID
-        val myDIDDoc = didHandler.vdrResolveDID(myDID)
-        println("MyDIDDoc: $myDIDDoc")
+        // TODO: Test with OOB V2
+        val oobinvitation = connection.createOOBInvitation()
 
         mediator.reconnectToMediator()
-        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(myDIDDoc), invitation, "connection_request")
+        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(oobinvitation), invitation, "connection_request")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -96,15 +96,16 @@ class AriesAgent(private val context: Context) {
         val didDoc = Utils.decodeBase64(didDocEnc)
         println("Got Connection Request from $label with theirDID: $didDoc")
 
-        val theirDID = didHandler.createTheirDIDFromDoc(didDoc)
-        val myDID = didHandler.createMyDID()
-        val connectionID = connection.createNewConnection(myDID, theirDID)
-        println("Created Connection with: $connectionID")
+        val connectionID = connection.acceptOOBV2Invitation(didDoc)
+        println("Accepted OOB Invitation with $connectionID")
 
         addContact(label, connectionID)
 
-        val myDIDDoc = didHandler.vdrResolveDID(myDID)
-        messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
+        val newConnection = connection.getConnection(connectionID)
+        println(newConnection)
+
+        //val myDIDDoc = didHandler.vdrResolveDID(myDID)
+        //messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -152,6 +153,14 @@ class AriesAgent(private val context: Context) {
     }
 
     fun registerMediator() {
+
+        // TODO: Is this necessary? Update Connection to V2
+        //val routerConnection = JSONObject(connection.getConnection(routerConnectionId))
+        //routerConnectionId = connection.createNewConnection(routerConnection["MyDID"].toString(), routerConnection["TheirDID"].toString())
+
+        //println("My Router DID: ${routerConnection["MyDID"]}")
+        //println(didHandler.vdrResolveDID(routerConnection["MyDID"].toString()))
+
         mediator.registerMediator()
     }
 
@@ -184,6 +193,7 @@ class AriesAgent(private val context: Context) {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun sendMessage(message: String, recipient: String){
         val connectionID = getConnectionIDFromLabel(recipient)
         if (connectionID != "") {
@@ -197,12 +207,14 @@ class AriesAgent(private val context: Context) {
     /*
         Rotation
      */
+
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(theirLabel: String){
         val connectionID = getConnectionIDFromLabel(theirLabel)
 
         if (connectionID != "null") {
 
-            // TEST:
+            // TODO: get connection via theirOldDID?
             val myDID = connection.getMyDIDForConnection(connectionID)
             Utils.storeConnectionIDForOldDID(context, connectionID, myDID)
 

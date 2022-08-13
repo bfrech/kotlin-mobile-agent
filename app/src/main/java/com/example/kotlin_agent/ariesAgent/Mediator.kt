@@ -89,5 +89,22 @@ class Mediator(private val service: AriesAgent) {
         }
     }
 
+    fun removeKeyFromMediator(didKey: String) {
+        val mediatorController = service.ariesAgent?.mediatorController
+        val request = """ {"connectionID":"${service.routerConnectionId}", "did_key": "$didKey"} """
+
+        val data = request.toByteArray(StandardCharsets.UTF_8)
+        val res = mediatorController?.removeKey(data)
+
+        if (res != null) {
+            if(res.error != null){
+                println("There was an error with the Key Removal ${res.error.message}")
+            } else {
+                println("Removed Key from mediator: $didKey")
+
+            }
+        }
+    }
+
 
 }
