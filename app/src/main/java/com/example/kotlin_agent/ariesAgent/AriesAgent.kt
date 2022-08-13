@@ -45,6 +45,8 @@ class AriesAgent(private val context: Context) {
         opts.label = agentlabel
         opts.addOutboundTransport("ws")
         opts.mediaTypeProfiles = "didcomm/v2"
+
+        opts.logLevel = "debug"
         //opts.storage = MyStorageProvider()
 
         try {

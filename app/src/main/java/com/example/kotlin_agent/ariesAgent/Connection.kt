@@ -36,8 +36,8 @@ class Connection(private val service: AriesAgent) {
         val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
 
         val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
-            |"body": {"accept": ["didcomm/v2"]},
-            | "attachments": [{"id": "request-0", "mime-type": "application/json", 
+            |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"},
+            | "attachments": [{"id": "request-0", "mime-type": "application/json", "description": "didDoc",
             | "data": {"base64": "${Utils.encodeBase64(myDIDDoc)}"}}]
             | } """.trimMargin()
 
@@ -59,7 +59,8 @@ class Connection(private val service: AriesAgent) {
     fun acceptOOBV2Invitation(inv: String): String{
 
         val invitation = """ ${inv.dropLast(2)}, "my_label": "${service.agentlabel}" }"""
-        println(invitation)
+
+        // First get the DID from the attachments
 
         var res: ResponseEnvelope
         try {
