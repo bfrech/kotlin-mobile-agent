@@ -41,6 +41,24 @@ class Connection(private val service: AriesAgent) {
             | "data": {"base64": "${Utils.encodeBase64(myDIDDoc)}"}}]
             | } """.trimMargin()
 
+        val data = payload.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.outOfBandV2Controller?.createInvitation(data)
+        if (res != null) {
+            if (res.error != null) {
+                println(res.error)
+            } else {
+                return String(res.payload, StandardCharsets.UTF_8)
+            }
+        }
+        return ""
+    }
+
+
+    fun createOOBResponse(myDID: String): String {
+
+        val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
+            |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"}
+            | } """.trimMargin()
 
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.outOfBandV2Controller?.createInvitation(data)

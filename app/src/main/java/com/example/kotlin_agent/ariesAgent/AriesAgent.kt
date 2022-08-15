@@ -11,6 +11,7 @@ import com.example.kotlin_agent.Utils
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
+import org.json.JSONObject
 
 
 class AriesAgent(private val context: Context) {
@@ -85,9 +86,14 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
-        val oobInvitation = connection.createOOBInvitation()
+        val oobInvitation = JSONObject(connection.createOOBInvitation())
+
+        // TODO: Store DID as open DID
+        println("Saved own DID in openDID: ${oobInvitation["from"]}")
+        openDID = oobInvitation["from"].toString()
+
         mediator.reconnectToMediator()
-        messaging.sendOOBInvitationViaServiceEndpoint(Utils.encodeBase64(oobInvitation), invitation, "connection_request")
+        messaging.sendOOBInvitationViaServiceEndpoint(Utils.encodeBase64(oobInvitation.toString()), invitation, "connection_request")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -100,8 +106,10 @@ class AriesAgent(private val context: Context) {
 
         addContact(label, connectionID)
 
-        val newConnection = connection.getConnection(connectionID)
-        println(newConnection)
+        val newConnection = JSONObject(connection.getConnection(connectionID))
+        println(newConnection["MyDID"])
+
+        //val message = connection.createOOBResponse(newConnection["MyDID"].toString())
 
         // TODO: Send back response
         messaging.sendConnectionResponse(connectionID, "connection_response")
@@ -109,14 +117,14 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun completeConnectionRequest(theirDID: String, myDID: String ,label: String){
-        //if(openDID == "") {
-        //    println("No Open Connection Request!")
-        //}
+        if(openDID == "") {
+            println("No Open Connection Request!")
+        }
 
         //val theirDidDoc = Utils.decodeBase64(didDocEnc)
         //val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc)
 
-        val connectionID = connection.createNewConnection(myDID, theirDID)
+        val connectionID = connection.createNewConnection(openDID, theirDID)
         println("Created Connection with: $connectionID")
 
         addContact(label, connectionID)
