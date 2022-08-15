@@ -76,7 +76,7 @@ class AriesAgent(private val context: Context) {
 
 
     /*
-        Connection Messages
+        Connection Messages to establish a connection with other mobile agents
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createConnectionInvitation(): String {
@@ -86,14 +86,15 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
-        val oobInvitation = JSONObject(connection.createOOBInvitation())
+        val oobInvitation = connection.createOOBInvitation()
 
         // TODO: Store DID as open DID
-        println("Saved own DID in openDID: ${oobInvitation["from"]}")
-        openDID = oobInvitation["from"].toString()
+        val jsonOobInvitation = JSONObject(oobInvitation)
+        val inv = JSONObject(jsonOobInvitation["invitation"].toString())
+        openDID = inv["from"].toString()
 
         mediator.reconnectToMediator()
-        messaging.sendOOBInvitationViaServiceEndpoint(Utils.encodeBase64(oobInvitation.toString()), invitation, "connection_request")
+        messaging.sendOOBInvitationViaServiceEndpoint(Utils.encodeBase64(oobInvitation), invitation, "connection_request")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -106,9 +107,8 @@ class AriesAgent(private val context: Context) {
 
         addContact(label, connectionID)
 
-        val newConnection = JSONObject(connection.getConnection(connectionID))
-        println(newConnection["MyDID"])
-
+        //val newConnection = JSONObject(connection.getConnection(connectionID))
+        //println(newConnection["MyDID"])
         //val message = connection.createOOBResponse(newConnection["MyDID"].toString())
 
         // TODO: Send back response
