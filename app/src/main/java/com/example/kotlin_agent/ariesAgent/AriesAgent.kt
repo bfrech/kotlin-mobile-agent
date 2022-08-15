@@ -105,24 +105,24 @@ class AriesAgent(private val context: Context) {
         val newConnection = connection.getConnection(connectionID)
         println(newConnection)
 
-        // TODO: Send back own DID Doc (also packed in oob V2?)
-
-        //val myDIDDoc = didHandler.vdrResolveDID(myDID)
-        //messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
+        // TODO: Send back response
+        messaging.sendConnectionMessage(agentlabel ,connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun completeConnectionRequest(didDocEnc: String, label: String){
-        if(openDID == "") {
-            println("No Open Connection Request!")
-        }
-        val theirDidDoc = Utils.decodeBase64(didDocEnc)
-        val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc)
-        val connectionID = connection.createNewConnection(openDID, theirDID)
+    fun completeConnectionRequest(theirDID: String, myDID: String ,label: String){
+        //if(openDID == "") {
+        //    println("No Open Connection Request!")
+        //}
+
+        //val theirDidDoc = Utils.decodeBase64(didDocEnc)
+        //val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc)
+
+        val connectionID = connection.createNewConnection(myDID, theirDID)
         println("Created Connection with: $connectionID")
 
         addContact(label, connectionID)
-        messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
+        //messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
     fun acknowledgeConnectionCompletion(label: String){
