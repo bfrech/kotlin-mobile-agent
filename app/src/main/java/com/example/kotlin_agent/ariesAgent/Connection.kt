@@ -202,7 +202,12 @@ class Connection(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun rotateDIDForConnection(connectionID: String): String {
 
-        val kid = getOldKidForConnection(connectionID)
+        var kid = getOldKidForConnection(connectionID)
+
+        if (kid.startsWith("#")) {
+            val peerDID = getMyDIDForConnection(connectionID)
+            kid = peerDID + kid
+        }
 
         // TODO: remove key here? is this good?
         service.mediator.removeKeyFromMediator(kid)

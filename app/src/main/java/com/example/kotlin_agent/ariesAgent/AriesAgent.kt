@@ -106,30 +106,23 @@ class AriesAgent(private val context: Context) {
         println("Accepted OOB Invitation with $connectionID")
 
         addContact(label, connectionID)
-
-        // TODO: Send back response
         messaging.sendConnectionResponse(connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun completeConnectionRequest(theirDID: String, myDID: String ,label: String, invitation: String){
-        //if(openDID == "") {
-        //    println("No Open Connection Request!")
-        //}
+    fun completeConnectionRequest(label: String, invitation: String){
 
         val inv = Utils.decodeBase64(invitation)
         val connectionID = connection.acceptOOBV2Invitation(inv)
-
-        //val connectionID = connection.createNewConnection(openDID, theirDID)
         println("Created Connection with: $connectionID")
 
         addContact(label, connectionID)
         //messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
 
-    fun acknowledgeConnectionCompletion(label: String){
-        sendConnectionCompletedBroadcast(label)
-    }
+    //fun acknowledgeConnectionCompletion(label: String){
+    //    sendConnectionCompletedBroadcast(label)
+    //}
 
 
     private fun addContact(label: String, connectionID: String){
@@ -137,7 +130,7 @@ class AriesAgent(private val context: Context) {
             // TODO: Duplicate Handling
         }
         sharedPrefContacts.edit().putString(label, connectionID).apply()
-        sendConnectionCompletedBroadcast(label)
+        sendConnectionCompletedBroadcast()
     }
 
     private fun getConnectionIDFromLabel(label: String): String {
@@ -206,7 +199,7 @@ class AriesAgent(private val context: Context) {
     fun sendMessage(message: String, recipient: String){
         val connectionID = getConnectionIDFromLabel(recipient)
         if (connectionID != "") {
-           // rotateDIDForConnection(recipient)
+            rotateDIDForConnection(connectionID)
             messaging.sendMessage(message, connectionID)
         }
     }
@@ -218,26 +211,23 @@ class AriesAgent(private val context: Context) {
      */
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun rotateDIDForConnection(theirLabel: String){
-        val connectionID = getConnectionIDFromLabel(theirLabel)
+    private fun rotateDIDForConnection(connectionID: String){
 
-        if (connectionID != "null") {
+        // TODO: get connection via theirOldDID?
+        val myDID = connection.getMyDIDForConnection(connectionID)
+        Utils.storeConnectionIDForOldDID(context, connectionID, myDID)
 
-            // TODO: get connection via theirOldDID?
-            val myDID = connection.getMyDIDForConnection(connectionID)
-            Utils.storeConnectionIDForOldDID(context, connectionID, myDID)
+        val newDID =  connection.rotateDIDForConnection(connectionID)
+        val newDIDDoc = didHandler.vdrResolveDID(newDID)
+        println("New DID Doc: $newDIDDoc")
 
-            val newDID =  connection.rotateDIDForConnection(connectionID)
-            val newDIDDoc = didHandler.vdrResolveDID(newDID)
-            println("New DID Doc: $newDIDDoc")
-        }
     }
 
 
     /*
          Communicate to Activity that connection was completed to go back to contacts screen
     */
-    private fun sendConnectionCompletedBroadcast(theirLabel: String){
+    private fun sendConnectionCompletedBroadcast(){
         println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
