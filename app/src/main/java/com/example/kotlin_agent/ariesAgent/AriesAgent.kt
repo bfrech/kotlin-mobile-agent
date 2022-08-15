@@ -176,6 +176,10 @@ class AriesAgent(private val context: Context) {
         // Get connectionID and Label for TheirDID
         val connectionID = getConnectionIDFromLabel(from)
 
+        // TODO: Try get connection by TheirDID
+        val connectionIDNew = connection.getConnectionIDByTheirDID(theirDID)
+        println("Got Connection ID By Their DID: $connectionIDNew")
+
         println(didHandler.vdrResolveDID(theirDID))
 
         if(connectionID == ""){

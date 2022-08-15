@@ -60,8 +60,6 @@ class Connection(private val service: AriesAgent) {
 
         val invitation = """ ${inv.dropLast(2)}, "my_label": "${service.agentlabel}" }"""
 
-        // First get the DID from the attachments
-
         var res: ResponseEnvelope
         try {
             val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
@@ -73,9 +71,7 @@ class Connection(private val service: AriesAgent) {
                 } else {
                     val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
                     val jsonActionResponse = JSONObject(actionsResponse)
-                    val connectionID = jsonActionResponse["connection_id"].toString()
-                    println("""Accepted Invitation of Mobile Agent with: $connectionID""")
-                    return connectionID
+                    return jsonActionResponse["connection_id"].toString()
                 }
             }
         } catch (e: Exception) {
@@ -146,7 +142,7 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-    fun getConnectionID(theirDID: String): String {
+    fun getConnectionIDByTheirDID(theirDID: String): String {
         val request = """{"their_did": "$theirDID"}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.getConnectionIdByTheirDID(data)
