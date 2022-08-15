@@ -83,28 +83,29 @@ class AriesAgent(private val context: Context) {
         return connection.createDIDExchangeInvitation()
     }
 
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
 
-        // TODO: Test with OOB V2
-        val oobinvitation = connection.createOOBInvitation()
-
+        val oobInvitation = connection.createOOBInvitation()
         mediator.reconnectToMediator()
-        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(oobinvitation), invitation, "connection_request")
+        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(oobInvitation), invitation, "connection_request")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createAndSendConnectionResponse(didDocEnc: String, label: String){
-        val didDoc = Utils.decodeBase64(didDocEnc)
-        println("Got Connection Request from $label with theirDID: $didDoc")
+    fun createAndSendConnectionResponse(invitationEnc: String, label: String){
+        val invitation = Utils.decodeBase64(invitationEnc)
+        println("Got Connection Request from $label with invitation: $invitation")
 
-        val connectionID = connection.acceptOOBV2Invitation(didDoc)
+        val connectionID = connection.acceptOOBV2Invitation(invitation)
         println("Accepted OOB Invitation with $connectionID")
 
         addContact(label, connectionID)
 
         val newConnection = connection.getConnection(connectionID)
         println(newConnection)
+
+        // TODO: Send back own DID Doc (also packed in oob V2?)
 
         //val myDIDDoc = didHandler.vdrResolveDID(myDID)
         //messaging.sendConnectionMessage(Utils.encodeBase64(myDIDDoc), connectionID, "connection_response")
@@ -175,9 +176,11 @@ class AriesAgent(private val context: Context) {
         // Get connectionID and Label for TheirDID
         val connectionID = getConnectionIDFromLabel(from)
 
+        println(didHandler.vdrResolveDID(theirDID))
+
         if(connectionID == ""){
             // TODO: ignore message?
-            println("Not connection Entry for This Label")
+            println("No connection Entry for This Label")
             return
         } else {
             val theirOldDID = connection.getTheirDIDForConnection(connectionID)
