@@ -16,6 +16,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         val json = JSONObject(String(message, StandardCharsets.UTF_8))
         val jsonMessage = JSONObject(json["message"].toString())
 
+
         if(topic == "connection_request"){
             println("Received Connection Request: $jsonMessage" )
 

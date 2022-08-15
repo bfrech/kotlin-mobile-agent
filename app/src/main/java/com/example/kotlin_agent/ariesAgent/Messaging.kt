@@ -80,15 +80,17 @@ class Messaging(private val service: AriesAgent) {
         }
     }
 
+
+
     /*
         Connection Messages Message
      */
-    fun sendConnectionMessage(message: String, connectionID: String, purpose: String) {
+    fun sendConnectionResponse(connectionID: String, purpose: String) {
         val messageBody = """ {
 			    "@type": "https://didcomm.org/connection/2.0/message",
                 "purpose": "$purpose",
                 "body": {
-			        "did_doc": "$message",
+                    "content": "",
                     "label": "${service.agentlabel}"
                 }
 			} """
@@ -96,19 +98,18 @@ class Messaging(private val service: AriesAgent) {
     }
 
 
-    fun sendMessageViaServiceEndpoint(message: String, serviceEndpoint: String, purpose: String) {
-        val messageController = service.ariesAgent?.messagingController
+    fun sendOOBInvitationViaServiceEndpoint(message: String, serviceEndpoint: String, purpose: String) {
         val messageBody = """ {
 			    "@type": "https://didcomm.org/connection/2.0/message",
                 "purpose": "$purpose",
                 "body": {
-			        "did_doc": "$message",
+			        "content": "$message",
                     "label": "${service.agentlabel}"
                 }
 			} """
         val payload = """ {"message_body": $messageBody, "service_endpoint": $serviceEndpoint} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = messageController?.send(data)
+        val res = service.ariesAgent?.messagingController?.send(data)
         if (res != null) {
             if (res.error != null) {
                 println(res.error)

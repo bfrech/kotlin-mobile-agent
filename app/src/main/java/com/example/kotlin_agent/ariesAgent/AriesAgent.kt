@@ -11,7 +11,6 @@ import com.example.kotlin_agent.Utils
 import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
-import org.json.JSONObject
 
 
 class AriesAgent(private val context: Context) {
@@ -86,10 +85,9 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
-
         val oobInvitation = connection.createOOBInvitation()
         mediator.reconnectToMediator()
-        messaging.sendMessageViaServiceEndpoint(Utils.encodeBase64(oobInvitation), invitation, "connection_request")
+        messaging.sendOOBInvitationViaServiceEndpoint(Utils.encodeBase64(oobInvitation), invitation, "connection_request")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -106,7 +104,7 @@ class AriesAgent(private val context: Context) {
         println(newConnection)
 
         // TODO: Send back response
-        messaging.sendConnectionMessage(agentlabel ,connectionID, "connection_response")
+        messaging.sendConnectionResponse(connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
