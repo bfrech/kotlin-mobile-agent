@@ -76,7 +76,10 @@ class Connection(private val service: AriesAgent) {
 
     fun acceptOOBV2Invitation(inv: String): String{
 
-        val invitation = """ ${inv.dropLast(2)}, "my_label": "${service.agentlabel}" }"""
+        val invitation = """ ${inv.dropLast(2)}, 
+            |"my_label": "${service.agentlabel}", 
+            |"my_router_connections": ["${service.routerConnectionId}"] 
+            |}""".trimMargin()
 
         var res: ResponseEnvelope
         try {
