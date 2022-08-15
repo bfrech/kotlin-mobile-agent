@@ -31,7 +31,8 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
             ariesAgent.completeConnectionRequest(
                 jsonMessage["theirDID"].toString(),
                 jsonMessage["myDID"].toString(),
-                jsonMessage["label"].toString()
+                jsonMessage["label"].toString(),
+                jsonMessage["content"].toString()
             )
             return
         }

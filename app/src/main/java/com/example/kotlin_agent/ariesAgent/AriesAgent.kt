@@ -107,24 +107,19 @@ class AriesAgent(private val context: Context) {
 
         addContact(label, connectionID)
 
-        //val newConnection = JSONObject(connection.getConnection(connectionID))
-        //println(newConnection["MyDID"])
-        //val message = connection.createOOBResponse(newConnection["MyDID"].toString())
-
         // TODO: Send back response
         messaging.sendConnectionResponse(connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun completeConnectionRequest(theirDID: String, myDID: String ,label: String){
-        if(openDID == "") {
-            println("No Open Connection Request!")
-        }
+    fun completeConnectionRequest(theirDID: String, myDID: String ,label: String, invitation: String){
+        //if(openDID == "") {
+        //    println("No Open Connection Request!")
+        //}
 
-        //val theirDidDoc = Utils.decodeBase64(didDocEnc)
-        //val theirDID = didHandler.createTheirDIDFromDoc(theirDidDoc)
+        val connectionID = connection.acceptOOBV2Invitation(invitation)
 
-        val connectionID = connection.createNewConnection(openDID, theirDID)
+        //val connectionID = connection.createNewConnection(openDID, theirDID)
         println("Created Connection with: $connectionID")
 
         addContact(label, connectionID)
@@ -186,8 +181,6 @@ class AriesAgent(private val context: Context) {
         val connectionIDNew = connection.getConnectionIDByTheirDID(theirDID)
         println("Got Connection ID By Their DID: $connectionIDNew")
 
-        println(didHandler.vdrResolveDID(theirDID))
-
         if(connectionID == ""){
             // TODO: ignore message?
             println("No connection Entry for This Label")
@@ -212,7 +205,7 @@ class AriesAgent(private val context: Context) {
     fun sendMessage(message: String, recipient: String){
         val connectionID = getConnectionIDFromLabel(recipient)
         if (connectionID != "") {
-            rotateDIDForConnection(recipient)
+           // rotateDIDForConnection(recipient)
             messaging.sendMessage(message, connectionID)
         }
     }

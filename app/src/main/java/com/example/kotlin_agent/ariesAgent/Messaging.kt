@@ -1,5 +1,9 @@
 package com.example.kotlin_agent.ariesAgent
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import com.example.kotlin_agent.Utils
+import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
 class Messaging(private val service: AriesAgent) {
@@ -85,15 +89,24 @@ class Messaging(private val service: AriesAgent) {
     /*
         Connection Messages Message
      */
+    @RequiresApi(Build.VERSION_CODES.O)
     fun sendConnectionResponse(connectionID: String, purpose: String) {
+
+        val connection = JSONObject(service.connection.getConnection(connectionID))
+        val jsonInvitation = JSONObject(connection["invitation"].toString())
+        val myDID = jsonInvitation["from"].toString()
+
+        val oobInvitation = service.connection.createOOBResponse(myDID)
+
         val messageBody = """ {
 			    "@type": "https://didcomm.org/connection/2.0/message",
                 "purpose": "$purpose",
                 "body": {
-                    "content": "",
+                    "content": "${Utils.encodeBase64(oobInvitation)}",
                     "label": "${service.agentlabel}"
                 }
 			} """
+
         sendViaConnectionID(messageBody, connectionID)
     }
 
