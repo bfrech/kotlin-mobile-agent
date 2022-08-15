@@ -92,10 +92,7 @@ class Messaging(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun sendConnectionResponse(connectionID: String, purpose: String) {
 
-        val connection = JSONObject(service.connection.getConnection(connectionID))
-        val jsonInvitation = JSONObject(connection["invitation"].toString())
-        val myDID = jsonInvitation["from"].toString()
-
+        val myDID = service.connection.getMyDIDForConnection(connectionID)
         val oobInvitation = service.connection.createOOBResponse(myDID)
 
         val messageBody = """ {

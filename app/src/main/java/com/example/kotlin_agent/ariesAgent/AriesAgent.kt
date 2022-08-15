@@ -117,7 +117,8 @@ class AriesAgent(private val context: Context) {
         //    println("No Open Connection Request!")
         //}
 
-        val connectionID = connection.acceptOOBV2Invitation(invitation)
+        val inv = Utils.decodeBase64(invitation)
+        val connectionID = connection.acceptOOBV2Invitation(inv)
 
         //val connectionID = connection.createNewConnection(openDID, theirDID)
         println("Created Connection with: $connectionID")
