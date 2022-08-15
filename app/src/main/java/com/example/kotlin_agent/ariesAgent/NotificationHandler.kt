@@ -22,15 +22,15 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
 
             // TODO: Check request acceptance?
 
-            ariesAgent.createAndSendConnectionResponse(jsonMessage["DIDDoc"].toString(),jsonMessage["label"].toString())
+            ariesAgent.createAndSendConnectionResponse(jsonMessage["content"].toString(), jsonMessage["label"].toString())
             return
         }
 
         if(topic == "connection_response"){
             println("Received Connection Response: $jsonMessage" )
             ariesAgent.completeConnectionRequest(
-                jsonMessage["TheirDID"].toString(),
-                jsonMessage["MyDID"].toString(),
+                jsonMessage["theirDID"].toString(),
+                jsonMessage["myDID"].toString(),
                 jsonMessage["label"].toString()
             )
             return
