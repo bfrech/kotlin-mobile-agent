@@ -122,19 +122,8 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun completeConnectionRequest(label: String, from: String, to: String){
-        //val inv = Utils.decodeBase64(invitation)
-        //val connectionID = connection.acceptOOBV2Invitation(inv)
-
-
         val connectionID = connection.createNewConnection(to, from)
-
         println("Created Connection with $label and: $connectionID")
-
-        // TODO: need same DID, use openDID
-
-        // TODO: get label from connection and store in shared Prefs
-        //val jsonConnection = JSONObject(connection.getConnection(connectionID))
-        //val label = jsonConnection["TheirLabel"].toString()
         addContact(label, connectionID)
     }
 
@@ -206,8 +195,6 @@ class AriesAgent(private val context: Context) {
                 println("Updated connection: ${connection.getConnection(connectionID)}")
 
                 // TODO: get label for connection
-                //val jsonConnection = JSONObject(connection.getConnection(connectionID))
-                //val label = jsonConnection["TheirLabel"].toString()
                 val label = sharedPrefLabels.getString(connectionID, "")
 
                 if (label != null) {
@@ -238,16 +225,10 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(connectionID: String){
-
-        //val myDID = connection.getMyDIDForConnection(connectionID)
-
-
         val newDID =  connection.rotateDIDForConnection(connectionID)
         val newDIDDoc = didHandler.vdrResolveDID(newDID)
         println("New DID Doc: $newDIDDoc")
-
         Utils.storeConnectionIDForOldDID(context, connectionID, newDID)
-
     }
 
 

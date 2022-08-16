@@ -7,19 +7,6 @@ import java.nio.charset.StandardCharsets
 
 class Messaging(private val service: AriesAgent) {
 
-    //fun sendMessage(message: String, connectionID: String, goal: String){
-    //    val theirDID = service.connection.getTheirDIDForConnection(connectionID)
-    //    val messageBody = """ {
-	//		    "@type": "https://didcomm.org/mobilemessage/1.0/message",
-    //            "goal": "$goal",
-    //            "to": "$theirDID",
-    //            "body": {
-	//		        "content": "$message"
-    //            }
-	//		} """
-    //    sendMessageViaConnectionID(messageBody, connectionID)
-    //}
-
     private fun sendMessageViaConnectionID(goal: String, message: String, connectionID: String){
         val messageBody = buildMessageBody(goal, message, connectionID)
         val payload = """ {"message_body": $messageBody, "connection_id": "$connectionID"} """
@@ -48,7 +35,7 @@ class Messaging(private val service: AriesAgent) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun sendConnectionResponse(connectionID: String, goal: String) {
-        val myDID = service.connection.getMyDIDForConnection(connectionID)
+        //val myDID = service.connection.getMyDIDForConnection(connectionID)
         //val oobInvitation = service.connection.createOOBResponse(myDID)
         sendMessageViaConnectionID(goal, service.agentlabel , connectionID)
     }

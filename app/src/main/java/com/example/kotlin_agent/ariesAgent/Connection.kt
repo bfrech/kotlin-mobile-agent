@@ -102,25 +102,6 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-
-    //@RequiresApi(Build.VERSION_CODES.O)
-    //fun createServiceEndpointInvitation(): String {
-    //    val did = service.createMyDID()
-    //    openDID = did
-    //    val res = JSONObject(service.vdrResolveDID(did))
-    //    val didDoc = JSONObject(res["didDocument"].toString())
-    //    val service = JSONObject(didDoc["service"].toString().drop(1).dropLast(1))
-    //    val serviceEndpoint = JSONObject(service["serviceEndpoint"].toString())
-    //    val key = service["recipientKeys"].toString().drop(2).substringBefore('#')
-    //    val payload = """{
-    //        |"serviceEndpoint": "${serviceEndpoint["uri"]}",
-    //        |"routingKeys": ${service["routingKeys"]},
-    //        |"recipientKeys": "$key"
-    //        |}""".trimMargin()
-    //    return payload
-    //}
-
-
     fun getTheirDIDForConnection(connectionID: String): String {
         val connection = JSONObject(getConnection(connectionID))
         return connection["TheirDID"].toString()
@@ -163,24 +144,6 @@ class Connection(private val service: AriesAgent) {
         }
         return ""
     }
-
-    //fun getConnectionIDByTheirDID(theirDID: String): String {
-    //    val request = """{"their_did": "$theirDID"}"""
-    //    val data = request.toByteArray(StandardCharsets.UTF_8)
-    //    val res = service.ariesAgent?.connectionController?.getConnectionIdByTheirDID(data)
-    //    if(res != null){
-    //        if(res.error != null){
-    //            println(res.error)
-    //        } else {
-    //            val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-    //            val jsonObject = JSONObject(actionsResponse)
-    //            return jsonObject["id"].toString()
-    //        }
-    //    } else {
-    //        println("Res is null")
-    //    }
-    //    return ""
-    //}
 
     fun updateTheirDIDForConnection(connectionID: String, theirDID: String): String {
         val request = """{"id": "$connectionID", "their_did": "$theirDID"}"""
