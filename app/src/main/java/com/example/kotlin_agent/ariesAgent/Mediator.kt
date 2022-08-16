@@ -1,6 +1,5 @@
 package com.example.kotlin_agent.ariesAgent
 
-import org.hyperledger.aries.models.RequestEnvelope
 import org.hyperledger.aries.models.ResponseEnvelope
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -21,7 +20,7 @@ class Mediator(private val service: AriesAgent) {
             val outOfBandController = service.ariesAgent?.outOfBandController
             val data = invite.toByteArray(StandardCharsets.UTF_8)
             if (outOfBandController != null) {
-                res = outOfBandController.acceptInvitation(RequestEnvelope(data))
+                res = outOfBandController.acceptInvitation(data)
                 if(res.error != null){
                     println(res.error.message)
                 } else {
@@ -94,7 +93,7 @@ class Mediator(private val service: AriesAgent) {
         val request = """ {"connectionID":"${service.routerConnectionId}", "did_key": "$didKey"} """
 
         val data = request.toByteArray(StandardCharsets.UTF_8)
-        val res = mediatorController?.removeKey(data)
+        val res = mediatorController?.unregisterKey(data)
 
         if (res != null) {
             if(res.error != null){

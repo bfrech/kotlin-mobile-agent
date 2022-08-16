@@ -22,25 +22,22 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
 
             // TODO: Check request acceptance?
 
-            ariesAgent.createAndSendConnectionResponse(jsonMessage["content"].toString(), jsonMessage["label"].toString())
+            ariesAgent.createAndSendConnectionResponse(jsonMessage["content"].toString())
             return
         }
 
         if(topic == "connection_response"){
             println("Received Connection Response: $jsonMessage" )
             ariesAgent.completeConnectionRequest(
-
-                // TODO: replace label with "to"
-                jsonMessage["label"].toString(),
                 jsonMessage["content"].toString()
             )
             return
         }
 
-        if(topic == "basicmessage"){
+        if(topic == "mobile_message"){
             println("Got a Message: $jsonMessage")
-            ariesAgent.processBasicMessage(jsonMessage["TheirDID"].toString(), jsonMessage["MyDID"].toString(),
-                jsonMessage["message"].toString())
+            ariesAgent.processBasicMessage(jsonMessage["from"].toString(), jsonMessage["to"].toString(),
+                jsonMessage["content"].toString())
             return
         }
 

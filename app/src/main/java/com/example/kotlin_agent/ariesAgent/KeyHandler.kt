@@ -17,7 +17,7 @@ class KeyHandler(private val service: AriesAgent) {
         val kmsController = service.ariesAgent?.kmsController
         val kmsRequest = """{ "keyType" : "$keyType" }"""
         val kmsData = kmsRequest.toByteArray(StandardCharsets.UTF_8)
-        val kmsResponse = kmsController?.createKeySet(RequestEnvelope(kmsData))
+        val kmsResponse = kmsController?.createKeyWithDIDKey(kmsData)
         var key = ""
         var keyDID = ""
         if (kmsResponse != null) {
@@ -28,7 +28,7 @@ class KeyHandler(private val service: AriesAgent) {
                 println("Created Key Set: $actionsResponse")
                 val jsonActionResponse = JSONObject(actionsResponse)
                 key = jsonActionResponse["publicKey"].toString()
-                keyDID = jsonActionResponse["DIDKey"].toString()
+                keyDID = jsonActionResponse["keyDID"].toString()
             }
         }
         return Pair(key, keyDID)

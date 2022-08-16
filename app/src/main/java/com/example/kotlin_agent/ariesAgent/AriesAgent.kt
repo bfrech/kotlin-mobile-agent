@@ -57,7 +57,7 @@ class AriesAgent(private val context: Context) {
             val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
             println("registered didExchange handler with registration id: $registrationID")
 
-            val messagingRegistrationID = ariesAgent?.registerHandler(handler, "basicmessage")
+            val messagingRegistrationID = ariesAgent?.registerHandler(handler, "mobile_message")
             println("registered didExchange handler with registration id: $messagingRegistrationID")
 
             val connectionRegID = ariesAgent?.registerHandler(handler, "connection_request")
@@ -94,26 +94,34 @@ class AriesAgent(private val context: Context) {
         openDID = inv["from"].toString()
 
         mediator.reconnectToMediator()
-        messaging.sendOOBInvitationViaServiceEndpoint(Utils.encodeBase64(oobInvitation), invitation, "connection_request")
+        messaging.sendMessageViaServiceEndpoint("connection_request", Utils.encodeBase64(oobInvitation), invitation)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createAndSendConnectionResponse(invitationEnc: String, label: String){
+    fun createAndSendConnectionResponse(invitationEnc: String){
         val invitation = Utils.decodeBase64(invitationEnc)
-        println("Got Connection Request from $label with invitation: $invitation")
+        println("Got Connection Request with invitation: $invitation")
 
         val connectionID = connection.acceptOOBV2Invitation(invitation)
         println("Accepted OOB Invitation with $connectionID")
 
+        // TODO: get label from connection and store in shared Prefs
+        val jsonConnection = JSONObject(connection.getConnection(connectionID))
+        val label = jsonConnection["TheirLabel"].toString()
         addContact(label, connectionID)
+
         messaging.sendConnectionResponse(connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun completeConnectionRequest(label: String, invitation: String){
+    fun completeConnectionRequest(invitation: String){
         val inv = Utils.decodeBase64(invitation)
         val connectionID = connection.acceptOOBV2Invitation(inv)
         println("Created Connection with: $connectionID")
+
+        // TODO: get label from connection and store in shared Prefs
+        val jsonConnection = JSONObject(connection.getConnection(connectionID))
+        val label = jsonConnection["TheirLabel"].toString()
         addContact(label, connectionID)
     }
 
@@ -122,6 +130,11 @@ class AriesAgent(private val context: Context) {
             // TODO: Duplicate Handling
         }
         sharedPrefContacts.edit().putString(label, connectionID).apply()
+
+        // TODO: store my DID -> connID
+        val myDID = connection.getMyDIDForConnection(connectionID)
+        Utils.storeConnectionIDForOldDID(context,connectionID, myDID)
+
         sendConnectionCompletedBroadcast()
     }
 
@@ -175,7 +188,8 @@ class AriesAgent(private val context: Context) {
                 println("Updated connection: ${connection.getConnection(connectionID)}")
 
                 // TODO: get label for connection
-                val label = ""
+                val jsonConnection = JSONObject(connection.getConnection(connectionID))
+                val label = jsonConnection["TheirLabel"].toString()
                 Utils.storeMessageToSharedPrefs(context, message, false, label)
             }
         }
@@ -190,7 +204,7 @@ class AriesAgent(private val context: Context) {
         val connectionID = getConnectionIDFromLabel(recipient)
         if (connectionID != "") {
             rotateDIDForConnection(connectionID)
-            messaging.sendMessage(message, connectionID)
+            messaging.sendMobileMessage(message, connectionID)
         }
     }
 

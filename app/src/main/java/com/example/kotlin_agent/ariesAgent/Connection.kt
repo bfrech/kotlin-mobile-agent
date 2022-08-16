@@ -35,10 +35,12 @@ class Connection(private val service: AriesAgent) {
         val myDID = service.didHandler.createMyDID()
         val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
 
+        println("MYDIDDOC: $myDIDDoc")
+
         // Change ID of attachment to peer-connection-request with new framework file
         val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
             |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"},
-            | "attachments": [{"id": "request-0", "mime-type": "application/json", "description": "didDoc",
+            | "attachments": [{"id": "peer-connection-request", "mime-type": "application/json", "description": "didDoc",
             | "data": {"base64": "${Utils.encodeBase64(myDIDDoc)}"}}]
             | } """.trimMargin()
 
@@ -87,7 +89,7 @@ class Connection(private val service: AriesAgent) {
             val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
             val data = invitation.toByteArray(StandardCharsets.UTF_8)
             if (outOfBandV2Controller != null) {
-                res = outOfBandV2Controller.acceptInvitation(RequestEnvelope(data))
+                res = outOfBandV2Controller.acceptInvitation(data)
                 if(res.error != null){
                     println(res.error.message)
                 } else {
@@ -164,23 +166,23 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
-    fun getConnectionIDByTheirDID(theirDID: String): String {
-        val request = """{"their_did": "$theirDID"}"""
-        val data = request.toByteArray(StandardCharsets.UTF_8)
-        val res = service.ariesAgent?.connectionController?.getConnectionIdByTheirDID(data)
-        if(res != null){
-            if(res.error != null){
-                println(res.error)
-            } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                val jsonObject = JSONObject(actionsResponse)
-                return jsonObject["id"].toString()
-            }
-        } else {
-            println("Res is null")
-        }
-        return ""
-    }
+    //fun getConnectionIDByTheirDID(theirDID: String): String {
+    //    val request = """{"their_did": "$theirDID"}"""
+    //    val data = request.toByteArray(StandardCharsets.UTF_8)
+    //    val res = service.ariesAgent?.connectionController?.getConnectionIdByTheirDID(data)
+    //    if(res != null){
+    //        if(res.error != null){
+    //            println(res.error)
+    //        } else {
+    //            val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
+    //            val jsonObject = JSONObject(actionsResponse)
+    //            return jsonObject["id"].toString()
+    //        }
+    //    } else {
+    //        println("Res is null")
+    //    }
+    //    return ""
+    //}
 
     fun updateTheirDIDForConnection(connectionID: String, theirDID: String): String {
         val request = """{"id": "$connectionID", "their_did": "$theirDID"}"""

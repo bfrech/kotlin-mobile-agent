@@ -3,62 +3,25 @@ package com.example.kotlin_agent.ariesAgent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.Utils
-import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
 class Messaging(private val service: AriesAgent) {
 
-    /*
-       Register Service
-     */
-    fun registerMessagingService(name: String, purpose: String) {
-        val messageController = service.ariesAgent?.messagingController
-        val payload =
-            """{"name":"$name", "purpose": ["$purpose"], "type": "https://didcomm.org/generic/1.0/message"} """
-        println(payload)
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = messageController?.registerService(data)
-        if (res != null) {
-            if (res.error != null) {
-                println(res.error)
-            }
-        }
+    //fun sendMessage(message: String, connectionID: String, goal: String){
+    //    val theirDID = service.connection.getTheirDIDForConnection(connectionID)
+    //    val messageBody = """ {
+	//		    "@type": "https://didcomm.org/mobilemessage/1.0/message",
+    //            "goal": "$goal",
+    //            "to": "$theirDID",
+    //            "body": {
+	//		        "content": "$message"
+    //            }
+	//		} """
+    //    sendMessageViaConnectionID(messageBody, connectionID)
+    //}
 
-        getRegisteredServices()
-    }
-
-    private fun getRegisteredServices() {
-        val messageController = service.ariesAgent?.messagingController
-        val payload = """ {} """
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = messageController?.services(data)
-        if (res != null) {
-            if (res.error != null) {
-                println(res.error)
-            } else {
-
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                println("Registered Services: $actionsResponse")
-            }
-        }
-    }
-
-    fun sendMessage(message: String, connectionID: String){
-
-        val theirDID = service.connection.getTheirDIDForConnection(connectionID)
-        println(theirDID)
-
-        val messageBody = """ {
-			    "@type": "https://didcomm.org/basicmessage/2.0/message",
-                "label": "${service.agentlabel}",
-                "body": {
-			        "content": "$message"
-                }
-			} """
-        sendViaConnectionID(messageBody, connectionID)
-    }
-
-    private fun sendViaConnectionID(messageBody: String, connectionID: String){
+    private fun sendMessageViaConnectionID(goal: String, message: String, connectionID: String){
+        val messageBody = buildMessageBody(goal, message, connectionID)
         val payload = """ {"message_body": $messageBody, "connection_id": "$connectionID"} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.messagingController?.send(data)
@@ -71,52 +34,8 @@ class Messaging(private val service: AriesAgent) {
         }
     }
 
-    private fun sendViaTheirDID(messageBody: String, theirDID: String){
-        val payload = """ {"message_body": $messageBody, "their_did": "$theirDID"} """
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = service.ariesAgent?.messagingController?.send(data)
-        if (res != null) {
-            if (res.error != null) {
-                println(res.error)
-            } else {
-                // Returns empty JSON
-            }
-        }
-    }
-
-
-
-    /*
-        Connection Messages Message
-     */
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun sendConnectionResponse(connectionID: String, purpose: String) {
-
-        val myDID = service.connection.getMyDIDForConnection(connectionID)
-        val oobInvitation = service.connection.createOOBResponse(myDID)
-
-        val messageBody = """ {
-			    "@type": "https://didcomm.org/connection/2.0/message",
-                "purpose": "$purpose",
-                "body": {
-                    "content": "${Utils.encodeBase64(oobInvitation)}",
-                    "label": "${service.agentlabel}"
-                }
-			} """
-
-        sendViaConnectionID(messageBody, connectionID)
-    }
-
-
-    fun sendOOBInvitationViaServiceEndpoint(message: String, serviceEndpoint: String, purpose: String) {
-        val messageBody = """ {
-			    "@type": "https://didcomm.org/connection/2.0/message",
-                "purpose": "$purpose",
-                "body": {
-			        "content": "$message",
-                    "label": "${service.agentlabel}"
-                }
-			} """
+    fun sendMessageViaServiceEndpoint(goal: String, message: String, serviceEndpoint: String) {
+        val messageBody = buildMessageBody(goal, message, "")
         val payload = """ {"message_body": $messageBody, "service_endpoint": $serviceEndpoint} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.messagingController?.send(data)
@@ -127,5 +46,28 @@ class Messaging(private val service: AriesAgent) {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun sendConnectionResponse(connectionID: String, goal: String) {
+        val myDID = service.connection.getMyDIDForConnection(connectionID)
+        val oobInvitation = service.connection.createOOBResponse(myDID)
+        sendMessageViaConnectionID(goal, Utils.encodeBase64(oobInvitation), connectionID)
+    }
+
+    fun sendMobileMessage(message: String, connectionID: String) {
+        sendMessageViaConnectionID("mobile_message", message,  connectionID)
+    }
+
+
+    private fun buildMessageBody(goal: String, message: String, connectionID: String): String{
+        val theirDID = if (connectionID != "") service.connection.getTheirDIDForConnection(connectionID) else ""
+        return """ {
+			    "@type": "https://didcomm.org/mobilemessage/1.0/message",
+                "goal": "$goal",
+                "to": "$theirDID",
+                "body": {
+			        "content": "$message"
+                }
+			} """
+    }
 
 }

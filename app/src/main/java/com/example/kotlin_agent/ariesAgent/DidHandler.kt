@@ -73,17 +73,14 @@ class DidHandler(private val service: AriesAgent) {
         val routerConnection = service.connection.getConnection(service.routerConnectionId)
         val jsonRouterConnection = JSONObject(routerConnection)
         val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
-        val serviceEndpointJson = JSONObject(serviceEndpointObject)
-        val serviceEndpointURI = serviceEndpointJson["uri"].toString()
+        val serviceEndpointArray = JSONArray(serviceEndpointObject)
         val serviceRoutingKeys = jsonRouterConnection["RecipientKeys"].toString()
 
         return """
             [  {
                 "id": "",
                 "type": "DIDCommMessaging",
-                "serviceEndpoint": {
-                    "uri": "$serviceEndpointURI"
-                },
+                "serviceEndpoint": ${serviceEndpointArray},
                 "routingKeys": $serviceRoutingKeys,
                 "accept": ["didcomm/v2"]
             } ]
