@@ -23,6 +23,13 @@ class AriesAgent(private val context: Context) {
         )
     }
 
+    private val sharedPrefLabels: SharedPreferences by lazy {
+        context.getSharedPreferences(
+            "${BuildConfig.APPLICATION_ID}_sharedPreferencesLabels",
+            Context.MODE_PRIVATE
+        )
+    }
+
     var ariesAgent: AriesController? = null
     var agentlabel: String = ""
     var routerConnectionId = ""
@@ -121,7 +128,7 @@ class AriesAgent(private val context: Context) {
 
         val connectionID = connection.createNewConnection(to, from)
 
-        println("Created Connection with: $connectionID")
+        println("Created Connection with $label and: $connectionID")
 
         // TODO: need same DID, use openDID
 
@@ -132,14 +139,19 @@ class AriesAgent(private val context: Context) {
     }
 
     private fun addContact(label: String, connectionID: String){
-        if(sharedPrefContacts.all.containsKey(label)){
+        if(sharedPrefContacts.all.containsKey(connectionID)){
             // TODO: Duplicate Handling
         }
         sharedPrefContacts.edit().putString(label, connectionID).apply()
 
+        // TODO: Only use connectionID
+        sharedPrefLabels.edit().putString(connectionID, label).apply()
+
         // TODO: store my DID -> connID
         val myDID = connection.getMyDIDForConnection(connectionID)
         Utils.storeConnectionIDForOldDID(context,connectionID, myDID)
+
+        println("new Connection: ${connection.getConnection(connectionID)}")
 
         sendConnectionCompletedBroadcast()
     }
@@ -194,9 +206,13 @@ class AriesAgent(private val context: Context) {
                 println("Updated connection: ${connection.getConnection(connectionID)}")
 
                 // TODO: get label for connection
-                val jsonConnection = JSONObject(connection.getConnection(connectionID))
-                val label = jsonConnection["TheirLabel"].toString()
-                Utils.storeMessageToSharedPrefs(context, message, false, label)
+                //val jsonConnection = JSONObject(connection.getConnection(connectionID))
+                //val label = jsonConnection["TheirLabel"].toString()
+                val label = sharedPrefLabels.getString(connectionID, "")
+
+                if (label != null) {
+                    Utils.storeMessageToSharedPrefs(context, message, false, label)
+                }
             }
         }
 

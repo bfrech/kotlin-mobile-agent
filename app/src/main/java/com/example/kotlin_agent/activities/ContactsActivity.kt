@@ -65,6 +65,9 @@ class ContactsActivity : AppCompatActivity() {
         // Open Messaging Screen for Label
         listView.setOnItemClickListener { parent, view, position, id ->
             val intent = Intent(this, MessageActivity::class.java)
+
+            // TODO: change to connection ID instead of Label
+
             intent.putExtra("Label",parent.getItemAtPosition(position).toString() )
             startActivity(intent)
         }
