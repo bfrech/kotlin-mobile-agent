@@ -50,7 +50,7 @@ class Messaging(private val service: AriesAgent) {
     fun sendConnectionResponse(connectionID: String, goal: String) {
         val myDID = service.connection.getMyDIDForConnection(connectionID)
         //val oobInvitation = service.connection.createOOBResponse(myDID)
-        sendMessageViaConnectionID(goal, Utils.encodeBase64(myDID), connectionID)
+        sendMessageViaConnectionID(goal, service.agentlabel , connectionID)
     }
 
     fun sendMobileMessage(message: String, connectionID: String) {
