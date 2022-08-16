@@ -29,7 +29,9 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         if(topic == "connection_response"){
             println("Received Connection Response: $jsonMessage" )
             ariesAgent.completeConnectionRequest(
-                jsonMessage["content"].toString()
+                jsonMessage["content"].toString(),
+                jsonMessage["from"].toString(),
+                jsonMessage["to"].toString()
             )
             return
         }

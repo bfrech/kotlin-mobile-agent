@@ -55,15 +55,10 @@ class Connection(private val service: AriesAgent) {
     }
 
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun createOOBResponse(myDID: String): String {
 
-        val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
-
         val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
-            |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"},
-            | "attachments": [{"id": "peer-connection-request", "mime-type": "application/json", "description": "didDoc",
-            | "data": {"base64": "${Utils.encodeBase64(myDIDDoc)}"}}]
+            |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"}
             | } """.trimMargin()
 
         val data = payload.toByteArray(StandardCharsets.UTF_8)

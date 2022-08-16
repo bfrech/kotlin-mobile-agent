@@ -110,14 +110,18 @@ class AriesAgent(private val context: Context) {
         val label = jsonConnection["TheirLabel"].toString()
         addContact(label, connectionID)
 
-        messaging.sendConnectionResponse(openDID, connectionID, "connection_response")
+        messaging.sendConnectionResponse(connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun completeConnectionRequest(invitation: String){
+    fun completeConnectionRequest(invitation: String, from: String, to: String){
         val inv = Utils.decodeBase64(invitation)
-        val connectionID = connection.acceptOOBV2Invitation(inv)
+        //val connectionID = connection.acceptOOBV2Invitation(inv)
+        val connectionID = connection.createNewConnection(to, from)
+
         println("Created Connection with: $connectionID")
+
+        // TODO: need same DID, use openDID
 
         // TODO: get label from connection and store in shared Prefs
         val jsonConnection = JSONObject(connection.getConnection(connectionID))
