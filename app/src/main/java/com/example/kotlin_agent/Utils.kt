@@ -37,6 +37,8 @@ class Utils {
                Context.MODE_PRIVATE
            )
 
+           println("Storing $oldDID to SharedPrefs")
+
            with (sharedPrefs.edit()) {
                putString(oldDID, connectionID)
                apply()

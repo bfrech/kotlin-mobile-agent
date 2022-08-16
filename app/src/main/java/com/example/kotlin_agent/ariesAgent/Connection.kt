@@ -35,6 +35,7 @@ class Connection(private val service: AriesAgent) {
         val myDID = service.didHandler.createMyDID()
         val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
 
+        // Change ID of attachment to peer-connection-request with new framework file
         val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
             |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"},
             | "attachments": [{"id": "request-0", "mime-type": "application/json", "description": "didDoc",

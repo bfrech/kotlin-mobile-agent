@@ -111,19 +111,11 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun completeConnectionRequest(label: String, invitation: String){
-
         val inv = Utils.decodeBase64(invitation)
         val connectionID = connection.acceptOOBV2Invitation(inv)
         println("Created Connection with: $connectionID")
-
         addContact(label, connectionID)
-        //messaging.sendConnectionMessage("completed connection", connectionID, "connection_complete")
     }
-
-    //fun acknowledgeConnectionCompletion(label: String){
-    //    sendConnectionCompletedBroadcast(label)
-    //}
-
 
     private fun addContact(label: String, connectionID: String){
         if(sharedPrefContacts.all.containsKey(label)){
@@ -166,14 +158,10 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processBasicMessage(theirDID: String, message: String, from: String){
+    fun processBasicMessage(theirDID: String, myDID: String, message: String){
 
-        // Get connectionID and Label for TheirDID
-        val connectionID = getConnectionIDFromLabel(from)
-
-        // TODO: Try get connection by TheirDID
-        val connectionIDNew = connection.getConnectionIDByTheirDID(theirDID)
-        println("Got Connection ID By Their DID: $connectionIDNew")
+        val connectionID = Utils.getConnectionIDForMyOldDID(context, myDID)
+        println(connection.getConnection(connectionID!!))
 
         if(connectionID == ""){
             // TODO: ignore message?
@@ -186,9 +174,11 @@ class AriesAgent(private val context: Context) {
                 connection.updateTheirDIDForConnection(connectionID, theirDID)
                 println("Updated connection: ${connection.getConnection(connectionID)}")
 
+                // TODO: get label for connection
+                val label = ""
+                Utils.storeMessageToSharedPrefs(context, message, false, label)
             }
         }
-        Utils.storeMessageToSharedPrefs(context, message, false, from)
 
         // TODO: notification of message: refresh messages page if open
         sendMessageReceivedMessage()
@@ -213,7 +203,6 @@ class AriesAgent(private val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(connectionID: String){
 
-        // TODO: get connection via theirOldDID?
         val myDID = connection.getMyDIDForConnection(connectionID)
         Utils.storeConnectionIDForOldDID(context, connectionID, myDID)
 
