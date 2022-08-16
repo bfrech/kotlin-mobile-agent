@@ -35,8 +35,6 @@ class Connection(private val service: AriesAgent) {
         val myDID = service.didHandler.createMyDID()
         val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
 
-        println("MYDIDDOC: $myDIDDoc")
-
         // Change ID of attachment to peer-connection-request with new framework file
         val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
             |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"},
@@ -57,10 +55,15 @@ class Connection(private val service: AriesAgent) {
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createOOBResponse(myDID: String): String {
 
+        val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
+
         val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
-            |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"}
+            |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"},
+            | "attachments": [{"id": "peer-connection-request", "mime-type": "application/json", "description": "didDoc",
+            | "data": {"base64": "${Utils.encodeBase64(myDIDDoc)}"}}]
             | } """.trimMargin()
 
         val data = payload.toByteArray(StandardCharsets.UTF_8)

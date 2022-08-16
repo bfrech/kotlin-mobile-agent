@@ -47,8 +47,7 @@ class Messaging(private val service: AriesAgent) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun sendConnectionResponse(connectionID: String, goal: String) {
-        val myDID = service.connection.getMyDIDForConnection(connectionID)
+    fun sendConnectionResponse(myDID: String, connectionID: String, goal: String) {
         val oobInvitation = service.connection.createOOBResponse(myDID)
         sendMessageViaConnectionID(goal, Utils.encodeBase64(oobInvitation), connectionID)
     }

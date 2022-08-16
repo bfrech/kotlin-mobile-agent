@@ -110,7 +110,7 @@ class AriesAgent(private val context: Context) {
         val label = jsonConnection["TheirLabel"].toString()
         addContact(label, connectionID)
 
-        messaging.sendConnectionResponse(connectionID, "connection_response")
+        messaging.sendConnectionResponse(openDID, connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
