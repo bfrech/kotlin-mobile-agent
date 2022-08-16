@@ -29,17 +29,13 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         if(topic == "connection_response"){
             println("Received Connection Response: $jsonMessage" )
             ariesAgent.completeConnectionRequest(
+
+                // TODO: replace label with "to"
                 jsonMessage["label"].toString(),
                 jsonMessage["content"].toString()
             )
             return
         }
-
-        //if(topic == "connection_complete"){
-        //    println("Received Connection Completed Message: $jsonMessage" )
-        //    ariesAgent.acknowledgeConnectionCompletion(jsonMessage["label"].toString())
-        //    return
-        //}
 
         if(topic == "basicmessage"){
             println("Got a Message: $jsonMessage")
