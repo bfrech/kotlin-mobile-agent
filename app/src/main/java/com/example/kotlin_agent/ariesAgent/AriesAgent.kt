@@ -239,12 +239,14 @@ class AriesAgent(private val context: Context) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(connectionID: String){
 
-        val myDID = connection.getMyDIDForConnection(connectionID)
-        Utils.storeConnectionIDForOldDID(context, connectionID, myDID)
+        //val myDID = connection.getMyDIDForConnection(connectionID)
+
 
         val newDID =  connection.rotateDIDForConnection(connectionID)
         val newDIDDoc = didHandler.vdrResolveDID(newDID)
         println("New DID Doc: $newDIDDoc")
+
+        Utils.storeConnectionIDForOldDID(context, connectionID, newDID)
 
     }
 
