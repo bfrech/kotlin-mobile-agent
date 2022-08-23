@@ -17,7 +17,6 @@ class AgentService: Service(){
         Android Service Functions
      */
     override fun onBind(intent: Intent?): IBinder? {
-
         println("Some component wants to bind this service")
         return null
     }
@@ -35,25 +34,18 @@ class AgentService: Service(){
                 if (extras == null) {
                     println("No mediator URL or Label given")
                 } else {
-
                     val backgroundSetup = object: Thread(){
                         override fun run(){
                             ariesAgent.createNewAgent(extras["label"].toString())
                             ariesAgent.connectToMediator(extras["mediatorURL"].toString())
                         }
                     }.start()
-
                 }
-
             }
 
             if (action.equals("createInvitation")) {
                 val invitation = ariesAgent.createConnectionInvitation()
-                println("Created Invitation: $invitation")
-
-                if (invitation != null) {
-                    sendPeerDidMessage(invitation)
-                }
+                sendCreatedInvitationMessage(invitation)
             }
 
             if (action.equals("acceptInvitation")) {
@@ -61,8 +53,7 @@ class AgentService: Service(){
                 if (extras == null) {
                     println("No Value was given")
                 } else {
-                    var invitation = extras["did"].toString()
-                    println("Got Invitation: $invitation")
+                    val invitation = extras["qr_invitation"].toString()
                     ariesAgent.createAndSendConnectionRequest(invitation)
                 }
             }
@@ -75,7 +66,6 @@ class AgentService: Service(){
                 } else {
                     val message = extras["message"].toString()
                     val label = extras["label"].toString()
-                    println("Sending Message $message to $label")
                     ariesAgent.sendMessage(message, label)
                 }
             }
@@ -92,9 +82,8 @@ class AgentService: Service(){
     }
 
 
-    private fun sendPeerDidMessage(peerDIDDocEncoded: String) {
-        println("sender: Broadcasting message")
-        val intent = Intent("created-peer-did")
+    private fun sendCreatedInvitationMessage(peerDIDDocEncoded: String) {
+        val intent = Intent("connection-invitation")
         intent.putExtra("message", peerDIDDocEncoded)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }

@@ -35,14 +35,11 @@ class AriesAgent(private val context: Context) {
     var routerConnectionId = ""
     var mediatorURL = ""
 
-    var mediator: Mediator = Mediator(this)
-    var connection: Connection = Connection(this)
-    var messaging: Messaging = Messaging(this)
+    var mediatorHandler: MediatorHandler = MediatorHandler(this)
+    var connectionHandler: ConnectionHandler = ConnectionHandler(this)
+    var messagingHandler: MessagingHandler = MessagingHandler(this)
     var didHandler: DidHandler = DidHandler(this)
     var keyHandler: KeyHandler = KeyHandler(this)
-
-    var openDID = ""
-
 
     fun createNewAgent(label: String) {
         agentlabel = label
@@ -87,21 +84,15 @@ class AriesAgent(private val context: Context) {
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createConnectionInvitation(): String {
-        return connection.createDIDExchangeInvitation()
+        return connectionHandler.createDIDExchangeInvitation()
     }
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
-        val oobInvitation = connection.createOOBInvitation()
-
-        // TODO: Store DID as open DID
-        val jsonOobInvitation = JSONObject(oobInvitation)
-        val inv = JSONObject(jsonOobInvitation["invitation"].toString())
-        openDID = inv["from"].toString()
-
-        mediator.reconnectToMediator()
-        messaging.sendMessageViaServiceEndpoint("connection_request", Utils.encodeBase64(oobInvitation), invitation)
+        val oobInvitation = connectionHandler.createOOBInvitation()
+        mediatorHandler.reconnectToMediator()
+        messagingHandler.sendMessageViaServiceEndpoint("connection_request", Utils.encodeBase64(oobInvitation), invitation)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -109,20 +100,20 @@ class AriesAgent(private val context: Context) {
         val invitation = Utils.decodeBase64(invitationEnc)
         println("Got Connection Request with invitation: $invitation")
 
-        val connectionID = connection.acceptOOBV2Invitation(invitation)
+        val connectionID = connectionHandler.acceptOOBV2Invitation(invitation)
         println("Accepted OOB Invitation with $connectionID")
 
         // TODO: get label from connection and store in shared Prefs
-        val jsonConnection = JSONObject(connection.getConnection(connectionID))
+        val jsonConnection = JSONObject(connectionHandler.getConnection(connectionID))
         val label = jsonConnection["TheirLabel"].toString()
         addContact(label, connectionID)
 
-        messaging.sendConnectionResponse(connectionID, "connection_response")
+        messagingHandler.sendConnectionResponse(connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun completeConnectionRequest(label: String, from: String, to: String){
-        val connectionID = connection.createNewConnection(to, from)
+        val connectionID = connectionHandler.createNewConnection(to, from)
         println("Created Connection with $label and: $connectionID")
         addContact(label, connectionID)
     }
@@ -137,10 +128,10 @@ class AriesAgent(private val context: Context) {
         sharedPrefLabels.edit().putString(connectionID, label).apply()
 
         // TODO: store my DID -> connID
-        val myDID = connection.getMyDIDForConnection(connectionID)
+        val myDID = connectionHandler.getMyDIDForConnection(connectionID)
         Utils.storeConnectionIDForOldDID(context,connectionID, myDID)
 
-        println("new Connection: ${connection.getConnection(connectionID)}")
+        println("new Connection: ${connectionHandler.getConnection(connectionID)}")
 
         sendConnectionCompletedBroadcast()
     }
@@ -159,19 +150,11 @@ class AriesAgent(private val context: Context) {
      */
     fun connectToMediator(mediatorUrl: String){
         this.mediatorURL = mediatorUrl
-        mediator.connectToMediator(mediatorUrl)
+        mediatorHandler.connectToMediator(mediatorUrl)
     }
 
     fun registerMediator() {
-
-        // TODO: Is this necessary? Update Connection to V2
-        //val routerConnection = JSONObject(connection.getConnection(routerConnectionId))
-        //routerConnectionId = connection.createNewConnection(routerConnection["MyDID"].toString(), routerConnection["TheirDID"].toString())
-
-        //println("My Router DID: ${routerConnection["MyDID"]}")
-        //println(didHandler.vdrResolveDID(routerConnection["MyDID"].toString()))
-
-        mediator.registerMediator()
+        mediatorHandler.registerMediator()
     }
 
 
@@ -181,18 +164,16 @@ class AriesAgent(private val context: Context) {
     fun processBasicMessage(theirDID: String, myDID: String, message: String){
 
         val connectionID = Utils.getConnectionIDForMyOldDID(context, myDID)
-        println(connection.getConnection(connectionID!!))
+        println(connectionHandler.getConnection(connectionID!!))
 
         if(connectionID == ""){
-            // TODO: ignore message?
             println("No connection Entry for This Label")
             return
         } else {
-            val theirOldDID = connection.getTheirDIDForConnection(connectionID)
+            val theirOldDID = connectionHandler.getTheirDIDForConnection(connectionID)
             if(theirOldDID != theirDID){
                 println("They rotated DIDs, Updating Connection Entry with new connectionID: $connectionID!")
-                connection.updateTheirDIDForConnection(connectionID, theirDID)
-                println("Updated connection: ${connection.getConnection(connectionID)}")
+                connectionHandler.updateTheirDIDForConnection(connectionID, theirDID)
 
                 // TODO: get label for connection
                 val label = sharedPrefLabels.getString(connectionID, "")
@@ -213,7 +194,7 @@ class AriesAgent(private val context: Context) {
         val connectionID = getConnectionIDFromLabel(recipient)
         if (connectionID != "") {
             rotateDIDForConnection(connectionID)
-            messaging.sendMobileMessage(message, connectionID)
+            messagingHandler.sendMobileMessage(message, connectionID)
         }
     }
 
@@ -225,9 +206,7 @@ class AriesAgent(private val context: Context) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(connectionID: String){
-        val newDID =  connection.rotateDIDForConnection(connectionID)
-        val newDIDDoc = didHandler.vdrResolveDID(newDID)
-        println("New DID Doc: $newDIDDoc")
+        val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
         Utils.storeConnectionIDForOldDID(context, connectionID, newDID)
     }
 

@@ -31,13 +31,14 @@ class ContactsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_contacts)
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
-            IntentFilter("created-peer-did")
+            IntentFilter("connection-invitation")
         )
 
         LocalBroadcastManager.getInstance(this).registerReceiver(completedConnectionMessageReceiver,
             IntentFilter("connection_completed")
         )
 
+        // Button to create a new Invitation
         val addContactButton: FloatingActionButton = findViewById(R.id.addContactActionButton)
         addContactButton.setOnClickListener {
             val service = Intent(this, AgentService::class.java)
@@ -45,6 +46,7 @@ class ContactsActivity : AppCompatActivity() {
             startService(service)
         }
 
+        // Button to scan an Invitation
         val scanQrActionButton: FloatingActionButton = findViewById(R.id.scanQRActionButton)
         scanQrActionButton.setOnClickListener{
             val options = ScanOptions()
@@ -56,13 +58,12 @@ class ContactsActivity : AppCompatActivity() {
 
         // Display Contacts List
         val listView: ListView = findViewById(R.id.listview_contacts)
-        val values: MutableMap<String, *> = sharedPref.all
-        val contacts = values.keys
+        val contacts = getContactList()
         adapter = ArrayAdapter(this, R.layout.contacts_item, contacts.toTypedArray())
         listView.adapter = adapter
 
         // Open Messaging Screen for Label
-        listView.setOnItemClickListener { parent, view, position, id ->
+        listView.setOnItemClickListener { parent, _, position, _ ->
             val intent = Intent(this, MessageActivity::class.java)
 
             // TODO: change to connection ID instead of Label
@@ -91,32 +92,37 @@ class ContactsActivity : AppCompatActivity() {
 
     private fun acceptInvitationFromQRCode(didDocEncoded: String){
         val service = Intent(this, AgentService::class.java)
-        service.putExtra("did", didDocEncoded)
+        service.putExtra("qr_invitation", didDocEncoded)
         service.action = "acceptInvitation"
         startService(service)
     }
 
+    // Get Contacts from SharedPrefs
+    private fun getContactList(): MutableSet<String> {
+        val values: MutableMap<String, *> = sharedPref.all
+        return values.keys
+    }
+
 
     // Handler for received Intents. This will be called whenever an Intent
-    // with an action named "created-peer-did" is broadcasted.
+    // with an action named "connection-invitation" is broadcasted.
     private val mMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             // Get extra data included in the Intent
             val message = intent.getStringExtra("message")
-            println("Receiver Got message: $message")
 
             // Go to invitation Screen
-            val intent = Intent(this@ContactsActivity, NewInvitationActivity::class.java)
-            intent.putExtra("peerDID",message)
-            startActivity(intent)
+            val invitationIntent = Intent(this@ContactsActivity, NewInvitationActivity::class.java)
+            invitationIntent.putExtra("new_invitation",message)
+            startActivity(invitationIntent)
         }
     }
 
     private val completedConnectionMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             adapter.notifyDataSetChanged()
-            val intent = Intent(this@ContactsActivity, ContactsActivity::class.java)
-            startActivity(intent)
+            val contactsIntent = Intent(this@ContactsActivity, ContactsActivity::class.java)
+            startActivity(contactsIntent)
 
         }
     }

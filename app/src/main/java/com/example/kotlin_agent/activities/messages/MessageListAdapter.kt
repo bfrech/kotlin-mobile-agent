@@ -1,6 +1,5 @@
 package com.example.kotlin_agent.activities.messages
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,14 +8,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.kotlin_agent.Utils
 
 
-class MessageListAdapter(context: Context, userMessageList: List<UserMessage>) :
+class MessageListAdapter(userMessageList: List<UserMessage>) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val VIEW_TYPE_MESSAGE_SENT = 1
     private val VIEW_TYPE_MESSAGE_RECEIVED = 2
 
-    private val mContext: Context = context
-    private var mUserMessageList: List<UserMessage> = userMessageList
+    private var mUserMessageList: List<UserMessage> = userMessageList.sortedBy { it.createdAt }
 
 
     override fun getItemViewType(position: Int): Int {
@@ -48,8 +46,8 @@ class MessageListAdapter(context: Context, userMessageList: List<UserMessage>) :
         return mUserMessageList.size
     }
 
-    fun updateMessageList(newlist: List<UserMessage>) {
-        mUserMessageList = newlist
+    fun updateMessageList(newList: List<UserMessage>) {
+        mUserMessageList = newList.sortedBy { it.createdAt }
         notifyDataSetChanged()
     }
 
@@ -67,29 +65,25 @@ class MessageListAdapter(context: Context, userMessageList: List<UserMessage>) :
     // View Holder for Received messages
     class ReceivedMessageHolder constructor(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
-        var messageText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_message_other) as TextView
-        var timeText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_timestamp_other) as TextView
-        var nameText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_user_other) as TextView
+        private var messageText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_message_other) as TextView
+        private var timeText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_timestamp_other) as TextView
+        private var nameText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_user_other) as TextView
         fun bind(userMessage: UserMessage) {
             messageText.text = userMessage.message
-
-            // Format the stored timestamp into a readable String using method.
             timeText.text = Utils.formatDateTime(userMessage.createdAt)
             nameText.text = userMessage.sender
         }
 
     }
 
-
+    // View Holder for Sent messages
     class SentMessageHolder constructor(itemView: View) :
         RecyclerView.ViewHolder(itemView) {
-        var messageText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_message_me) as TextView
-        var timeText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_timestamp_me) as TextView
+        private var messageText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_message_me) as TextView
+        private var timeText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_timestamp_me) as TextView
 
         fun bind(userMessage: UserMessage) {
             messageText.text = userMessage.message
-
-            // Format the stored timestamp into a readable String using method.
             timeText.text = Utils.formatDateTime(userMessage.createdAt)
         }
     }

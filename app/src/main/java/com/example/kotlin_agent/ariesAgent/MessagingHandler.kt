@@ -2,10 +2,9 @@ package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import com.example.kotlin_agent.Utils
 import java.nio.charset.StandardCharsets
 
-class Messaging(private val service: AriesAgent) {
+class MessagingHandler(private val service: AriesAgent) {
 
     private fun sendMessageViaConnectionID(goal: String, message: String, connectionID: String){
         val messageBody = buildMessageBody(goal, message, connectionID)
@@ -46,7 +45,7 @@ class Messaging(private val service: AriesAgent) {
 
 
     private fun buildMessageBody(goal: String, message: String, connectionID: String): String{
-        val theirDID = if (connectionID != "") service.connection.getTheirDIDForConnection(connectionID) else ""
+        val theirDID = if (connectionID != "") service.connectionHandler.getTheirDIDForConnection(connectionID) else ""
         return """ {
 			    "@type": "https://didcomm.org/mobilemessage/1.0/message",
                 "goal": "$goal",

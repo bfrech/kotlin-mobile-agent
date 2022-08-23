@@ -3,55 +3,63 @@ package com.example.kotlin_agent.ariesAgent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import org.hyperledger.aries.api.Handler
-import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
 class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun handle(topic: String, message: ByteArray) {
         println("received notification topic: $topic")
         println("received notification message: " + String(message, StandardCharsets.UTF_8))
 
-        val json = JSONObject(String(message, StandardCharsets.UTF_8))
-        val jsonMessage = JSONObject(json["message"].toString())
+
+        val newMessage = AriesUtils.extractValueFromJSONObject(
+            String(message, StandardCharsets.UTF_8),
+            AriesUtils.MESSAGE_KEY
+        )
 
 
+        // Connection Request Handling
         if(topic == "connection_request"){
-            println("Received Connection Request: $jsonMessage" )
+            println("Received Connection Request: $newMessage" )
 
             // TODO: Check request acceptance?
 
-            ariesAgent.createAndSendConnectionResponse(jsonMessage["content"].toString())
-            return
-        }
+            ariesAgent.createAndSendConnectionResponse(
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
 
-        if(topic == "connection_response"){
-            println("Received Connection Response: $jsonMessage" )
-            ariesAgent.completeConnectionRequest(
-                jsonMessage["content"].toString(),
-                jsonMessage["from"].toString(),
-                jsonMessage["to"].toString()
             )
             return
         }
 
-        if(topic == "mobile_message"){
-            println("Got a Message: $jsonMessage")
-            ariesAgent.processBasicMessage(jsonMessage["from"].toString(), jsonMessage["to"].toString(),
-                jsonMessage["content"].toString())
+        // Connection Response Handling
+        if(topic == "connection_response"){
+            println("Received Connection Response: $newMessage" )
+            ariesAgent.completeConnectionRequest(
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY)
+            )
             return
         }
 
-        /*
-            Mediator Connection Handling
-         */
-        val properties = JSONObject(jsonMessage["Properties"].toString())
-        if(jsonMessage["StateID"].equals("completed")) {
-            if(properties["connectionID"].equals(ariesAgent.routerConnectionId)){
-                println("Reached completed State: register Router now")
-                ariesAgent.registerMediator()
-            }
+        // Message Handling
+        if(topic == "mobile_message"){
+            println("Got a Message: $newMessage")
+            ariesAgent.processBasicMessage(
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY),
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
+            )
+            return
+        }
+
+
+        // Mediator Connection Handling
+        val stateID = AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.STATE_ID_KEY)
+        if(stateID == "completed") {
+            ariesAgent.registerMediator()
         }
     }
 }

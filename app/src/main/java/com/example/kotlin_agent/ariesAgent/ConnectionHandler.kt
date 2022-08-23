@@ -3,13 +3,12 @@ package com.example.kotlin_agent.ariesAgent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.Utils
-import org.hyperledger.aries.models.RequestEnvelope
 import org.hyperledger.aries.models.ResponseEnvelope
 import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
-class Connection(private val service: AriesAgent) {
+class ConnectionHandler(private val service: AriesAgent) {
 
     fun createDIDExchangeInvitation(): String {
         val payload = """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}"} """
@@ -28,6 +27,19 @@ class Connection(private val service: AriesAgent) {
         return ""
     }
 
+    fun createNewConnectionInvitation(): String {
+        val serviceEndpoint = ""
+        val recipientKeys = ""
+        val routingKeys = ""
+
+        return """ {
+           "label": "${service.agentlabel}",
+           "serviceEndpoint": "$serviceEndpoint",
+           "recipientKeys" : ["$recipientKeys"],
+           "routingKeys" : ["$routingKeys"],
+        }""".trimIndent()
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createOOBInvitation(): String {
@@ -35,10 +47,9 @@ class Connection(private val service: AriesAgent) {
         val myDID = service.didHandler.createMyDID()
         val myDIDDoc = service.didHandler.vdrResolveDID(myDID)
 
-        // Change ID of attachment to peer-connection-request with new framework file
         val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
             |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"},
-            | "attachments": [{"id": "peer-connection-request", "mime-type": "application/json", "description": "didDoc",
+            | "attachments": [{"id": "peer-connection-request", "mime-type": "application/json",
             | "data": {"base64": "${Utils.encodeBase64(myDIDDoc)}"}}]
             | } """.trimMargin()
 
@@ -55,26 +66,6 @@ class Connection(private val service: AriesAgent) {
     }
 
 
-    fun createOOBResponse(myDID: String): String {
-
-        val payload = """ { "label": "${service.agentlabel}", "from": "$myDID", 
-            |"body": {"accept": ["didcomm/v2"], "goal_code": "connect"}
-            | } """.trimMargin()
-
-        val data = payload.toByteArray(StandardCharsets.UTF_8)
-        val res = service.ariesAgent?.outOfBandV2Controller?.createInvitation(data)
-        if (res != null) {
-            if (res.error != null) {
-                println(res.error)
-            } else {
-                return String(res.payload, StandardCharsets.UTF_8)
-            }
-        }
-        return ""
-    }
-
-
-
     fun acceptOOBV2Invitation(inv: String): String{
 
         val invitation = """ ${inv.dropLast(2)}, 
@@ -82,18 +73,18 @@ class Connection(private val service: AriesAgent) {
             |"my_router_connections": ["${service.routerConnectionId}"] 
             |}""".trimMargin()
 
-        var res: ResponseEnvelope
         try {
             val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
             val data = invitation.toByteArray(StandardCharsets.UTF_8)
             if (outOfBandV2Controller != null) {
-                res = outOfBandV2Controller.acceptInvitation(data)
+                var res = outOfBandV2Controller.acceptInvitation(data)
                 if(res.error != null){
                     println(res.error.message)
                 } else {
-                    val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                    val jsonActionResponse = JSONObject(actionsResponse)
-                    return jsonActionResponse["connection_id"].toString()
+                    return AriesUtils.extractValueFromJSONObject(
+                        String(res.payload, StandardCharsets.UTF_8),
+                        AriesUtils.CONNECTION_ID_KEY
+                    )
                 }
             }
         } catch (e: Exception) {
@@ -103,8 +94,7 @@ class Connection(private val service: AriesAgent) {
     }
 
     fun getTheirDIDForConnection(connectionID: String): String {
-        val connection = JSONObject(getConnection(connectionID))
-        return connection["TheirDID"].toString()
+        return AriesUtils.extractValueFromJSONObject(getConnection(connectionID), AriesUtils.THEIR_DID_KEY)
     }
 
     fun getConnection(connectionID: String): String{
@@ -115,13 +105,11 @@ class Connection(private val service: AriesAgent) {
             if(res.error != null){
                 println(res.error)
             } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                val jsonObject = JSONObject(actionsResponse)
-                val result = JSONObject(jsonObject["result"].toString())
-                return result.toString()
+                return AriesUtils.extractValueFromJSONObject(
+                    String(res.payload, StandardCharsets.UTF_8),
+                    AriesUtils.RESULT_KEY
+                )
             }
-        } else {
-            return "Res is null"
         }
         return ""
     }
@@ -135,12 +123,11 @@ class Connection(private val service: AriesAgent) {
             if(res.error != null){
                 println(res.error)
             } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                val jsonObject = JSONObject(actionsResponse)
-                return jsonObject["id"].toString()
+                return AriesUtils.extractValueFromJSONObject(
+                    String(res.payload, StandardCharsets.UTF_8),
+                    AriesUtils.ID_KEY
+                )
             }
-        } else {
-            println("Res is null")
         }
         return ""
     }
@@ -152,12 +139,8 @@ class Connection(private val service: AriesAgent) {
         if(res != null){
             if(res.error != null){
                 println(res.error)
-            } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                println("Updated Connection: $actionsResponse")
             }
-        } else {
-            println("Res is null")
+            // Return empty response on success
         }
         return ""
     }
@@ -173,23 +156,22 @@ class Connection(private val service: AriesAgent) {
             kid = peerDID + kid
         }
 
-        // TODO: remove key here? is this good?
-        service.mediator.removeKeyFromMediator(kid)
+        // Remove old key from mediator
+        service.mediatorHandler.removeKeyFromMediator(kid)
 
         val newDID = service.didHandler.createMyDID()
 
         val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "$newDID", "create_peer_did": false}"""
-
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.rotateDID(data)
         if(res != null){
             if(res.error != null){
                 println(res.error)
             } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                val jsonObject = JSONObject(actionsResponse)
-                println("Rotate DID response: $jsonObject")
-                return jsonObject["new_did"].toString()
+                return AriesUtils.extractValueFromJSONObject(
+                    String(res.payload, StandardCharsets.UTF_8),
+                    AriesUtils.NEW_DID_KEY
+                )
             }
         } else {
             println("Res is null")
@@ -198,28 +180,35 @@ class Connection(private val service: AriesAgent) {
     }
 
     fun getMyDIDForConnection(connectionID: String): String{
-        val connection = JSONObject(getConnection(connectionID))
-        return connection["MyDID"].toString()
+        return AriesUtils.extractValueFromJSONObject(
+            getConnection(connectionID),
+            AriesUtils.MY_DID_KEY
+        )
     }
 
     private fun getOldKidForConnection(connectionID: String): String {
         val myDID = getMyDIDForConnection(connectionID)
-        val myDIDDoc = JSONObject(service.didHandler.vdrResolveDID(myDID))
-        val assertionMethod = JSONArray(myDIDDoc["assertionMethod"].toString())
-        return assertionMethod[0].toString()
+
+        val methods = AriesUtils.extractValueFromJSONObject(
+            service.didHandler.vdrResolveDID(myDID),
+            AriesUtils.ASSERTION_METHOD_KEY
+        )
+
+        return AriesUtils.extractValueFromJSONArray(methods, 0)
     }
 
-    private fun getServiceEndpointForConnection(connectionID: String): String {
-        val services = JSONArray(getServiceForConnection(connectionID))
-        val service = JSONObject(services[0].toString())
-        return service["serviceEndpoint"].toString()
-    }
 
-    private fun getServiceForConnection(connectionID: String): String {
-        val myDID = getMyDIDForConnection(connectionID)
-        val myDIDDoc = JSONObject(service.didHandler.vdrResolveDID(myDID))
-        return myDIDDoc["service"].toString()
-    }
+    //private fun getServiceEndpointForConnection(connectionID: String): String {
+    //    val services = JSONArray(getServiceForConnection(connectionID))
+    //    val service = JSONObject(services[0].toString())
+    //    return service["serviceEndpoint"].toString()
+    //}
+
+    //private fun getServiceForConnection(connectionID: String): String {
+    //    val myDID = getMyDIDForConnection(connectionID)
+    //    val myDIDDoc = JSONObject(service.didHandler.vdrResolveDID(myDID))
+    //    return myDIDDoc["service"].toString()
+    //}
 
 
 

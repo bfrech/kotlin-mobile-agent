@@ -2,7 +2,6 @@ package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import org.hyperledger.aries.models.RequestEnvelope
 import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
@@ -17,12 +16,11 @@ class DidHandler(private val service: AriesAgent) {
             if(res.error != null){
                 println("Error: ${res.error}")
             } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                val jsonObject = JSONObject(actionsResponse)
-                return jsonObject["didDocument"].toString()
+                return AriesUtils.extractValueFromJSONObject(
+                    String(res.payload, StandardCharsets.UTF_8),
+                    AriesUtils.DID_DOCUMENT_KEY
+                )
             }
-        } else {
-            println("Res is null")
         }
         return ""
     }
@@ -49,7 +47,7 @@ class DidHandler(private val service: AriesAgent) {
     }
 
     /*
-        Create Own DID in VDR (uses Router Connection
+        Create Own DID in VDR (uses Router Connection)
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createMyDID(): String {
@@ -69,8 +67,7 @@ class DidHandler(private val service: AriesAgent) {
 
 
     private fun createMyService(): String{
-
-        val routerConnection = service.connection.getConnection(service.routerConnectionId)
+        val routerConnection = service.connectionHandler.getConnection(service.routerConnectionId)
         val jsonRouterConnection = JSONObject(routerConnection)
         val serviceEndpointObject = jsonRouterConnection["ServiceEndPoint"].toString()
         val serviceEndpointArray = JSONArray(serviceEndpointObject)

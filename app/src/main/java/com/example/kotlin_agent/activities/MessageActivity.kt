@@ -38,15 +38,12 @@ class MessageActivity : AppCompatActivity() {
         val extras = intent.extras
         if (extras != null) {
             theirLabel = extras.getString("Label").toString()
-
             println("Starting Messaging Activity for $theirLabel")
 
             val messageList = Utils.getMessagesFromSharedPrefs(this, theirLabel)
 
-            println("Got Message List with size ${messageList.size}")
-
             mMessageRecycler = findViewById<View>(R.id.recycler_messaging) as RecyclerView
-            mMessageAdapter = MessageListAdapter(this, messageList)
+            mMessageAdapter = MessageListAdapter(messageList)
             mMessageRecycler.layoutManager = LinearLayoutManager(this)
             mMessageRecycler.adapter = mMessageAdapter
         }
@@ -64,7 +61,7 @@ class MessageActivity : AppCompatActivity() {
             ariesService.action = "writeMessage"
             startService(ariesService)
 
-            // refresh page to display message
+            // display message
             updateAdapter()
             messageEdit.text.clear()
         }

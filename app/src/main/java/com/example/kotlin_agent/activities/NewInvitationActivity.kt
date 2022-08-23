@@ -30,18 +30,16 @@ class NewInvitationActivity : AppCompatActivity() {
             IntentFilter("connection_completed")
         )
 
-        // Render PeerDID as QR Code
+        // Render Invitation as QR Code
         qrImageView = findViewById(R.id.qrCodeImage)
-        val peerDID = intent.getStringExtra("peerDID")
-        val bitmap = peerDID?.let { getQrCodeBitmap(it) }
+        val invitation = intent.getStringExtra("new_invitation")
+        val bitmap = invitation?.let { getQrCodeBitmap(it) }
         qrImageView.setImageBitmap(bitmap)
     }
 
 
     private fun getQrCodeBitmap(qrCodeContent: String): Bitmap {
-        val size = 512 //pixels
-
-        //val hints = hashMapOf<EncodeHintType, Int>().also { it[EncodeHintType.MARGIN] = 1 } // Make the QR code buffer border narrower
+        val size = 512
         val bits = QRCodeWriter().encode(qrCodeContent, BarcodeFormat.QR_CODE, size, size)
         return Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565).also {
             for (x in 0 until size) {

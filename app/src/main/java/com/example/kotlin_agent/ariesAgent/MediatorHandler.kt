@@ -6,7 +6,7 @@ import java.io.BufferedReader
 import java.net.URL
 import java.nio.charset.StandardCharsets
 
-class Mediator(private val service: AriesAgent) {
+class MediatorHandler(private val service: AriesAgent) {
 
     fun connectToMediator(mediatorUrl: String){
         val url = URL(mediatorUrl)

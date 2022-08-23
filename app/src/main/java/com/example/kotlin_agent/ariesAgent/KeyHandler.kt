@@ -1,6 +1,5 @@
 package com.example.kotlin_agent.ariesAgent
 
-import org.hyperledger.aries.models.RequestEnvelope
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
@@ -8,7 +7,7 @@ class KeyHandler(private val service: AriesAgent) {
 
     fun createVerificationMethod(keyType: String, type: String): String {
         val (key, keyDID) = createKeySet(keyType)
-        service.mediator.addKeyToMediator(keyDID)
+        service.mediatorHandler.addKeyToMediator(keyDID)
         return buildVerificationMethodFromKey(keyDID,type, key)
     }
 

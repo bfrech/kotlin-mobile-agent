@@ -13,39 +13,13 @@ import com.example.kotlin_agent.R
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var connectButton: Button
+    private lateinit var connectButton: Button
     lateinit var mediatorURLEdit: EditText
     lateinit var labelEdit: EditText
-
-    // TEST
-    private val sharedPrefContacts: SharedPreferences by lazy {
-        getSharedPreferences(
-            "${BuildConfig.APPLICATION_ID}_sharedPreferences",
-            Context.MODE_PRIVATE
-        )
-    }
-
-    // TEST
-    private val sharedPrefMessages: SharedPreferences by lazy {
-        getSharedPreferences(
-            "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_Alice",
-            Context.MODE_PRIVATE
-        )
-    }
 
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_main)
-
-            sharedPrefMessages.edit().clear().apply()
-
-            // TEST
-            with (sharedPrefMessages.edit()) {
-                clear()
-                apply()
-            }
-
-            sharedPrefContacts.edit().clear().apply()
 
             mediatorURLEdit = findViewById(R.id.mediatorURLeditText)
             labelEdit = findViewById(R.id.yourLabelEditText)
@@ -56,14 +30,13 @@ class MainActivity : AppCompatActivity() {
             connectButton.setOnClickListener {
 
                 // TODO: TEST Case
-                ariesService.putExtra("mediatorURL","http://93f5-88-78-13-247.eu.ngrok.io/invitation")
+                ariesService.putExtra("mediatorURL","http://1741-88-78-13-247.eu.ngrok.io/invitation")
                 //service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
 
                 ariesService.putExtra("label",labelEdit.text.toString())
                 ariesService.action = "startAgent"
                 startService(ariesService)
 
-                // Screen 2
                 val intent = Intent(this, ContactsActivity::class.java)
                 startActivity(intent)
             }
