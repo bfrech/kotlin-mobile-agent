@@ -19,6 +19,7 @@ import com.example.kotlin_agent.AgentService
 
 import com.example.kotlin_agent.R
 import com.example.kotlin_agent.Utils
+import com.example.kotlin_agent.store.AndroidFileSystemUtils
 
 
 class MessageActivity : AppCompatActivity() {
@@ -26,6 +27,7 @@ class MessageActivity : AppCompatActivity() {
     private lateinit var mMessageRecycler: RecyclerView
     private lateinit var mMessageAdapter: MessageListAdapter
     private lateinit var theirLabel: String
+    private lateinit var connectionID: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,9 +40,10 @@ class MessageActivity : AppCompatActivity() {
         val extras = intent.extras
         if (extras != null) {
             theirLabel = extras.getString("Label").toString()
-            println("Starting Messaging Activity for $theirLabel")
+            connectionID = AndroidFileSystemUtils.getConnectionIDForLabel(this, theirLabel).toString()
+            println("Starting Messaging Activity for $theirLabel with ID: $connectionID")
 
-            val messageList = Utils.getMessagesFromSharedPrefs(this, theirLabel)
+            val messageList = AndroidFileSystemUtils.getMessagesFromSharedPrefs(this, theirLabel)
 
             mMessageRecycler = findViewById<View>(R.id.recycler_messaging) as RecyclerView
             mMessageAdapter = MessageListAdapter(messageList)
@@ -55,9 +58,9 @@ class MessageActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             val message = messageEdit.text.toString()
-            Utils.storeMessageToSharedPrefs(this, message, true ,theirLabel)
+            AndroidFileSystemUtils.storeMessageToSharedPrefs(this, message, true ,theirLabel)
             ariesService.putExtra("message", message)
-            ariesService.putExtra("label", theirLabel)
+            ariesService.putExtra("connectionID", connectionID)
             ariesService.action = "writeMessage"
             startService(ariesService)
 
@@ -69,7 +72,7 @@ class MessageActivity : AppCompatActivity() {
 
 
     private fun updateAdapter(){
-        val messageList = Utils.getMessagesFromSharedPrefs(this, theirLabel)
+        val messageList = AndroidFileSystemUtils.getMessagesFromSharedPrefs(this, theirLabel)
         mMessageAdapter.updateMessageList(messageList)
     }
 

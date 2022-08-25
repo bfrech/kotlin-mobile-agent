@@ -10,19 +10,13 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.Toast
 import com.example.kotlin_agent.AgentService
-import com.example.kotlin_agent.BuildConfig
 import com.example.kotlin_agent.R
+import com.example.kotlin_agent.store.AndroidFileSystemUtils
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.journeyapps.barcodescanner.ScanIntentResult
 class ContactsActivity : AppCompatActivity() {
 
-    private val sharedPref: SharedPreferences by lazy {
-        getSharedPreferences(
-            "${BuildConfig.APPLICATION_ID}_sharedPreferences",
-            Context.MODE_PRIVATE
-        )
-    }
 
     lateinit var adapter: ArrayAdapter<String>
 
@@ -99,8 +93,7 @@ class ContactsActivity : AppCompatActivity() {
 
     // Get Contacts from SharedPrefs
     private fun getContactList(): MutableSet<String> {
-        val values: MutableMap<String, *> = sharedPref.all
-        return values.keys
+        return AndroidFileSystemUtils.getContactList(this)
     }
 
 

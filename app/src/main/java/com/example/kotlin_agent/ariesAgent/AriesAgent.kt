@@ -8,27 +8,12 @@ import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.kotlin_agent.BuildConfig
 import com.example.kotlin_agent.Utils
+import com.example.kotlin_agent.store.AndroidFileSystemUtils
 import org.hyperledger.aries.api.AriesController
-import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
-import org.json.JSONObject
 
 
 class AriesAgent(private val context: Context) {
-
-    private val sharedPrefContacts: SharedPreferences by lazy {
-        context.getSharedPreferences(
-            "${BuildConfig.APPLICATION_ID}_sharedPreferences",
-            Context.MODE_PRIVATE
-        )
-    }
-
-    private val sharedPrefLabels: SharedPreferences by lazy {
-        context.getSharedPreferences(
-            "${BuildConfig.APPLICATION_ID}_sharedPreferencesLabels",
-            Context.MODE_PRIVATE
-        )
-    }
 
     var ariesAgent: AriesController? = null
     var agentlabel: String = ""
@@ -54,30 +39,29 @@ class AriesAgent(private val context: Context) {
         //opts.storage = MyStorageProvider()
 
         try {
-
-            println("Starting Agent with: $agentlabel")
-            ariesAgent = Ariesagent.new_(opts)
-            val handler = NotificationHandler(this)
-            val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
-            println("registered didExchange handler with registration id: $registrationID")
-
-            val messagingRegistrationID = ariesAgent?.registerHandler(handler, "mobile_message")
-            println("registered didExchange handler with registration id: $messagingRegistrationID")
-
-            val connectionRegID = ariesAgent?.registerHandler(handler, "connection_request")
-            println("registered connection handler with registration id: $connectionRegID")
-
-            val connectionResID = ariesAgent?.registerHandler(handler, "connection_response")
-            println("registered connection handler with registration id: $connectionResID")
-
-            val connectionCompleteID = ariesAgent?.registerHandler(handler, "connection_complete")
-            println("registered connection handler with registration id: $connectionCompleteID")
-
+            registerNotificationHandlers()
         }catch (e: Exception){
             e.printStackTrace()
         }
     }
 
+    private fun registerNotificationHandlers(){
+        val handler = NotificationHandler(this)
+        val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
+        println("registered did exchange handler with registration id: $registrationID")
+
+        val messagingRegistrationID = ariesAgent?.registerHandler(handler, "mobile_message")
+        println("registered mobile message handler with registration id: $messagingRegistrationID")
+
+        val connectionRegID = ariesAgent?.registerHandler(handler, "connection_request")
+        println("registered connection request handler with registration id: $connectionRegID")
+
+        val connectionResID = ariesAgent?.registerHandler(handler, "connection_response")
+        println("registered connection response handler with registration id: $connectionResID")
+
+        val connectionCompleteID = ariesAgent?.registerHandler(handler, "connection_complete")
+        println("registered connection complete handler with registration id: $connectionCompleteID")
+    }
 
     /*
         Connection Messages to establish a connection with other mobile agents
@@ -103,9 +87,10 @@ class AriesAgent(private val context: Context) {
         val connectionID = connectionHandler.acceptOOBV2Invitation(invitation)
         println("Accepted OOB Invitation with $connectionID")
 
-        // TODO: get label from connection and store in shared Prefs
-        val jsonConnection = JSONObject(connectionHandler.getConnection(connectionID))
-        val label = jsonConnection["TheirLabel"].toString()
+        val label = AriesUtils.extractValueFromJSONObject(
+            connectionHandler.getConnection(connectionID),
+            AriesUtils.THEIR_LABEL_KEY
+        )
         addContact(label, connectionID)
 
         messagingHandler.sendConnectionResponse(connectionID, "connection_response")
@@ -119,29 +104,14 @@ class AriesAgent(private val context: Context) {
     }
 
     private fun addContact(label: String, connectionID: String){
-        if(sharedPrefContacts.all.containsKey(connectionID)){
-            // TODO: Duplicate Handling
-        }
-        sharedPrefContacts.edit().putString(label, connectionID).apply()
 
-        // TODO: Only use connectionID
-        sharedPrefLabels.edit().putString(connectionID, label).apply()
+        AndroidFileSystemUtils.addLabelToSharedPrefs(context, connectionID, label)
+        AndroidFileSystemUtils.addConnectionIDToSharedPrefs(context, connectionID, label)
 
-        // TODO: store my DID -> connID
         val myDID = connectionHandler.getMyDIDForConnection(connectionID)
-        Utils.storeConnectionIDForOldDID(context,connectionID, myDID)
-
-        println("new Connection: ${connectionHandler.getConnection(connectionID)}")
+        AndroidFileSystemUtils.storeConnectionIDForMyDID(context,connectionID, myDID)
 
         sendConnectionCompletedBroadcast()
-    }
-
-    private fun getConnectionIDFromLabel(label: String): String {
-        return if(sharedPrefContacts.all.containsKey(label)){
-            sharedPrefContacts.getString(label, "").toString()
-        } else {
-            ""
-        }
     }
 
 
@@ -163,7 +133,7 @@ class AriesAgent(private val context: Context) {
      */
     fun processBasicMessage(theirDID: String, myDID: String, message: String){
 
-        val connectionID = Utils.getConnectionIDForMyOldDID(context, myDID)
+        val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID)
         println(connectionHandler.getConnection(connectionID!!))
 
         if(connectionID == ""){
@@ -175,11 +145,10 @@ class AriesAgent(private val context: Context) {
                 println("They rotated DIDs, Updating Connection Entry with new connectionID: $connectionID!")
                 connectionHandler.updateTheirDIDForConnection(connectionID, theirDID)
 
-                // TODO: get label for connection
-                val label = sharedPrefLabels.getString(connectionID, "")
+                val label = AndroidFileSystemUtils.getLabelForConnectionID(context, connectionID)
 
                 if (label != null) {
-                    Utils.storeMessageToSharedPrefs(context, message, false, label)
+                    AndroidFileSystemUtils.storeMessageToSharedPrefs(context, message, false, label)
                 }
             }
         }
@@ -190,12 +159,9 @@ class AriesAgent(private val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun sendMessage(message: String, recipient: String){
-        val connectionID = getConnectionIDFromLabel(recipient)
-        if (connectionID != "") {
-            rotateDIDForConnection(connectionID)
-            messagingHandler.sendMobileMessage(message, connectionID)
-        }
+    fun sendMessage(message: String, connectionID: String){
+        rotateDIDForConnection(connectionID)
+        messagingHandler.sendMobileMessage(message, connectionID)
     }
 
 
@@ -203,19 +169,19 @@ class AriesAgent(private val context: Context) {
     /*
         Rotation
      */
-
     @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(connectionID: String){
         val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
-        Utils.storeConnectionIDForOldDID(context, connectionID, newDID)
+        AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID)
     }
+
+
 
 
     /*
          Communicate to Activity that connection was completed to go back to contacts screen
     */
     private fun sendConnectionCompletedBroadcast(){
-        println("sender: Broadcasting message")
         val intent = Intent("connection_completed")
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent)
     }

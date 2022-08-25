@@ -65,8 +65,8 @@ class AgentService: Service(){
                     println("No Value was given")
                 } else {
                     val message = extras["message"].toString()
-                    val label = extras["label"].toString()
-                    ariesAgent.sendMessage(message, label)
+                    val connectionID = extras["connectionID"].toString()
+                    ariesAgent.sendMessage(message, connectionID)
                 }
             }
 
