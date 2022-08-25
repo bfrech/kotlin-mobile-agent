@@ -40,6 +40,23 @@ class ConnectionHandler(private val service: AriesAgent) {
         }""".trimIndent()
     }
 
+    //@RequiresApi(Build.VERSION_CODES.O)
+    //fun createServiceEndpointInvitation(): String {
+    //    val did = service.createMyDID()
+    //    openDID = did
+    //    val res = JSONObject(service.vdrResolveDID(did))
+    //    val didDoc = JSONObject(res["didDocument"].toString())
+    //    val service = JSONObject(didDoc["service"].toString().drop(1).dropLast(1))
+    //    val serviceEndpoint = JSONObject(service["serviceEndpoint"].toString())
+    //    val key = service["recipientKeys"].toString().drop(2).substringBefore('#')
+    //    val payload = """{
+    //        |"serviceEndpoint": "${serviceEndpoint["uri"]}",
+    //        |"routingKeys": ${service["routingKeys"]},
+    //        |"recipientKeys": "$key"
+    //        |}""".trimMargin()
+    //    return payload
+    //}
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createOOBInvitation(): String {

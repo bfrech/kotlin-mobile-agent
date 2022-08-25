@@ -23,11 +23,15 @@ class KeyHandler(private val service: AriesAgent) {
             if (kmsResponse.error != null) {
                 println(kmsResponse.error)
             } else {
-                val actionsResponse = String(kmsResponse.payload, StandardCharsets.UTF_8)
-                println("Created Key Set: $actionsResponse")
-                val jsonActionResponse = JSONObject(actionsResponse)
-                key = jsonActionResponse["publicKey"].toString()
-                keyDID = jsonActionResponse["keyDID"].toString()
+                keyDID = AriesUtils.extractValueFromJSONObject(
+                    String(kmsResponse.payload, StandardCharsets.UTF_8),
+                    AriesUtils.KEY_DID_KEY
+                )
+
+                key = AriesUtils.extractValueFromJSONObject(
+                    String(kmsResponse.payload, StandardCharsets.UTF_8),
+                    AriesUtils.PUBLIC_KEY_KEY
+                )
             }
         }
         return Pair(key, keyDID)
@@ -35,7 +39,6 @@ class KeyHandler(private val service: AriesAgent) {
 
 
     private fun buildVerificationMethodFromKey(id: String, keyType: String, value: String): String {
-
         return """
             {
                 "id": "$id",

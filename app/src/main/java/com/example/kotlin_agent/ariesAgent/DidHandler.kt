@@ -34,14 +34,17 @@ class DidHandler(private val service: AriesAgent) {
             if(res.error != null){
                 println("Error: ${res.error}")
             } else {
-                val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                val jsonObject = JSONObject(actionsResponse)
-                val did = jsonObject["did"].toString()
-                val jsonDID = JSONObject(did)
-                return jsonDID["id"].toString()
+
+                val did = AriesUtils.extractValueFromJSONObject(
+                    String(res.payload, StandardCharsets.UTF_8),
+                    AriesUtils.DID_KEY
+                )
+
+                return AriesUtils.extractValueFromJSONObject(
+                    did,
+                    AriesUtils.ID_KEY
+                )
             }
-        } else {
-            println("Res is null")
         }
         return ""
     }
@@ -84,25 +87,5 @@ class DidHandler(private val service: AriesAgent) {
         """.trimIndent()
     }
 
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createTheirDIDFromDoc(didDoc: String): String {
-        val jsonDIDDoc = JSONObject(didDoc)
-        val service = jsonDIDDoc["service"].toString()
-        val id = jsonDIDDoc["id"].toString()
-
-        val verificationMethodArray = JSONArray(jsonDIDDoc["verificationMethod"].toString())
-        val verificationMethod = verificationMethodArray[0].toString()
-        val keyAgreement = verificationMethodArray[1].toString()
-
-        val payload = """ {"@context":["https://www.w3.org/ns/did/v1"], 
-            "id": "$id" ,
-            "service": $service , 
-            "verificationMethod":  [$verificationMethod],
-            "keyAgreement": [$keyAgreement]
-            } 
-        """
-        return createDIDInVDR(payload)
-    }
 
 }

@@ -14,9 +14,7 @@ class MessagingHandler(private val service: AriesAgent) {
         if (res != null) {
             if (res.error != null) {
                 println(res.error)
-            } else {
-                // Returns empty JSON
-            }
+            } // returns empty json on success
         }
     }
 
@@ -28,14 +26,12 @@ class MessagingHandler(private val service: AriesAgent) {
         if (res != null) {
             if (res.error != null) {
                 println(res.error)
-            }
+            } // returns empty json on success
         }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun sendConnectionResponse(connectionID: String, goal: String) {
-        //val myDID = service.connection.getMyDIDForConnection(connectionID)
-        //val oobInvitation = service.connection.createOOBResponse(myDID)
         sendMessageViaConnectionID(goal, service.agentlabel , connectionID)
     }
 

@@ -24,10 +24,10 @@ class MediatorHandler(private val service: AriesAgent) {
                 if(res.error != null){
                     println(res.error.message)
                 } else {
-                    val actionsResponse = String(res.payload, StandardCharsets.UTF_8)
-                    val jsonActionResponse = JSONObject(actionsResponse)
-                    service.routerConnectionId = jsonActionResponse["connection_id"].toString()
-                    println("""Accepted Router Invitation with: ${service.routerConnectionId}""")
+                    service.routerConnectionId = AriesUtils.extractValueFromJSONObject(
+                        String(res.payload, StandardCharsets.UTF_8),
+                        AriesUtils.CONNECTION_ID_KEY
+                    )
                 }
             }
         } catch (e: Exception) {

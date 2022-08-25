@@ -2,7 +2,7 @@ package com.example.kotlin_agent.ariesAgent
 
 import org.json.JSONArray
 import org.json.JSONObject
-import java.nio.charset.StandardCharsets
+
 
 class AriesUtils {
 
@@ -21,11 +21,10 @@ class AriesUtils {
         const val NEW_DID_KEY = "new_did"
         const val ASSERTION_METHOD_KEY = "assertionMethod"
         const val DID_DOCUMENT_KEY = "didDocument"
-
-        fun createPayloadData(payload: String): ByteArray {
-            return payload.toByteArray(StandardCharsets.UTF_8)
-        }
-
+        const val PUBLIC_KEY_KEY = "publicKey"
+        const val KEY_DID_KEY = "keyDID"
+        const val DID_KEY = "did"
+        const val THEIR_LABEL_KEY = "TheirLabel"
 
 
         fun extractValueFromJSONObject(objectString: String, key: String): String{
