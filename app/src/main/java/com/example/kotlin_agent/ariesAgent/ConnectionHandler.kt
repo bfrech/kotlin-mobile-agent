@@ -27,35 +27,6 @@ class ConnectionHandler(private val service: AriesAgent) {
         return ""
     }
 
-    fun createNewConnectionInvitation(): String {
-        val serviceEndpoint = ""
-        val recipientKeys = ""
-        val routingKeys = ""
-
-        return """ {
-           "label": "${service.agentlabel}",
-           "serviceEndpoint": "$serviceEndpoint",
-           "recipientKeys" : ["$recipientKeys"],
-           "routingKeys" : ["$routingKeys"],
-        }""".trimIndent()
-    }
-
-    //@RequiresApi(Build.VERSION_CODES.O)
-    //fun createServiceEndpointInvitation(): String {
-    //    val did = service.createMyDID()
-    //    openDID = did
-    //    val res = JSONObject(service.vdrResolveDID(did))
-    //    val didDoc = JSONObject(res["didDocument"].toString())
-    //    val service = JSONObject(didDoc["service"].toString().drop(1).dropLast(1))
-    //    val serviceEndpoint = JSONObject(service["serviceEndpoint"].toString())
-    //    val key = service["recipientKeys"].toString().drop(2).substringBefore('#')
-    //    val payload = """{
-    //        |"serviceEndpoint": "${serviceEndpoint["uri"]}",
-    //        |"routingKeys": ${service["routingKeys"]},
-    //        |"recipientKeys": "$key"
-    //        |}""".trimMargin()
-    //    return payload
-    //}
 
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -173,7 +144,6 @@ class ConnectionHandler(private val service: AriesAgent) {
             kid = peerDID + kid
         }
 
-        // Remove old key from mediator
         service.mediatorHandler.removeKeyFromMediator(kid)
 
         val newDID = service.didHandler.createMyDID()
@@ -213,20 +183,5 @@ class ConnectionHandler(private val service: AriesAgent) {
 
         return AriesUtils.extractValueFromJSONArray(methods, 0)
     }
-
-
-    //private fun getServiceEndpointForConnection(connectionID: String): String {
-    //    val services = JSONArray(getServiceForConnection(connectionID))
-    //    val service = JSONObject(services[0].toString())
-    //    return service["serviceEndpoint"].toString()
-    //}
-
-    //private fun getServiceForConnection(connectionID: String): String {
-    //    val myDID = getMyDIDForConnection(connectionID)
-    //    val myDIDDoc = JSONObject(service.didHandler.vdrResolveDID(myDID))
-    //    return myDIDDoc["service"].toString()
-    //}
-
-
 
 }
