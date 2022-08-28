@@ -88,12 +88,12 @@ class AndroidFileSystemUtils {
 
 
         // Store messages for Label
-        fun storeMessageToSharedPrefs(context: Context, message: String, sent: Boolean, sharedPreflabel: String){
+        fun storeMessageToSharedPrefs(context: Context, message: String, sent: Boolean, sharedPreflabel: String, createdAt: String){
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$sharedPreflabel",
                 Context.MODE_PRIVATE
             )
-            val currentTimestamp = System.currentTimeMillis()
+
 
             val label = if ( sent ) {
                 "sent"
@@ -102,7 +102,7 @@ class AndroidFileSystemUtils {
             }
 
             with (sharedPrefs.edit()) {
-                putStringSet(currentTimestamp.toString(), setOf("0000$label", "1111$message"))
+                putStringSet(createdAt, setOf("0000$label", "1111$message"))
                 apply()
             }
         }

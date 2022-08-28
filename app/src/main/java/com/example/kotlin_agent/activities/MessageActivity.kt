@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.kotlin_agent.activities.messages.MessageListAdapter
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.kotlin_agent.AgentService
 
@@ -29,6 +31,7 @@ class MessageActivity : AppCompatActivity() {
     private lateinit var theirLabel: String
     private lateinit var connectionID: String
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_message)
@@ -58,7 +61,7 @@ class MessageActivity : AppCompatActivity() {
 
         sendButton.setOnClickListener {
             val message = messageEdit.text.toString()
-            AndroidFileSystemUtils.storeMessageToSharedPrefs(this, message, true ,theirLabel)
+            AndroidFileSystemUtils.storeMessageToSharedPrefs(this, message, true ,theirLabel, Utils.getCurrentTimeAsFormattedString())
             ariesService.putExtra("message", message)
             ariesService.putExtra("connectionID", connectionID)
             ariesService.action = "writeMessage"

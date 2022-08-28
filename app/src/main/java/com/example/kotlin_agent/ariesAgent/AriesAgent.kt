@@ -2,14 +2,13 @@ package com.example.kotlin_agent.ariesAgent
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import com.example.kotlin_agent.BuildConfig
 import com.example.kotlin_agent.Utils
 import com.example.kotlin_agent.store.AndroidFileSystemUtils
 import org.hyperledger.aries.api.AriesController
+import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
 
 
@@ -39,27 +38,29 @@ class AriesAgent(private val context: Context) {
         //opts.storage = MyStorageProvider()
 
         try {
+            println("Starting Agent with: $agentlabel")
+            ariesAgent = Ariesagent.new_(opts)
             registerNotificationHandlers()
         }catch (e: Exception){
             e.printStackTrace()
         }
     }
 
-    private fun registerNotificationHandlers(){
+    private fun registerNotificationHandlers() {
         val handler = NotificationHandler(this)
-        val registrationID = ariesAgent?.registerHandler(handler, "didexchange_states")
+        val registrationID = this.ariesAgent?.registerHandler(handler, "didexchange_states")
         println("registered did exchange handler with registration id: $registrationID")
 
-        val messagingRegistrationID = ariesAgent?.registerHandler(handler, "mobile_message")
+        val messagingRegistrationID = this.ariesAgent?.registerHandler(handler, "mobile_message")
         println("registered mobile message handler with registration id: $messagingRegistrationID")
 
-        val connectionRegID = ariesAgent?.registerHandler(handler, "connection_request")
+        val connectionRegID = this.ariesAgent?.registerHandler(handler, "connection_request")
         println("registered connection request handler with registration id: $connectionRegID")
 
-        val connectionResID = ariesAgent?.registerHandler(handler, "connection_response")
+        val connectionResID = this.ariesAgent?.registerHandler(handler, "connection_response")
         println("registered connection response handler with registration id: $connectionResID")
 
-        val connectionCompleteID = ariesAgent?.registerHandler(handler, "connection_complete")
+        val connectionCompleteID = this.ariesAgent?.registerHandler(handler, "connection_complete")
         println("registered connection complete handler with registration id: $connectionCompleteID")
     }
 
@@ -131,7 +132,7 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processBasicMessage(theirDID: String, myDID: String, message: String){
+    fun processBasicMessage(theirDID: String, myDID: String, message: String, createdAt: String){
 
         val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID)
         println(connectionHandler.getConnection(connectionID!!))
@@ -148,7 +149,7 @@ class AriesAgent(private val context: Context) {
                 val label = AndroidFileSystemUtils.getLabelForConnectionID(context, connectionID)
 
                 if (label != null) {
-                    AndroidFileSystemUtils.storeMessageToSharedPrefs(context, message, false, label)
+                    AndroidFileSystemUtils.storeMessageToSharedPrefs(context, message, false, label, createdAt )
                 }
             }
         }

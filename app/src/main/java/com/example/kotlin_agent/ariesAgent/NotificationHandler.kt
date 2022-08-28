@@ -50,7 +50,8 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
             ariesAgent.processBasicMessage(
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY),
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CREATED_TIME_KEY)
             )
             return
         }

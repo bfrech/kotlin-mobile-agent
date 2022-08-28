@@ -1,9 +1,11 @@
 package com.example.kotlin_agent.activities.messages
 
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 import androidx.recyclerview.widget.RecyclerView
 import com.example.kotlin_agent.Utils
 
@@ -51,6 +53,7 @@ class MessageListAdapter(userMessageList: List<UserMessage>) :
         notifyDataSetChanged()
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val message = mUserMessageList[position]
 
@@ -68,6 +71,7 @@ class MessageListAdapter(userMessageList: List<UserMessage>) :
         private var messageText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_message_other) as TextView
         private var timeText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_timestamp_other) as TextView
         private var nameText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_user_other) as TextView
+        @RequiresApi(Build.VERSION_CODES.O)
         fun bind(userMessage: UserMessage) {
             messageText.text = userMessage.message
             timeText.text = Utils.formatDateTime(userMessage.createdAt)
@@ -82,6 +86,7 @@ class MessageListAdapter(userMessageList: List<UserMessage>) :
         private var messageText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_message_me) as TextView
         private var timeText: TextView = itemView.findViewById<View>(com.example.kotlin_agent.R.id.text_timestamp_me) as TextView
 
+        @RequiresApi(Build.VERSION_CODES.O)
         fun bind(userMessage: UserMessage) {
             messageText.text = userMessage.message
             timeText.text = Utils.formatDateTime(userMessage.createdAt)
