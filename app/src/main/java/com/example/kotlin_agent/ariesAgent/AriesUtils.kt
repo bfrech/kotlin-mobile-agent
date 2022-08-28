@@ -26,6 +26,8 @@ class AriesUtils {
         const val DID_KEY = "did"
         const val THEIR_LABEL_KEY = "TheirLabel"
         const val CREATED_TIME_KEY = "created_time"
+        const val RECIPIENT_KEYS_KEY = "recipientKeys"
+        const val INVITATION_ID_KEY = "invitationID"
 
 
         fun extractValueFromJSONObject(objectString: String, key: String): String{

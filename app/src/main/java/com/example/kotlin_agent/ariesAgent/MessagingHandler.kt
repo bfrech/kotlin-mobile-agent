@@ -21,8 +21,10 @@ class MessagingHandler(private val service: AriesAgent) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun sendMessageViaServiceEndpoint(goal: String, message: String, serviceEndpoint: String) {
-        val messageBody = buildMessageBody(goal, message, "")
+    fun sendConnectionRequest(goal: String, message: String, serviceEndpoint: String, invitationID: String) {
+
+
+        val messageBody = buildMessageBody(goal, message, "", invitationID)
         val payload = """ {"message_body": $messageBody, "service_endpoint": $serviceEndpoint} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.messagingController?.send(data)
@@ -33,8 +35,11 @@ class MessagingHandler(private val service: AriesAgent) {
         }
     }
 
+    /*
+        Function to send either a connection_response or a connection_complete message
+     */
     @RequiresApi(Build.VERSION_CODES.O)
-    fun sendConnectionResponse(connectionID: String, goal: String) {
+    fun sendConnectionMessage(connectionID: String, goal: String) {
         sendMessageViaConnectionID(goal, service.agentlabel , connectionID)
     }
 
@@ -45,10 +50,12 @@ class MessagingHandler(private val service: AriesAgent) {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun buildMessageBody(goal: String, message: String, connectionID: String): String{
+    private fun buildMessageBody(goal: String, message: String, connectionID: String, invitationID: String = ""): String{
         val time = Utils.getCurrentTimeAsIsoString()
-        println(time)
-        val theirDID = if (connectionID != "") service.connectionHandler.getTheirDIDForConnection(connectionID) else ""
+
+        // if no Connection, add recipientKey for identification
+        val theirDID = if (connectionID != "") service.connectionHandler.getTheirDIDForConnection(connectionID)
+            else invitationID
         return """ {
 			    "@type": "https://didcomm.org/mobilemessage/1.0/message",
                 "created_time": "$time",

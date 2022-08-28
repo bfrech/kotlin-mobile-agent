@@ -24,11 +24,9 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         if(topic == "connection_request"){
             println("Received Connection Request: $newMessage" )
 
-            // TODO: Check request acceptance?
-
             ariesAgent.createAndSendConnectionResponse(
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
-
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY)
             )
             return
         }
@@ -40,6 +38,15 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY)
+            )
+            return
+        }
+
+        // Connection Complete Handling
+        if(topic == "connection_complete"){
+            println("Received Connection Completion Acknowledgment: $newMessage" )
+            ariesAgent.acknowledgeConnectionComplete(
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
             )
             return
         }

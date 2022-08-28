@@ -10,9 +10,9 @@ import java.nio.charset.StandardCharsets
 
 class ConnectionHandler(private val service: AriesAgent) {
 
-    fun createDIDExchangeInvitation(): String {
+    fun createDIDExchangeInvitation(): Pair<String, String> {
         val payload = """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}"} """
-
+        val invitationID = Utils.createUniqueID()
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.didExchangeController?.createInvitation(data)
         if (res != null) {
@@ -21,10 +21,15 @@ class ConnectionHandler(private val service: AriesAgent) {
             } else {
                 val actionsResponse = JSONObject(String(res.payload, StandardCharsets.UTF_8))
                 val invitation = JSONObject(actionsResponse["invitation"].toString())
-                return """{ "label": "${service.agentlabel}", "serviceEndpoint": "${invitation["serviceEndpoint"]}", "recipientKeys": ${invitation["recipientKeys"]}, "routingKeys":  ${invitation["routingKeys"]}}"""
+                return """{ "label": "${service.agentlabel}", 
+                    |"serviceEndpoint": "${invitation["serviceEndpoint"]}", 
+                    |"recipientKeys": ${invitation["recipientKeys"]}, 
+                    |"routingKeys":  ${invitation["routingKeys"]},
+                    |"invitationID": "$invitationID"
+                    |}""".trimMargin()  to invitationID
             }
         }
-        return ""
+        return "" to ""
     }
 
 

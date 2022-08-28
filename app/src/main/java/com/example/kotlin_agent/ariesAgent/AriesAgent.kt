@@ -15,9 +15,11 @@ import org.hyperledger.aries.config.Options
 class AriesAgent(private val context: Context) {
 
     var ariesAgent: AriesController? = null
-    var agentlabel: String = ""
-    var routerConnectionId = ""
-    var mediatorURL = ""
+    lateinit var agentlabel: String
+    lateinit var routerConnectionId: String
+    lateinit var mediatorURL: String
+
+    lateinit var openInvitationID: String
 
     var mediatorHandler: MediatorHandler = MediatorHandler(this)
     var connectionHandler: ConnectionHandler = ConnectionHandler(this)
@@ -69,19 +71,28 @@ class AriesAgent(private val context: Context) {
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun createConnectionInvitation(): String {
-        return connectionHandler.createDIDExchangeInvitation()
+        val invitation = connectionHandler.createDIDExchangeInvitation()
+        openInvitationID = invitation.second
+        return invitation.first
     }
 
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
         val oobInvitation = connectionHandler.createOOBInvitation()
+        val invitationID = AriesUtils.extractValueFromJSONObject(invitation, AriesUtils.INVITATION_ID_KEY)
         mediatorHandler.reconnectToMediator()
-        messagingHandler.sendMessageViaServiceEndpoint("connection_request", Utils.encodeBase64(oobInvitation), invitation)
+        messagingHandler.sendConnectionRequest("connection_request", Utils.encodeBase64(oobInvitation), invitation, invitationID)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createAndSendConnectionResponse(invitationEnc: String){
+    fun createAndSendConnectionResponse(invitationEnc: String, invitationID: String){
+
+        if(invitationID != openInvitationID) {
+            println("Not an open Invitation anymore, do not accept!")
+            return
+        }
+
         val invitation = Utils.decodeBase64(invitationEnc)
         println("Got Connection Request with invitation: $invitation")
 
@@ -94,14 +105,22 @@ class AriesAgent(private val context: Context) {
         )
         addContact(label, connectionID)
 
-        messagingHandler.sendConnectionResponse(connectionID, "connection_response")
+        messagingHandler.sendConnectionMessage(connectionID, "connection_response")
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun completeConnectionRequest(label: String, from: String, to: String){
         val connectionID = connectionHandler.createNewConnection(to, from)
         println("Created Connection with $label and: $connectionID")
+        rotateDIDForConnection(connectionID)
+        messagingHandler.sendConnectionMessage(connectionID, "connection_complete")
         addContact(label, connectionID)
+
+    }
+
+    fun acknowledgeConnectionComplete(label: String){
+        println("Connection with $label acknowledged")
+        openInvitationID = ""
     }
 
     private fun addContact(label: String, connectionID: String){
