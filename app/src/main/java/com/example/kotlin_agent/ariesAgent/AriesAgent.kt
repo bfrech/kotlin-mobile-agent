@@ -17,13 +17,13 @@ class AriesAgent(private val context: Context) {
     var ariesAgent: AriesController? = null
     lateinit var agentlabel: String
     lateinit var routerConnectionId: String
-    lateinit var mediatorURL: String
+    private lateinit var mediatorURL: String
 
-    lateinit var openInvitationID: String
+    private lateinit var openInvitationID: String
 
     var mediatorHandler: MediatorHandler = MediatorHandler(this)
     var connectionHandler: ConnectionHandler = ConnectionHandler(this)
-    var messagingHandler: MessagingHandler = MessagingHandler(this)
+    private var messagingHandler: MessagingHandler = MessagingHandler(this)
     var didHandler: DidHandler = DidHandler(this)
     var keyHandler: KeyHandler = KeyHandler(this)
 
@@ -209,8 +209,9 @@ class AriesAgent(private val context: Context) {
      */
     @RequiresApi(Build.VERSION_CODES.O)
     private fun rotateDIDForConnection(connectionID: String){
+        val oldDID = connectionHandler.getMyDIDForConnection(connectionID)
         val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
-        AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID)
+        AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID, oldDID)
     }
 
 

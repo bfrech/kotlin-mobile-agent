@@ -34,7 +34,7 @@ class AgentService: Service(){
                 if (extras == null) {
                     println("No mediator URL or Label given")
                 } else {
-                    val backgroundSetup = object: Thread(){
+                    object: Thread(){
                         override fun run(){
                             ariesAgent.createNewAgent(extras["label"].toString())
                             ariesAgent.connectToMediator(extras["mediatorURL"].toString())

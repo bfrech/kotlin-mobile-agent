@@ -3,8 +3,6 @@ package com.example.kotlin_agent.ariesAgent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.Utils
-import org.hyperledger.aries.models.ResponseEnvelope
-import org.json.JSONArray
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
@@ -71,7 +69,7 @@ class ConnectionHandler(private val service: AriesAgent) {
             val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
             val data = invitation.toByteArray(StandardCharsets.UTF_8)
             if (outOfBandV2Controller != null) {
-                var res = outOfBandV2Controller.acceptInvitation(data)
+                val res = outOfBandV2Controller.acceptInvitation(data)
                 if(res.error != null){
                     println(res.error.message)
                 } else {

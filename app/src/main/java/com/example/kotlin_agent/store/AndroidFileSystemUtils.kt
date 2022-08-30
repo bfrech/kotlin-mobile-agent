@@ -9,32 +9,21 @@ class AndroidFileSystemUtils {
     companion object {
 
         // Store MyDID -> ConnectionID for identification after message received
-        fun storeConnectionIDForMyDID(context: Context, connectionID: String, myDID: String){
+        fun storeConnectionIDForMyDID(context: Context, connectionID: String, myDID: String, oldDID: String = ""){
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
                 Context.MODE_PRIVATE
             )
 
             with (sharedPrefs.edit()) {
+                remove(oldDID)
                 putString(myDID, connectionID)
                 apply()
             }
 
-        }
-
-        // Remove MyOldDID -> ConnectionID
-        fun removeConnectionIDForMyDID(context: Context, myOldDID: String){
-            val sharedPrefs = context.getSharedPreferences(
-                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
-                Context.MODE_PRIVATE
-            )
-
-            with (sharedPrefs.edit()) {
-                remove(myOldDID)
-                apply()
-            }
 
         }
+
 
         // Get connectionID that belongs to MyDID
         fun getConnectionIDForMyDID(context: Context, did: String): String? {
@@ -46,7 +35,7 @@ class AndroidFileSystemUtils {
         }
 
 
-        // Add theirlabel -> connectionID
+        // Add theirLabel -> connectionID
         fun addLabelToSharedPrefs(context: Context, connectionID: String, label: String){
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesContactsLabel",
@@ -102,9 +91,9 @@ class AndroidFileSystemUtils {
 
 
         // Store messages for Label
-        fun storeMessageToSharedPrefs(context: Context, message: String, sent: Boolean, sharedPreflabel: String, createdAt: String){
+        fun storeMessageToSharedPrefs(context: Context, message: String, sent: Boolean, sharedPrefLabel: String, createdAt: String){
             val sharedPrefs = context.getSharedPreferences(
-                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$sharedPreflabel",
+                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$sharedPrefLabel",
                 Context.MODE_PRIVATE
             )
 
@@ -112,7 +101,7 @@ class AndroidFileSystemUtils {
             val label = if ( sent ) {
                 "sent"
             } else {
-                sharedPreflabel
+                sharedPrefLabel
             }
 
             with (sharedPrefs.edit()) {
@@ -122,10 +111,10 @@ class AndroidFileSystemUtils {
         }
 
 
-        fun getMessagesFromSharedPrefs(context: Context, sharedPreflabel: String): MutableList<UserMessage> {
+        fun getMessagesFromSharedPrefs(context: Context, sharedPrefLabel: String): MutableList<UserMessage> {
             val messageList = mutableListOf<UserMessage>()
             val sharedPrefs = context.getSharedPreferences(
-                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$sharedPreflabel",
+                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_$sharedPrefLabel",
                 Context.MODE_PRIVATE
             )
 
