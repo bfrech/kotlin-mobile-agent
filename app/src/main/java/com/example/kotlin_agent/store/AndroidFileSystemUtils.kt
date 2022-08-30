@@ -22,6 +22,20 @@ class AndroidFileSystemUtils {
 
         }
 
+        // Remove MyOldDID -> ConnectionID
+        fun removeConnectionIDForMyDID(context: Context, myOldDID: String){
+            val sharedPrefs = context.getSharedPreferences(
+                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
+                Context.MODE_PRIVATE
+            )
+
+            with (sharedPrefs.edit()) {
+                remove(myOldDID)
+                apply()
+            }
+
+        }
+
         // Get connectionID that belongs to MyDID
         fun getConnectionIDForMyDID(context: Context, did: String): String? {
             val sharedPrefs = context.getSharedPreferences(

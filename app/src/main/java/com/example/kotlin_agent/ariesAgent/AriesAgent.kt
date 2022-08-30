@@ -27,6 +27,8 @@ class AriesAgent(private val context: Context) {
     var didHandler: DidHandler = DidHandler(this)
     var keyHandler: KeyHandler = KeyHandler(this)
 
+   private val notificationHandler: NotificationHandler = NotificationHandler(this)
+
     fun createNewAgent(label: String) {
         agentlabel = label
         val opts = Options()
@@ -49,20 +51,19 @@ class AriesAgent(private val context: Context) {
     }
 
     private fun registerNotificationHandlers() {
-        val handler = NotificationHandler(this)
-        val registrationID = this.ariesAgent?.registerHandler(handler, "didexchange_states")
+        val registrationID = this.ariesAgent?.registerHandler(notificationHandler, "didexchange_states")
         println("registered did exchange handler with registration id: $registrationID")
 
-        val messagingRegistrationID = this.ariesAgent?.registerHandler(handler, "mobile_message")
+        val messagingRegistrationID = this.ariesAgent?.registerHandler(notificationHandler, "mobile_message")
         println("registered mobile message handler with registration id: $messagingRegistrationID")
 
-        val connectionRegID = this.ariesAgent?.registerHandler(handler, "connection_request")
+        val connectionRegID = this.ariesAgent?.registerHandler(notificationHandler, "connection_request")
         println("registered connection request handler with registration id: $connectionRegID")
 
-        val connectionResID = this.ariesAgent?.registerHandler(handler, "connection_response")
+        val connectionResID = this.ariesAgent?.registerHandler(notificationHandler, "connection_response")
         println("registered connection response handler with registration id: $connectionResID")
 
-        val connectionCompleteID = this.ariesAgent?.registerHandler(handler, "connection_complete")
+        val connectionCompleteID = this.ariesAgent?.registerHandler(notificationHandler, "connection_complete")
         println("registered connection complete handler with registration id: $connectionCompleteID")
     }
 
@@ -76,6 +77,16 @@ class AriesAgent(private val context: Context) {
         return invitation.first
     }
 
+    //private fun subscribeToConnectionInvitation(invitationID: String): String? {
+    //    return this.ariesAgent?.registerHandler(notificationHandler, "connection_request_$invitationID")
+    //}
+
+    //private fun unsubscribeToConnectionInvitation(){
+    //    println("Unregistering Handler with: $openInvitationID")
+    //    this.ariesAgent?.unregisterHandler("connection_request_$openInvitationID")
+    //    openInvitationID = ""
+    //}
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
@@ -86,10 +97,14 @@ class AriesAgent(private val context: Context) {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun createAndSendConnectionResponse(invitationEnc: String, invitationID: String){
+    fun createAndSendConnectionResponse(message: String){
 
-        if(invitationID != openInvitationID) {
-            println("Not an open Invitation anymore, do not accept!")
+        val messageParts = message.split(";")
+        val invitationID = messageParts[0]
+        val invitationEnc = messageParts[1]
+
+        if (invitationID != openInvitationID) {
+            println("Invitation is not valid anymore!")
             return
         }
 
@@ -104,13 +119,16 @@ class AriesAgent(private val context: Context) {
             AriesUtils.THEIR_LABEL_KEY
         )
         addContact(label, connectionID)
-
-        messagingHandler.sendConnectionMessage(connectionID, "connection_response")
+        messagingHandler.sendConnectionResponse(connectionID)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun completeConnectionRequest(label: String, from: String, to: String){
-        val connectionID = connectionHandler.createNewConnection(to, from)
+    fun completeConnectionRequest(message: String, from: String){
+        val messageParts = message.split(";")
+        val label = messageParts[0]
+        val myDID = messageParts[1]
+
+        val connectionID = connectionHandler.createNewConnection(myDID, from)
         println("Created Connection with $label and: $connectionID")
         rotateDIDForConnection(connectionID)
         messagingHandler.sendConnectionMessage(connectionID, "connection_complete")

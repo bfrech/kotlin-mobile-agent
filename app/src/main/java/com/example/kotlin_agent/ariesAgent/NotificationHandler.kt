@@ -25,8 +25,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
             println("Received Connection Request: $newMessage" )
 
             ariesAgent.createAndSendConnectionResponse(
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY)
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
             )
             return
         }
@@ -36,8 +35,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
             println("Received Connection Response: $newMessage" )
             ariesAgent.completeConnectionRequest(
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY)
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY)
             )
             return
         }

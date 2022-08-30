@@ -21,6 +21,7 @@ class ConnectionHandler(private val service: AriesAgent) {
             } else {
                 val actionsResponse = JSONObject(String(res.payload, StandardCharsets.UTF_8))
                 val invitation = JSONObject(actionsResponse["invitation"].toString())
+
                 return """{ "label": "${service.agentlabel}", 
                     |"serviceEndpoint": "${invitation["serviceEndpoint"]}", 
                     |"recipientKeys": ${invitation["recipientKeys"]}, 
@@ -149,9 +150,10 @@ class ConnectionHandler(private val service: AriesAgent) {
             kid = peerDID + kid
         }
 
-        service.mediatorHandler.removeKeyFromMediator(kid)
 
         val newDID = service.didHandler.createMyDID()
+
+        service.mediatorHandler.removeKeyFromMediator(kid)
 
         val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "$newDID", "create_peer_did": false}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
