@@ -158,7 +158,7 @@ class AriesAgent(private val context: Context) {
      */
     fun connectToMediator(mediatorUrl: String){
         this.mediatorURL = mediatorUrl
-        mediatorHandler.connectToMediator(mediatorUrl)
+        this.routerConnectionId = mediatorHandler.connectToMediator(mediatorUrl)
     }
 
     fun registerMediator() {

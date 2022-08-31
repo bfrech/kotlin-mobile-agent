@@ -34,6 +34,15 @@ class AgentService: Service(){
                 if (extras == null) {
                     println("No mediator URL or Label given")
                 } else {
+
+                    // If Agent already started, only reconnect to mediator
+                    if (ariesAgent.ariesAgent == null) {
+                        object: Thread(){
+                            override fun run(){
+                                ariesAgent.connectToMediator(extras["mediatorURL"].toString())
+                            }
+                        }.start()
+                    }
                     object: Thread(){
                         override fun run(){
                             ariesAgent.createNewAgent(extras["label"].toString())

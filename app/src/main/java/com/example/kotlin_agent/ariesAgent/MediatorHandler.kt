@@ -8,7 +8,7 @@ import java.nio.charset.StandardCharsets
 
 class MediatorHandler(private val service: AriesAgent) {
 
-    fun connectToMediator(mediatorUrl: String){
+    fun connectToMediator(mediatorUrl: String): String{
         val url = URL(mediatorUrl)
         val connection = url.openConnection()
 
@@ -24,7 +24,7 @@ class MediatorHandler(private val service: AriesAgent) {
                 if(res.error != null){
                     println(res.error.message)
                 } else {
-                    service.routerConnectionId = AriesUtils.extractValueFromJSONObject(
+                    return AriesUtils.extractValueFromJSONObject(
                         String(res.payload, StandardCharsets.UTF_8),
                         AriesUtils.CONNECTION_ID_KEY
                     )
@@ -33,7 +33,7 @@ class MediatorHandler(private val service: AriesAgent) {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
+        return ""
     }
 
     fun registerMediator() {
