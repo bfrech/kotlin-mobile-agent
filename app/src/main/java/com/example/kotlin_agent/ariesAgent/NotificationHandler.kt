@@ -52,7 +52,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         // Message Handling
         if(topic == "mobile_message"){
             println("Got a Message: $newMessage")
-            ariesAgent.processBasicMessage(
+            ariesAgent.processMobileMessage(
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),

@@ -169,7 +169,7 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processBasicMessage(theirDID: String, myDID: String, message: String, createdAt: String){
+    fun processMobileMessage(theirDID: String, myDID: String, message: String, createdAt: String){
 
         val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID)
         println(connectionHandler.getConnection(connectionID!!))
