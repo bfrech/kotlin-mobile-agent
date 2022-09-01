@@ -1,5 +1,6 @@
 package com.example.kotlin_agent.ariesAgent
 
+import android.util.Log
 import org.hyperledger.aries.models.ResponseEnvelope
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -8,31 +9,29 @@ import java.nio.charset.StandardCharsets
 
 class MediatorHandler(private val service: AriesAgent) {
 
+    private val TAG = "MediatorHandler"
+
     fun connectToMediator(mediatorUrl: String): String{
         val url = URL(mediatorUrl)
         val connection = url.openConnection()
 
         val content = connection.getInputStream().bufferedReader().use(BufferedReader::readText)
+        Log.d(TAG, "Got invitation from mediator: $content")
         val invite = """{ "invitation": $content, "my_label": "${service.agentlabel}" }"""
 
-        var res: ResponseEnvelope
-        try {
-            val outOfBandController = service.ariesAgent?.outOfBandController
-            val data = invite.toByteArray(StandardCharsets.UTF_8)
-            if (outOfBandController != null) {
-                res = outOfBandController.acceptInvitation(data)
-                if(res.error != null){
-                    println(res.error.message)
-                } else {
-                    return AriesUtils.extractValueFromJSONObject(
-                        String(res.payload, StandardCharsets.UTF_8),
-                        AriesUtils.CONNECTION_ID_KEY
-                    )
-                }
+        val data = invite.toByteArray(StandardCharsets.UTF_8)
+        val res = service.ariesAgent?.outOfBandController?.acceptInvitation(data)
+        if (res != null) {
+            if(res.error != null){
+                Log.e(TAG, "Could not accept mediator invitation: ${res.error.message}")
+            } else {
+                return AriesUtils.extractValueFromJSONObject(
+                    String(res.payload, StandardCharsets.UTF_8),
+                    AriesUtils.CONNECTION_ID_KEY
+                )
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
+
         return ""
     }
 
@@ -45,9 +44,9 @@ class MediatorHandler(private val service: AriesAgent) {
 
         if (res != null) {
             if(res.error != null){
-                println("There was an error with the Router Registration ${res.error.message}")
+               Log.e(TAG,"There was an error with the Router Registration ${res.error.message}")
             } else {
-                println("Registered Router with: ${service.routerConnectionId}")
+                Log.d(TAG,"Registered Router with: ${service.routerConnectionId}")
 
             }
         }
@@ -63,9 +62,9 @@ class MediatorHandler(private val service: AriesAgent) {
 
         if (res != null) {
             if(res.error != null){
-                println("There was an error with the Router Reconnection ${res.error.message}")
+                Log.e(TAG,"There was an error with the Router Reconnection ${res.error.message}")
             } else {
-                println("Reconnected to Router with: ${service.routerConnectionId}")
+               Log.d(TAG, "Reconnected to Router with: ${service.routerConnectionId}")
 
             }
         }
@@ -80,9 +79,9 @@ class MediatorHandler(private val service: AriesAgent) {
 
         if (res != null) {
             if(res.error != null){
-                println("There was an error with the Key Registration ${res.error.message}")
+                Log.d(TAG, "There was an error with the Key Registration ${res.error.message}")
             } else {
-                println("Registered Key with mediator: $didKey")
+                Log.e(TAG, "Registered Key with mediator: $didKey")
 
             }
         }
@@ -97,13 +96,11 @@ class MediatorHandler(private val service: AriesAgent) {
 
         if (res != null) {
             if(res.error != null){
-                println("There was an error with the Key Removal ${res.error.message}")
+                Log.e(TAG, "There was an error with the Key Removal ${res.error.message}")
             } else {
-                println("Removed Key from mediator: $didKey")
+                Log.d(TAG, "Removed Key from mediator: $didKey")
 
             }
         }
     }
-
-
 }

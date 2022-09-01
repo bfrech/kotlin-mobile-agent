@@ -55,13 +55,9 @@ class NewInvitationActivity : AppCompatActivity() {
     // with an action named "connection_completed" is broadcasted.
     private val mMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
-            // Get extra data included in the Intent
-            val message = intent.getStringExtra("message")
-            println("Receiver Got message: $message")
-
             // Go to invitation Screen
-            val intent = Intent(this@NewInvitationActivity, ContactsActivity::class.java)
-            startActivity(intent)
+            val newIntent = Intent(this@NewInvitationActivity, ContactsActivity::class.java)
+            startActivity(newIntent)
         }
     }
 

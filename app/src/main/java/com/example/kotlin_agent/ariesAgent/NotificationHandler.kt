@@ -1,17 +1,22 @@
 package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
+import com.example.kotlin_agent.Utils
+import mu.KotlinLogging
 import org.hyperledger.aries.api.Handler
 import java.nio.charset.StandardCharsets
 
+
 class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
 
+    private val TAG = "NotificationHandler"
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun handle(topic: String, message: ByteArray) {
-        println("received notification topic: $topic")
-        println("received notification message: " + String(message, StandardCharsets.UTF_8))
+        Log.d( TAG,"received notification topic: $topic" )
+        Log.d( TAG, "received notification message: " + String(message, StandardCharsets.UTF_8) )
 
 
         val newMessage = AriesUtils.extractValueFromJSONObject(
@@ -22,19 +27,19 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
 
         // Connection Request Handling
         if(topic == "connection_request"){
-            println("Received Connection Request: $newMessage" )
+            Log.d( TAG, "received connection request: $newMessage" )
 
             ariesAgent.createAndSendConnectionResponse(
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
+                Utils.decodeBase64(AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY))
             )
             return
         }
 
         // Connection Response Handling
         if(topic == "connection_response"){
-            println("Received Connection Response: $newMessage" )
+            Log.d(TAG, "Received Connection Response: $newMessage" )
             ariesAgent.completeConnectionRequest(
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
+                Utils.decodeBase64(AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY)
             )
             return
@@ -42,20 +47,20 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
 
         // Connection Complete Handling
         if(topic == "connection_complete"){
-            println("Received Connection Completion Acknowledgment: $newMessage" )
+            Log.d(TAG,"Received Connection Completion Acknowledgment: $newMessage" )
             ariesAgent.acknowledgeConnectionComplete(
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)
+                Utils.decodeBase64(AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY))
             )
             return
         }
 
         // Message Handling
         if(topic == "mobile_message"){
-            println("Got a Message: $newMessage")
+            Log.d(TAG, "Got a Message: $newMessage")
             ariesAgent.processMobileMessage(
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY),
-                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY),
+                Utils.decodeBase64(AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CREATED_TIME_KEY)
             )
             return
@@ -65,6 +70,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         // Mediator Connection Handling
         val stateID = AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.STATE_ID_KEY)
         if(stateID == "completed") {
+            Log.d(TAG, "reached state ID completed, registering mediator now")
             ariesAgent.registerMediator()
         }
     }

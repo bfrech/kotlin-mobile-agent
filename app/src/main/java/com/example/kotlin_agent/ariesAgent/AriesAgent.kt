@@ -3,6 +3,7 @@ package com.example.kotlin_agent.ariesAgent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.kotlin_agent.Utils
@@ -11,8 +12,12 @@ import org.hyperledger.aries.api.AriesController
 import org.hyperledger.aries.ariesagent.Ariesagent
 import org.hyperledger.aries.config.Options
 
+import org.hyperledger.aries.api.Store
+
 
 class AriesAgent(private val context: Context) {
+
+    private val TAG = "AriesAgent"
 
     var ariesAgent: AriesController? = null
     lateinit var agentlabel: String
@@ -39,32 +44,33 @@ class AriesAgent(private val context: Context) {
         opts.mediaTypeProfiles = "didcomm/v2"
 
         opts.logLevel = "debug"
-        //opts.storage = MyStorageProvider()
+        //opts.storage =
 
         try {
-            println("Starting Agent with: $agentlabel")
+            Log.d(TAG, "Starting Agent with: $agentlabel")
             ariesAgent = Ariesagent.new_(opts)
             registerNotificationHandlers()
         }catch (e: Exception){
-            e.printStackTrace()
+            Log.e(TAG, "Could not start a new Aries Agent: ${e.message}")
         }
     }
 
+
     private fun registerNotificationHandlers() {
         val registrationID = this.ariesAgent?.registerHandler(notificationHandler, "didexchange_states")
-        println("registered did exchange handler with registration id: $registrationID")
+        Log.d(TAG, "registered did exchange handler with registration id: $registrationID")
 
         val messagingRegistrationID = this.ariesAgent?.registerHandler(notificationHandler, "mobile_message")
-        println("registered mobile message handler with registration id: $messagingRegistrationID")
+        Log.d(TAG, "registered mobile message handler with registration id: $messagingRegistrationID")
 
         val connectionRegID = this.ariesAgent?.registerHandler(notificationHandler, "connection_request")
-        println("registered connection request handler with registration id: $connectionRegID")
+        Log.d(TAG, "registered connection request handler with registration id: $connectionRegID")
 
         val connectionResID = this.ariesAgent?.registerHandler(notificationHandler, "connection_response")
-        println("registered connection response handler with registration id: $connectionResID")
+        Log.d(TAG, "registered connection response handler with registration id: $connectionResID")
 
         val connectionCompleteID = this.ariesAgent?.registerHandler(notificationHandler, "connection_complete")
-        println("registered connection complete handler with registration id: $connectionCompleteID")
+        Log.d(TAG,"registered connection complete handler with registration id: $connectionCompleteID")
     }
 
     /*
@@ -77,23 +83,12 @@ class AriesAgent(private val context: Context) {
         return invitation.first
     }
 
-    //private fun subscribeToConnectionInvitation(invitationID: String): String? {
-    //    return this.ariesAgent?.registerHandler(notificationHandler, "connection_request_$invitationID")
-    //}
-
-    //private fun unsubscribeToConnectionInvitation(){
-    //    println("Unregistering Handler with: $openInvitationID")
-    //    this.ariesAgent?.unregisterHandler("connection_request_$openInvitationID")
-    //    openInvitationID = ""
-    //}
-
-
     @RequiresApi(Build.VERSION_CODES.O)
     fun createAndSendConnectionRequest(invitation: String){
         val oobInvitation = connectionHandler.createOOBInvitation()
-        val invitationID = AriesUtils.extractValueFromJSONObject(invitation, AriesUtils.INVITATION_ID_KEY)
+        openInvitationID = AriesUtils.extractValueFromJSONObject(invitation, AriesUtils.INVITATION_ID_KEY)
         mediatorHandler.reconnectToMediator()
-        messagingHandler.sendConnectionRequest("connection_request", Utils.encodeBase64(oobInvitation), invitation, invitationID)
+        messagingHandler.sendConnectionRequest("connection_request", oobInvitation, invitation, openInvitationID)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -101,18 +96,17 @@ class AriesAgent(private val context: Context) {
 
         val messageParts = message.split(";")
         val invitationID = messageParts[0]
-        val invitationEnc = messageParts[1]
+        val invitation = messageParts[1]
+
+        Log.d(TAG, "Got Connection Request with invitation: $invitation")
 
         if (invitationID != openInvitationID) {
-            println("Invitation is not valid anymore!")
+            Log.w(TAG, "Invitation is not valid anymore! Ignoring the Request.")
             return
         }
 
-        val invitation = Utils.decodeBase64(invitationEnc)
-        println("Got Connection Request with invitation: $invitation")
-
         val connectionID = connectionHandler.acceptOOBV2Invitation(invitation)
-        println("Accepted OOB Invitation with $connectionID")
+        Log.d(TAG, "Accepted OOB Invitation with $connectionID")
 
         val label = AriesUtils.extractValueFromJSONObject(
             connectionHandler.getConnection(connectionID),
@@ -129,16 +123,21 @@ class AriesAgent(private val context: Context) {
         val myDID = messageParts[1]
 
         val connectionID = connectionHandler.createNewConnection(myDID, from)
-        println("Created Connection with $label and: $connectionID")
+        Log.d(TAG, "Created Connection with $label and: $connectionID")
+
         rotateDIDForConnection(connectionID)
-        messagingHandler.sendConnectionMessage(connectionID, "connection_complete")
+        messagingHandler.sendConnectionMessage(connectionID, "connection_complete", openInvitationID)
+        openInvitationID = ""
         addContact(label, connectionID)
 
     }
 
-    fun acknowledgeConnectionComplete(label: String){
-        println("Connection with $label acknowledged")
-        openInvitationID = ""
+    fun acknowledgeConnectionComplete(invitationID: String){
+        Log.d(TAG, "Connection for openInvitation: $invitationID acknowledged")
+        if(invitationID == openInvitationID){
+            openInvitationID = ""
+        }
+
     }
 
     private fun addContact(label: String, connectionID: String){
@@ -171,16 +170,15 @@ class AriesAgent(private val context: Context) {
      */
     fun processMobileMessage(theirDID: String, myDID: String, message: String, createdAt: String){
 
-        val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID)
-        println(connectionHandler.getConnection(connectionID!!))
+        val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID).toString()
 
         if(connectionID == ""){
-            println("No connection Entry for This Label")
+            Log.w(TAG, "No connection Entry for This Label")
             return
         } else {
             val theirOldDID = connectionHandler.getTheirDIDForConnection(connectionID)
             if(theirOldDID != theirDID){
-                println("They rotated DIDs, Updating Connection Entry with new connectionID: $connectionID!")
+                Log.d(TAG, "They rotated DIDs, Updating Connection Entry with new connectionID: $connectionID!")
                 connectionHandler.updateTheirDIDForConnection(connectionID, theirDID)
 
                 val label = AndroidFileSystemUtils.getLabelForConnectionID(context, connectionID)

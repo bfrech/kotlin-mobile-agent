@@ -1,11 +1,14 @@
 package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.Utils
 import java.nio.charset.StandardCharsets
 
 class MessagingHandler(private val service: AriesAgent) {
+
+    private val TAG = "MessagingHandler"
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sendMessageViaConnectionID(goal: String, message: String, connectionID: String){
@@ -15,7 +18,7 @@ class MessagingHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.messagingController?.send(data)
         if (res != null) {
             if (res.error != null) {
-                println(res.error)
+                Log.e(TAG, "Error with sending via connectionID: ${res.error}")
             } // returns empty json on success
         }
     }
@@ -29,7 +32,7 @@ class MessagingHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.messagingController?.send(data)
         if (res != null) {
             if (res.error != null) {
-                println(res.error)
+                Log.e(TAG, "Error with sending connection request: ${res.error}")
             } // returns empty json on success
         }
     }
@@ -38,8 +41,8 @@ class MessagingHandler(private val service: AriesAgent) {
         Function to send either a connection_response or a connection_complete message
      */
     @RequiresApi(Build.VERSION_CODES.O)
-    fun sendConnectionMessage(connectionID: String, goal: String) {
-        sendMessageViaConnectionID(goal, service.agentlabel , connectionID)
+    fun sendConnectionMessage(connectionID: String, goal: String, content: String) {
+        sendMessageViaConnectionID(goal, content , connectionID)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
@@ -63,7 +66,7 @@ class MessagingHandler(private val service: AriesAgent) {
                 "created_time": "$time",
                 "goal": "$goal",
                 "body": {
-			        "content": "$message"
+			        "content": "${Utils.encodeBase64(message)}"
                 }
 			} """
     }

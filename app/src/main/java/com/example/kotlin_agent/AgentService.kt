@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.ariesAgent.AriesAgent
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -12,27 +13,27 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 class AgentService: Service(){
 
     var ariesAgent = AriesAgent(this)
+    private val TAG = "AgentService"
 
     /*
         Android Service Functions
      */
     override fun onBind(intent: Intent?): IBinder? {
-        println("Some component wants to bind this service")
         return null
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        println("onStartCommand executed with startId: $startId")
+        Log.d(TAG, "onStartCommand executed with startId: $startId")
 
         if (intent != null) {
             val action = intent.action
-            println("using an intent with action $action")
+            Log.d(TAG, "onStartCommand executed with action: $action")
 
             if (action.equals("startAgent")) {
                 val extras = intent.extras
                 if (extras == null) {
-                    println("No mediator URL or Label given")
+                    Log.e(TAG, "No mediator URL or Label given")
                 } else {
 
                     // If Agent already started, only reconnect to mediator
@@ -71,7 +72,7 @@ class AgentService: Service(){
             if (action.equals("writeMessage")) {
                 val extras = intent.extras
                 if (extras == null) {
-                    println("No Value was given")
+                    Log.e(TAG, "No Value for message was given")
                 } else {
                     val message = extras["message"].toString()
                     val connectionID = extras["connectionID"].toString()
@@ -81,8 +82,8 @@ class AgentService: Service(){
 
 
         } else {
-            println(
-                "with a null intent. It has been probably restarted by the system."
+            Log.d(
+                TAG, "with a null intent. It has been probably restarted by the system."
             )
         }
 

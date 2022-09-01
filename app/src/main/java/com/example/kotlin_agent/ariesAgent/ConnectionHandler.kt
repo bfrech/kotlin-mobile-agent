@@ -1,12 +1,15 @@
 package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.Utils
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
 class ConnectionHandler(private val service: AriesAgent) {
+
+    private val TAG = "ConnectionHandler"
 
     fun createDIDExchangeInvitation(): Pair<String, String> {
         val payload = """ {"alias": "${service.agentlabel}", "router_connection_id": "${service.routerConnectionId}"} """
@@ -15,7 +18,7 @@ class ConnectionHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.didExchangeController?.createInvitation(data)
         if (res != null) {
             if (res.error != null) {
-                println(res.error)
+                Log.e(TAG, "Cannot create connection invitation: ${res.error}")
             } else {
                 val actionsResponse = JSONObject(String(res.payload, StandardCharsets.UTF_8))
                 val invitation = JSONObject(actionsResponse["invitation"].toString())
@@ -49,7 +52,7 @@ class ConnectionHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.outOfBandV2Controller?.createInvitation(data)
         if (res != null) {
             if (res.error != null) {
-                println(res.error)
+                Log.e(TAG, "Cannot create outofband v2 invitation: ${res.error}")
             } else {
                 return String(res.payload, StandardCharsets.UTF_8)
             }
@@ -65,22 +68,19 @@ class ConnectionHandler(private val service: AriesAgent) {
             |"my_router_connections": ["${service.routerConnectionId}"] 
             |}""".trimMargin()
 
-        try {
-            val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
-            val data = invitation.toByteArray(StandardCharsets.UTF_8)
-            if (outOfBandV2Controller != null) {
-                val res = outOfBandV2Controller.acceptInvitation(data)
-                if(res.error != null){
-                    println(res.error.message)
-                } else {
-                    return AriesUtils.extractValueFromJSONObject(
-                        String(res.payload, StandardCharsets.UTF_8),
-                        AriesUtils.CONNECTION_ID_KEY
-                    )
-                }
+
+        val outOfBandV2Controller = service.ariesAgent?.outOfBandV2Controller
+        val data = invitation.toByteArray(StandardCharsets.UTF_8)
+        if (outOfBandV2Controller != null) {
+            val res = outOfBandV2Controller.acceptInvitation(data)
+            if(res.error != null){
+                Log.e(TAG, "Cannot accept outofband v2 invitation: ${res.error}")
+            } else {
+                return AriesUtils.extractValueFromJSONObject(
+                    String(res.payload, StandardCharsets.UTF_8),
+                    AriesUtils.CONNECTION_ID_KEY
+                )
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
         return ""
     }
@@ -95,7 +95,7 @@ class ConnectionHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.didExchangeController?.queryConnectionByID(data)
         if(res != null){
             if(res.error != null){
-                println(res.error)
+                Log.e(TAG, "Cannot get connection for $connectionID: ${res.error}")
             } else {
                 return AriesUtils.extractValueFromJSONObject(
                     String(res.payload, StandardCharsets.UTF_8),
@@ -113,7 +113,7 @@ class ConnectionHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.connectionController?.createConnectionV2(data)
         if(res != null){
             if(res.error != null){
-                println(res.error)
+                Log.e(TAG, "Cannot create new connection: ${res.error}")
             } else {
                 return AriesUtils.extractValueFromJSONObject(
                     String(res.payload, StandardCharsets.UTF_8),
@@ -130,7 +130,7 @@ class ConnectionHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.connectionController?.updateTheirDIDForConnection(data)
         if(res != null){
             if(res.error != null){
-                println(res.error)
+                Log.e(TAG, "Cannot update their did for connection $connectionID ${res.error}")
             }
             // Return empty response on success
         }
@@ -141,32 +141,24 @@ class ConnectionHandler(private val service: AriesAgent) {
     @RequiresApi(Build.VERSION_CODES.O)
     fun rotateDIDForConnection(connectionID: String): String {
 
-        var kid = getOldKidForConnection(connectionID)
-
-        if (kid.startsWith("#")) {
-            val peerDID = getMyDIDForConnection(connectionID)
-            kid = peerDID + kid
-        }
-
-
+        val kid = getOldKidForConnection(connectionID)
         val newDID = service.didHandler.createMyDID()
-
-        service.mediatorHandler.removeKeyFromMediator(kid)
 
         val request = """{"id": "$connectionID", "kid": "$kid" ,"new_did": "$newDID", "create_peer_did": false}"""
         val data = request.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.connectionController?.rotateDID(data)
         if(res != null){
             if(res.error != null){
-                println(res.error)
+                Log.e(TAG, "Cannot rotate DID for connection: ${res.error}")
             } else {
+
+                service.mediatorHandler.removeKeyFromMediator(kid)
+
                 return AriesUtils.extractValueFromJSONObject(
                     String(res.payload, StandardCharsets.UTF_8),
                     AriesUtils.NEW_DID_KEY
                 )
             }
-        } else {
-            println("Res is null")
         }
         return ""
     }
@@ -186,7 +178,13 @@ class ConnectionHandler(private val service: AriesAgent) {
             AriesUtils.ASSERTION_METHOD_KEY
         )
 
-        return AriesUtils.extractValueFromJSONArray(methods, 0)
+       var kid = AriesUtils.extractValueFromJSONArray(methods, 0)
+
+        if (kid.startsWith("#")) {
+            val peerDID = getMyDIDForConnection(connectionID)
+            kid = peerDID + kid
+        }
+        return kid
     }
 
 }

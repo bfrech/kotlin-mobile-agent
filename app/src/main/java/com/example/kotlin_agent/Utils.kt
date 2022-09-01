@@ -29,10 +29,9 @@ class Utils {
 
        @RequiresApi(Build.VERSION_CODES.O)
        fun formatDateTime(isoDateString: String): String{
-           val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS +0000 'UTC'")
-           //var date = OffsetDateTime.parse(isoDateString.replace("Z$", "+0000"))
-           var date = LocalDateTime.parse(isoDateString, formatter)
-           var converter = DateTimeFormatter.ofPattern("HH:mm:ss")
+           val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.[SSS][SS][S] +0000 'UTC'")
+           val date = LocalDateTime.parse(isoDateString, formatter)
+           val converter = DateTimeFormatter.ofPattern("HH:mm:ss")
            return converter.format(date)
        }
 

@@ -7,6 +7,7 @@ import android.content.IntentFilter
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import com.example.kotlin_agent.activities.messages.MessageListAdapter
 
 import androidx.recyclerview.widget.RecyclerView
@@ -31,6 +32,8 @@ class MessageActivity : AppCompatActivity() {
     private lateinit var theirLabel: String
     private lateinit var connectionID: String
 
+    private val TAG = "MessageActivity"
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +47,7 @@ class MessageActivity : AppCompatActivity() {
         if (extras != null) {
             theirLabel = extras.getString("Label").toString()
             connectionID = AndroidFileSystemUtils.getConnectionIDForLabel(this, theirLabel).toString()
-            println("Starting Messaging Activity for $theirLabel with ID: $connectionID")
+            Log.d(TAG, "Starting Messaging Activity for $theirLabel with ID: $connectionID")
 
             val messageList = AndroidFileSystemUtils.getMessagesFromSharedPrefs(this, theirLabel)
 

@@ -1,15 +1,24 @@
 package com.example.kotlin_agent.store
 
 import android.content.Context
+import android.util.Log
 import com.example.kotlin_agent.BuildConfig
 import com.example.kotlin_agent.activities.messages.UserMessage
 
 class AndroidFileSystemUtils {
 
+
+
     companion object {
+
+        private val TAG = "AndroidFileSystemUtils"
+
 
         // Store MyDID -> ConnectionID for identification after message received
         fun storeConnectionIDForMyDID(context: Context, connectionID: String, myDID: String, oldDID: String = ""){
+
+            Log.d(TAG, "Storing $myDID -> $connectionID to shared preferences")
+
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
                 Context.MODE_PRIVATE
@@ -27,6 +36,8 @@ class AndroidFileSystemUtils {
 
         // Get connectionID that belongs to MyDID
         fun getConnectionIDForMyDID(context: Context, did: String): String? {
+            Log.d(TAG, "Fetching connectionID for $did from shared preferences")
+
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
                 Context.MODE_PRIVATE
@@ -42,12 +53,13 @@ class AndroidFileSystemUtils {
                 Context.MODE_PRIVATE
             )
             sharedPrefs.edit().putString(label, connectionID).apply()
-            println("Added $label -> $connectionID to Contacts")
+            Log.d(TAG, "Added $label -> $connectionID to shared preferences")
         }
 
 
         // Get Connection ID via Label
         fun getConnectionIDForLabel(context: Context, label: String): String? {
+            Log.d(TAG, "Fetching connectionID for $label from shared preferences")
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesContactsLabel",
                 Context.MODE_PRIVATE
@@ -58,6 +70,7 @@ class AndroidFileSystemUtils {
 
         // Get All names in contact list
         fun getContactList(context: Context): MutableSet<String> {
+            Log.d(TAG, "Fetching all contacts from shared preferences")
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesContactsLabel",
                 Context.MODE_PRIVATE
@@ -74,10 +87,11 @@ class AndroidFileSystemUtils {
                 Context.MODE_PRIVATE
             )
             sharedPrefs.edit().putString(connectionID, label).apply()
-            println("Added $connectionID -> $label to Contacts")
+            Log.d(TAG, "Added $connectionID -> $label to shared preferences")
         }
 
         fun getLabelForConnectionID(context: Context, connectionID: String): String? {
+            Log.d(TAG, "Fetching label for $connectionID from shared preferences")
             val sharedPrefs = context.getSharedPreferences(
                 "${BuildConfig.APPLICATION_ID}_sharedPreferencesContactsID",
                 Context.MODE_PRIVATE

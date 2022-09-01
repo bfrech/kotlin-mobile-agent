@@ -1,9 +1,12 @@
 package com.example.kotlin_agent.ariesAgent
 
+import android.util.Log
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 
 class KeyHandler(private val service: AriesAgent) {
+
+    private val TAG = "KeyHandler"
 
     fun createVerificationMethod(keyType: String, type: String): String {
         val (key, keyDID) = createKeySet(keyType)
@@ -12,7 +15,6 @@ class KeyHandler(private val service: AriesAgent) {
     }
 
     private fun createKeySet(keyType: String): Pair<String, String> {
-        //DIDComm V2 Key Agreement: NISTP384ECDHKW or X25519ECDH
         val kmsController = service.ariesAgent?.kmsController
         val kmsRequest = """{ "keyType" : "$keyType" }"""
         val kmsData = kmsRequest.toByteArray(StandardCharsets.UTF_8)
@@ -21,7 +23,7 @@ class KeyHandler(private val service: AriesAgent) {
         var keyDID = ""
         if (kmsResponse != null) {
             if (kmsResponse.error != null) {
-                println(kmsResponse.error)
+                Log.e(TAG, "Could not create key set ${kmsResponse.error}")
             } else {
                 keyDID = AriesUtils.extractValueFromJSONObject(
                     String(kmsResponse.payload, StandardCharsets.UTF_8),

@@ -1,6 +1,7 @@
 package com.example.kotlin_agent.ariesAgent
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import org.json.JSONArray
 import org.json.JSONObject
@@ -8,13 +9,15 @@ import java.nio.charset.StandardCharsets
 
 class DidHandler(private val service: AriesAgent) {
 
+    private val TAG = "DIDHandler"
+
     fun vdrResolveDID(did: String): String {
         val payload = """ {"id":"$did"}"""
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.vdrController?.resolveDID(data)
         if(res != null){
             if(res.error != null){
-                println("Error: ${res.error}")
+                Log.e(TAG, "Cannot resolve DID: ${res.error}")
             } else {
                 return AriesUtils.extractValueFromJSONObject(
                     String(res.payload, StandardCharsets.UTF_8),
@@ -32,16 +35,16 @@ class DidHandler(private val service: AriesAgent) {
         val res = service.ariesAgent?.vdrController?.createDID(data)
         if(res != null){
             if(res.error != null){
-                println("Error: ${res.error}")
+                Log.e(TAG, "Cannot create DID: ${res.error}")
             } else {
 
-                val did = AriesUtils.extractValueFromJSONObject(
+                val newDID = AriesUtils.extractValueFromJSONObject(
                     String(res.payload, StandardCharsets.UTF_8),
                     AriesUtils.DID_KEY
                 )
 
                 return AriesUtils.extractValueFromJSONObject(
-                    did,
+                    newDID,
                     AriesUtils.ID_KEY
                 )
             }
