@@ -56,8 +56,8 @@ class NewInvitationActivity : AppCompatActivity() {
     private val mMessageReceiver: BroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent) {
             // Go to invitation Screen
-            val newIntent = Intent(this@NewInvitationActivity, ContactsActivity::class.java)
-            startActivity(newIntent)
+            val newintent = Intent(this@NewInvitationActivity, ContactsActivity::class.java)
+            startActivity(newintent)
         }
     }
 
