@@ -12,7 +12,7 @@ class MessagingHandler(private val service: AriesAgent) {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun sendMessageViaConnectionID(goal: String, message: String, connectionID: String){
-        val messageBody = buildMessageBody(goal, message)
+        val messageBody = buildMessageBody(goal, message, connectionID)
         val payload = """ {"message_body": $messageBody, "connection_id": "$connectionID"} """
         val data = payload.toByteArray(StandardCharsets.UTF_8)
         val res = service.ariesAgent?.messagingController?.send(data)
@@ -58,13 +58,16 @@ class MessagingHandler(private val service: AriesAgent) {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun buildMessageBody(goal: String, message: String): String{
+    private fun buildMessageBody(goal: String, message: String, connectionID: String = ""): String{
         val time = Utils.getCurrentTimeAsIsoString()
+        val theirDID = if (connectionID != "") service.connectionHandler.getTheirDIDForConnection(connectionID)
+            else ""
 
         return """ {
 			    "@type": "https://didcomm.org/mobilemessage/1.0/message",
                 "created_time": "$time",
                 "goal": "$goal",
+                "to": "$theirDID",
                 "body": {
 			        "content": "${Utils.encodeBase64(message)}"
                 }
