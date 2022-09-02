@@ -4,7 +4,6 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.kotlin_agent.Utils
-import mu.KotlinLogging
 import org.hyperledger.aries.api.Handler
 import java.nio.charset.StandardCharsets
 
@@ -57,7 +56,7 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         // Message Handling
         if(topic == "mobile_message"){
             Log.d(TAG, "Got a Message: $newMessage")
-            ariesAgent.processMobileMessage(
+            ariesAgent.processIncomingMobileMessage(
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
                 AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY),
                 Utils.decodeBase64(AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY)),

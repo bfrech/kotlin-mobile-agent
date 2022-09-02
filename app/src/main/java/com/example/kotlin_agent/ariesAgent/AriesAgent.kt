@@ -156,8 +156,8 @@ class AriesAgent(private val context: Context) {
         Mediator Functions
      */
     fun connectToMediator(mediatorUrl: String){
-        this.mediatorURL = mediatorUrl
-        this.routerConnectionId = mediatorHandler.connectToMediator(mediatorUrl)
+        mediatorURL = mediatorUrl
+        routerConnectionId = mediatorHandler.connectToMediator(mediatorUrl)
     }
 
     fun registerMediator() {
@@ -168,7 +168,7 @@ class AriesAgent(private val context: Context) {
     /*
         Messaging
      */
-    fun processMobileMessage(theirDID: String, myDID: String, message: String, createdAt: String){
+    fun processIncomingMobileMessage(theirDID: String, myDID: String, message: String, createdAt: String){
 
         val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID).toString()
 
