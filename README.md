@@ -1,127 +1,45 @@
-# kotlin-mobile-agent
+# MOBIDID Mobile Client
+This is the Android mobile client for mobile messaging using DIDComm. It can be used together with 
+the [mediator](https://git.snet.tu-berlin.de/blockchain/idunion/DID) to send DIDComm messages with other agents. 
+
+The project uses Aries-framework-go for all DIDComm interactions. 
+The framework file is built from this [Fork](https://github.com/bfrech/aries-framework-go/tree/main) 
+of the original framework. 
 
 
+
+## Configuration and Run Instructions
+The mobile client can be tested with a local mediator. To start the mediator locally, follow the 
+instructions in the [mediator repository](https://git.snet.tu-berlin.de/blockchain/idunion/DID).
+
+### Prerequisities
+- AndroidStudio
+
+
+### Run the Application on an Emulator
+
+
+
+## Usage
+On the startup screen the mediator URL and a label have to be entered. After a click on the 'Connect'
+button, the app will create a new Aries agent and connect to the mediator. Note that an Android agent 
+cannot fetch the URL via localhost when the server is run locally, hence ngrok should be configured 
+first (see [run instructions](#Run the Application on an Emulator)). 
+
+
+## Aries-framework-go
+The project includes Aries-framework-go as a dependency for all DIDComm and Aries interactions. 
+The framework file is built from the Fork of the repository at [https://github.com/bfrech/aries-framework-go/tree/main](). 
+
+### How to build the framework file
+To include changes to the framework code in the application, 
+
+To build the framework file install [gomobile](https://pkg.go.dev/golang.org/x/mobile/cmd/gomobile), 
+and set the environment variables `ANDROID_HOME` and `ANDROID_NDK_HOME`.
+
+Then run the following command in the `cmd/aries-agent-mobile` directory of the framework:
 ```
-{
-  "@context":["https://www.w3.org/ns/did/v1"],
-  "id":"did:peer:1zQmWpAKgFhugQoFmuxmVkKsjPiG7JRvYxtDkBLCSd3Jht7E",
-  "verificationMethod":[
-    {
-      "controller":"#id",
-      "id":"did:key:z6MkofRrFv7NyuRSYLtNEdfskEh9gdt419RLnchcFyhgxaCa",
-      "publicKeyBase58":"ADAoffrweMvyRr3fZ4i2u999s4cCbGAz6bngRhjg3MRC",
-      "type":"Ed25519VerificationKey2018"
-    },
-   {
-      "controller":"",
-      "id":"did:key:z6LSjwLNdvvr826QwwCTrtioXJ7WcZhAQJDY1qQ5FTThqz7E",
-      "publicKeyBase58":"UhJiX5sjN2Q716rsieAxQc9i87ffSXDnjpQybNu....byjGqUCjGrVbquA13Y3ESrbnk",
-      "type":"X25519KeyAgreementKey2019"
-    }
- ],
- "service":[
-    {
-      "accept":["didcomm/v2"],
-      "id":"c6605ca6-a11d-4a14-9e3b-79500d1d7a54",
-      "priority":0,
-      "recipientKeys":["did:key:z6LSjwLNdvvr826QwwCTrtioXJ7WcZhAQJDY1qQ5FTThqz7E"],
-      "routingKeys":["did:key:z6LScEErxQesFbMMvRRuMzTEYxwfThhoSrPDtCaSxzyB5WrU"],
-      "serviceEndpoint":{
-        "uri":"ws://MBP-von-Berit.fritz.box:5001",
-        "routingKeys":["did:key:z6LScEErxQesFbMMvRRuMzTEYxwfThhoSrPDtCaSxzyB5WrU"]
-      },
-      "type":"DIDCommMessaging"
-  }
-],
-  "authentication":["did:key:z6MkofRrFv7NyuRSYLtNEdfskEh9gdt419RLnchcFyhgxaCa"],
-  "assertionMethod":["did:key:z6MkofRrFv7NyuRSYLtNEdfskEh9gdt419RLnchcFyhgxaCa"],
-  "keyAgreement":["did:key:z6LSjwLNdvvr826QwwCTrtioXJ7WcZhAQJDY1qQ5FTThqz7E"],
-  "created":"2022-06-07T15:33:24.708001629Z",
-  "updated":"2022-06-07T15:33:24.708001629Z"
- }
-
+gomobile bind -v -ldflags '-s -w' -target=android/arm64,android/amd64 -javapkg=org.hyperledger.aries -o=./build/android/aries-agent.aar github.com/hyperledger/aries-framework-go/cmd/aries-agent-mobile/...
 ```
-
-
-
-```
-{
-  "id": "1234567890",
-  "type": "<message-type-uri>",
-  "from": "did:example:alice",
-  "to": ["did:example:bob"],
-  "created_time": 1516269022,
-  "expires_time": 1516385931,
-  "body": {
-    "message": "Hello",
-    "goal": "I just want to say hello"
-  }
-}
-
-```
-
-
-```
-{
-    "type": "https://didcomm.org/routing/2.0/forward",
-    "id": "12345678",
-    "to": ["did:peer:mediator"],
-    "expires_time": 1516385931,
-    "body":{
-        "next": "did:peer:Bob"
-    },
-    "attachments": [
-        // The payload to be forwarded
-    ]
-}
-
-```
-
-
-```
-{
-  "@type": "https://didcomm.org/connection/2.0/message",
-  "purpose": "connection-request",
-  "body": {
-		"did_doc": "<Base64 encoded DID document>",
-    "label": "Alice"
-  }
-}
-```
-
-
-```
-val payload = """ {"key": "value", ...} """
-val data = payload.toByteArray(StandardCharsets.UTF_8)
-val res = service.ariesAgent.ariesController.send(data)
-if (res != null) {
-   if (res.error != null) {
-      // Handle Error
-   } else {
-     // Handle Return JSON
-}
-```
-
-
-```
-{
-	"ConnectionID":"02b57bcc-d5bb-4aa5-99f4-3946acb11593",
-	"State":"completed",
-	"ThreadID":"",
-	"ParentThreadID":"",
-	"TheirLabel":"",
-	"TheirDID":"did:peer:1zQmaTS93Z5hfQSqnsQPLjbigXkFcEeR2dLtvHEanp6Ydvmf",
-	"MyDID":"did:peer:1zQmW4kMccxHwhhWMmdEFjfFSdkkZ4AuiKBNKiQ1rtgemwDk",
-	"ServiceEndPoint":{
-		"uri":"ws:\/\/MBP-von-Berit.fritz.box:5001",
-		"accept":["didcomm\/v2"],
-		"routingKeys":["did:key:z6LSeJpuVUjP3uebe1rskgXWh3wTK3LVLiRe1xogAobpqzf3"]
-	},
-	"RecipientKeys": ["did:key:z6LSeX4cLFS6w5ni8BxKuw5Aycw4H6Luvuz7uKQLyjCgysGz"],
-	"Implicit":false,
-	"Namespace":"my",
-	"DIDCommVersion":"v2",
-	"PeerDIDInitialState":""
-}
-
-```
+This creates the `aries-agent.aar` file that can be included in the [libs](app/libs) folder and 
+referenced in the [build.gradle](app/build.gradle) file of the project.
