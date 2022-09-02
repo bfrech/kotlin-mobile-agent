@@ -14,7 +14,8 @@
         <entry key="app/src/main/res/layout/fragment_first.xml" value="0.24010416666666667" />
         <entry key="app/src/main/res/layout/fragment_second.xml" value="0.24010416666666667" />
         <entry key="app/src/main/res/layout/message_item.xml" value="0.158203125" />
-        <entry key="app/src/main/res/layout/message_item_they.xml" value="0.158203125" />
+        <entry key="app/src/main/res/layout/message_item_self.xml" value="0.2526041666666667" />
+        <entry key="app/src/main/res/layout/message_item_they.xml" value="0.335" />
       </map>
     </option>
   </component>
