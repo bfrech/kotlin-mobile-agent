@@ -48,6 +48,8 @@ class NotificationHandler(private val ariesAgent: AriesAgent) : Handler {
         if(topic == "connection_complete"){
             Log.d(TAG,"Received Connection Completion Acknowledgment: $newMessage" )
             ariesAgent.acknowledgeConnectionComplete(
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.FROM_KEY),
+                AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.TO_KEY),
                 Utils.decodeBase64(AriesUtils.extractValueFromJSONObject(newMessage, AriesUtils.CONTENT_KEY))
             )
             return

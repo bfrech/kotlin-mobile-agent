@@ -133,7 +133,10 @@ class AriesAgent(private val context: Context) {
 
     }
 
-    fun acknowledgeConnectionComplete(invitationID: String){
+    fun acknowledgeConnectionComplete(from: String, to: String, invitationID: String){
+
+        processIncomingDIDRotation(from, to)
+
         Log.d(TAG, "Connection for openInvitation: $invitationID acknowledged")
         if(invitationID == openInvitationID){
             openInvitationID = ""
@@ -213,6 +216,22 @@ class AriesAgent(private val context: Context) {
         val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
         //AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, oldDID)
         AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID)
+    }
+
+    private fun processIncomingDIDRotation(theirDID: String, myDID: String, ){
+        println("Trying to get connection ID for: $myDID")
+        val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID).toString()
+
+        if(connectionID == ""){
+            Log.w(TAG, "No connection Entry for This Label")
+            return
+        } else {
+            val theirOldDID = connectionHandler.getTheirDIDForConnection(connectionID)
+            if(theirOldDID != theirDID){
+                Log.d(TAG, "They rotated DIDs, Updating Connection Entry with new connectionID: $connectionID!")
+                connectionHandler.updateTheirDIDForConnection(connectionID, theirDID)
+            }
+        }
     }
 
 
