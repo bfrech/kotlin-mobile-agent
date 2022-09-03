@@ -174,24 +174,11 @@ class AriesAgent(private val context: Context) {
      */
     fun processIncomingMobileMessage(theirDID: String, myDID: String, message: String, createdAt: String){
 
-        println("Trying to get connection ID for: $myDID")
-        val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID).toString()
+        val connectionID = processIncomingDIDRotation(theirDID, myDID)
 
-        if(connectionID == ""){
-            Log.w(TAG, "No connection Entry for This Label")
-            return
-        } else {
-            val theirOldDID = connectionHandler.getTheirDIDForConnection(connectionID)
-            if(theirOldDID != theirDID){
-                Log.d(TAG, "They rotated DIDs, Updating Connection Entry with new connectionID: $connectionID!")
-                connectionHandler.updateTheirDIDForConnection(connectionID, theirDID)
-
-                val label = AndroidFileSystemUtils.getLabelForConnectionID(context, connectionID)
-
-                if (label != null) {
-                    AndroidFileSystemUtils.storeMessageToSharedPrefs(context, message, false, label, createdAt )
-                }
-            }
+        val label = AndroidFileSystemUtils.getLabelForConnectionID(context, connectionID)
+        if (label != null) {
+            AndroidFileSystemUtils.storeMessageToSharedPrefs(context, message, false, label, createdAt )
         }
 
         // TODO: notification of message: refresh messages page if open
@@ -214,17 +201,20 @@ class AriesAgent(private val context: Context) {
     private fun rotateDIDForConnection(connectionID: String){
         val oldDID = connectionHandler.getMyDIDForConnection(connectionID)
         val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
-        //AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, oldDID)
         AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID)
+
+        // TODO: remove old DID here?
+        AndroidFileSystemUtils.removeOldDID(context, oldDID)
     }
 
-    private fun processIncomingDIDRotation(theirDID: String, myDID: String, ){
+    private fun processIncomingDIDRotation(theirDID: String, myDID: String): String {
+
         println("Trying to get connection ID for: $myDID")
         val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID).toString()
 
         if(connectionID == ""){
             Log.w(TAG, "No connection Entry for This Label")
-            return
+            return ""
         } else {
             val theirOldDID = connectionHandler.getTheirDIDForConnection(connectionID)
             if(theirOldDID != theirDID){
@@ -232,6 +222,7 @@ class AriesAgent(private val context: Context) {
                 connectionHandler.updateTheirDIDForConnection(connectionID, theirDID)
             }
         }
+        return connectionID
     }
 
 
