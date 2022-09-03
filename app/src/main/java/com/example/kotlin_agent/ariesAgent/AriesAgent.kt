@@ -44,7 +44,6 @@ class AriesAgent(private val context: Context) {
         opts.mediaTypeProfiles = "didcomm/v2"
 
         opts.logLevel = "debug"
-        //opts.storage =
 
         try {
             Log.d(TAG, "Starting Agent with: $agentlabel")
@@ -170,6 +169,7 @@ class AriesAgent(private val context: Context) {
      */
     fun processIncomingMobileMessage(theirDID: String, myDID: String, message: String, createdAt: String){
 
+        println("Trying to get connection ID for: $myDID")
         val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID).toString()
 
         if(connectionID == ""){
@@ -209,7 +209,7 @@ class AriesAgent(private val context: Context) {
     private fun rotateDIDForConnection(connectionID: String){
         val oldDID = connectionHandler.getMyDIDForConnection(connectionID)
         val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
-        AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID, oldDID)
+        AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, oldDID)
     }
 
 

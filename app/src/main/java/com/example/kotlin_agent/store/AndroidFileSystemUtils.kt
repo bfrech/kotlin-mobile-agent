@@ -15,7 +15,7 @@ class AndroidFileSystemUtils {
 
 
         // Store MyDID -> ConnectionID for identification after message received
-        fun storeConnectionIDForMyDID(context: Context, connectionID: String, myDID: String, oldDID: String = ""){
+        fun storeConnectionIDForMyDID(context: Context, connectionID: String, myDID: String){
 
             Log.d(TAG, "Storing $myDID -> $connectionID to shared preferences")
 
@@ -25,11 +25,26 @@ class AndroidFileSystemUtils {
             )
 
             with (sharedPrefs.edit()) {
-                remove(oldDID)
                 putString(myDID, connectionID)
                 apply()
             }
 
+
+        }
+
+
+        fun removeOldDID(context: Context, myDID: String){
+            Log.d(TAG, "Removing $myDID -> connectionID from shared preferences")
+
+            val sharedPrefs = context.getSharedPreferences(
+                "${BuildConfig.APPLICATION_ID}_sharedPreferencesMessages_oldDIDs",
+                Context.MODE_PRIVATE
+            )
+
+            with (sharedPrefs.edit()) {
+                remove(myDID)
+                apply()
+            }
 
         }
 
