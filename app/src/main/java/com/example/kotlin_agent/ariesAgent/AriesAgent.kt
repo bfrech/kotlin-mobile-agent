@@ -112,6 +112,7 @@ class AriesAgent(private val context: Context) {
             AriesUtils.THEIR_LABEL_KEY
         )
         addContact(label, connectionID)
+
         messagingHandler.sendConnectionResponse(connectionID)
     }
 
@@ -124,10 +125,11 @@ class AriesAgent(private val context: Context) {
         val connectionID = connectionHandler.createNewConnection(myDID, from)
         Log.d(TAG, "Created Connection with $label and: $connectionID")
 
+        addContact(label, connectionID)
+
         rotateDIDForConnection(connectionID)
         messagingHandler.sendConnectionMessage(connectionID, "connection_complete", openInvitationID)
         openInvitationID = ""
-        addContact(label, connectionID)
 
     }
 
@@ -209,7 +211,8 @@ class AriesAgent(private val context: Context) {
     private fun rotateDIDForConnection(connectionID: String){
         val oldDID = connectionHandler.getMyDIDForConnection(connectionID)
         val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
-        AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, oldDID)
+        //AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, oldDID)
+        AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID)
     }
 
 
