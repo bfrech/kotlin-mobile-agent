@@ -13,7 +13,6 @@ class AndroidFileSystemUtils {
 
         private val TAG = "AndroidFileSystemUtils"
 
-
         // Store MyDID -> ConnectionID for identification after message received
         fun storeConnectionIDForMyDID(context: Context, connectionID: String, myDID: String){
 
@@ -28,10 +27,7 @@ class AndroidFileSystemUtils {
                 putString(myDID, connectionID)
                 apply()
             }
-
-
         }
-
 
         fun removeOldDID(context: Context, myDID: String){
             Log.d(TAG, "Removing $myDID -> connectionID from shared preferences")

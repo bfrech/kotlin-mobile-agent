@@ -181,10 +181,9 @@ class AriesAgent(private val context: Context) {
             AndroidFileSystemUtils.storeMessageToSharedPrefs(context, message, false, label, createdAt )
         }
 
-        // TODO: notification of message: refresh messages page if open
         sendMessageReceivedMessage()
-
     }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun sendMessage(message: String, connectionID: String){
@@ -203,13 +202,12 @@ class AriesAgent(private val context: Context) {
         val newDID =  connectionHandler.rotateDIDForConnection(connectionID)
         AndroidFileSystemUtils.storeConnectionIDForMyDID(context, connectionID, newDID)
 
-        // TODO: remove old DID here?
+        // remove old DID to save storage
         AndroidFileSystemUtils.removeOldDID(context, oldDID)
     }
 
     private fun processIncomingDIDRotation(theirDID: String, myDID: String): String {
 
-        println("Trying to get connection ID for: $myDID")
         val connectionID = AndroidFileSystemUtils.getConnectionIDForMyDID(context, myDID).toString()
 
         if(connectionID == ""){
