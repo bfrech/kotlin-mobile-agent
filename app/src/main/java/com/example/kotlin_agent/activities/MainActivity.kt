@@ -1,14 +1,11 @@
 package com.example.kotlin_agent.activities
 
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import com.example.kotlin_agent.AgentService
-import com.example.kotlin_agent.BuildConfig
 import com.example.kotlin_agent.R
 
 class MainActivity : AppCompatActivity() {
@@ -29,9 +26,8 @@ class MainActivity : AppCompatActivity() {
             connectButton = findViewById(R.id.connectbutton)
             connectButton.setOnClickListener {
 
-                // TODO: TEST Case
-                ariesService.putExtra("mediatorURL","http://fcd6-2003-e6-f46-3a01-cc2c-92cf-6b41-4c8c.eu.ngrok.io")
-                //service.putExtra("mediatorURL",mediatorURLEdit.text.toString())
+
+                ariesService.putExtra("mediatorURL",mediatorURLEdit.text.toString())
 
                 ariesService.putExtra("label",labelEdit.text.toString())
                 ariesService.action = "startAgent"
