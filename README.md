@@ -1,6 +1,5 @@
 ![MOBIDID - Decentralized Mobile Messaging using DIDComm](images/Mobidid.jpg)
 
-# Mobile Client
 This is the Android mobile client for mobile messaging using DIDComm. It can be used together with 
 the [mediator](https://git.snet.tu-berlin.de/blockchain/idunion/DID) to send DIDComm messages with other agents. 
 
@@ -29,6 +28,7 @@ The mediator serves an endpoint on port 5000. Run:
 ngrok http 5000
 ```
 
+Import the project to AndroidStudio and [run the App on an emulator](https://developer.android.com/training/basics/firstapp/running-app).
 
 
 The app was successfully tested on: 
